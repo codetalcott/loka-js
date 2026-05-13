@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>loka-js — M2 button demo</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+  section { border: 1px solid #ddd; padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 6px; }
+  section[lang="ar"] { direction: rtl; }
+  h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+  button { font-size: 1rem; padding: .4rem .8rem; cursor: pointer; }
+  .target { margin-top: .75rem; padding: .5rem; background: #f6f8fa; border-radius: 4px; min-height: 1.5em; }
+  pre { font-size: .75rem; background: #f0f0f0; padding: .25rem .5rem; border-radius: 3px; margin: .25rem 0; white-space: pre-wrap; }
+  code { background: #eef; padding: 1px 4px; border-radius: 3px; }
+  section[lang="ar"] pre { direction: ltr; text-align: left; }
+</style>
+
+<!-- Load order: orchestrator + locales BEFORE the patched fixi. -->
+<script src="../orchestrator.js"></script>
+<script src="../locales/en.js"></script>
+<script src="../locales/es.js"></script>
+<script src="../locales/ja.js"></script>
+<script src="../locales/ar.js"></script>
+<script src="../fixi.js"></script>
+</head>
+<body>
+
+<h1>loka-js M2 demo</h1>
+<p>Four buttons. The English one uses canonical <code>fx-*</code> attributes (regression check).
+The Spanish, Japanese, and Arabic ones use localized attribute names that the patched fixi
+reads directly via the <code>window.fixi.name</code> hook — <strong>nothing is mutated in the DOM</strong>.
+Open DevTools → Elements and confirm that the attribute names in the source remain
+<code>fx-acción</code>, <code>fx-アクション</code>, <code>fx-إجراء</code>, etc.</p>
+
+<section>
+  <h2>English (canonical, no-op)</h2>
+  <button
+    fx-action="./fragments/hello.html"
+    fx-trigger="click"
+    fx-target="#target-en"
+    fx-swap="innerHTML">Load</button>
+  <div id="target-en" class="target">— empty —</div>
+  <pre>Canonical attributes. window.fixi.name returns defaults for lang="en".</pre>
+</section>
+
+<section lang="es">
+  <h2>Spanish (Latin script)</h2>
+  <button
+    fx-acción="./fragments/hola.html"
+    fx-disparador="clic"
+    fx-objetivo="#target-es"
+    fx-intercambio="innerHTML">Cargar</button>
+  <div id="target-es" class="target">— vacío —</div>
+  <pre>fixi reads fx-acción as fx-action via window.fixi.name(elt, "action")
+fixi.event(elt, "clic") returns "click" for the event listener
+The DOM is unchanged.</pre>
+</section>
+
+<section lang="ja">
+  <h2>Japanese (CJK script)</h2>
+  <button
+    fx-アクション="./fragments/konnichiwa.html"
+    fx-トリガー="クリック"
+    fx-ターゲット="#target-ja"
+    fx-スワップ="innerHTML">読み込み</button>
+  <div id="target-ja" class="target">— 空 —</div>
+  <pre>fixi reads fx-アクション as fx-action via window.fixi.name(elt, "action")
+fixi.event(elt, "クリック") returns "click" for the event listener
+The DOM is unchanged.</pre>
+</section>
+
+<section lang="ar">
+  <h2>Arabic (RTL script)</h2>
+  <button
+    fx-إجراء="./fragments/marhaba.html"
+    fx-محفز="نقر"
+    fx-هدف="#target-ar"
+    fx-تبديل="innerHTML">تحميل</button>
+  <div id="target-ar" class="target">— فارغ —</div>
+  <pre>fixi reads fx-إجراء as fx-action via window.fixi.name(elt, "action")
+fixi.event(elt, "نقر") returns "click" for the event listener
+The DOM is unchanged.</pre>
+</section>
+
+<section>
+  <h2>Dynamically inserted</h2>
+  <button id="inject">Inject a Spanish fx-* button</button>
+  <div id="injected"></div>
+  <script>
+    document.getElementById('inject').addEventListener('click', () => {
+      var wrap = document.createElement('div');
+      wrap.setAttribute('lang', 'es');
+      wrap.innerHTML =
+        '<button fx-acción="./fragments/hola.html" fx-disparador="clic" ' +
+        'fx-objetivo="#injected-target" fx-intercambio="innerHTML">Recién inyectado</button>' +
+        '<div id="injected-target" class="target">— vacío —</div>';
+      document.getElementById('injected').appendChild(wrap);
+    });
+  </script>
+</section>
+
+</body>
+</html>

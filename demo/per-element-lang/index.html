@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>loka-js — per-element language demo</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+  section { border: 1px solid #ddd; padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 6px; }
+  section[lang="ar"] { direction: rtl; }
+  h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+  button { font-size: 1rem; padding: .4rem .8rem; cursor: pointer; }
+  .target { margin-top: .75rem; padding: .5rem; background: #f6f8fa; border-radius: 4px; min-height: 1.5em; }
+  .note { font-size: .85rem; color: #555; }
+</style>
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/en.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../locales/ja.js"></script>
+<script src="../../locales/ar.js"></script>
+<script src="../../fixi.js"></script>
+</head>
+<body>
+
+<h1>Per-element language</h1>
+<p>This page has <code>&lt;html lang="en"&gt;</code>, but each section below
+declares its own <code>lang</code>. <strong>Each section's fixi attributes
+are resolved against its own language</strong> — Spanish in the Spanish
+section, Japanese in the Japanese section, English at the top level.</p>
+
+<p class="note">The preprocessor-based approach (e.g. dixi) commits to one
+language at preprocess time and can't do this.</p>
+
+<section>
+  <h2>Outer (lang="en" inherited from &lt;html&gt;)</h2>
+  <button id="en-button"
+    fx-action="../fragments/hello.html"
+    fx-target="#en-target"
+    fx-swap="innerHTML">English Load</button>
+  <div id="en-target" class="target">— empty —</div>
+</section>
+
+<section lang="es">
+  <h2>lang="es" — Spanish</h2>
+  <button id="es-button"
+    fx-acción="../fragments/hola.html"
+    fx-objetivo="#es-target"
+    fx-intercambio="innerHTML">Cargar (Español)</button>
+  <div id="es-target" class="target">— vacío —</div>
+</section>
+
+<section lang="ja">
+  <h2>lang="ja" — Japanese</h2>
+  <button id="ja-button"
+    fx-アクション="../fragments/konnichiwa.html"
+    fx-ターゲット="#ja-target"
+    fx-スワップ="innerHTML">読み込み (日本語)</button>
+  <div id="ja-target" class="target">— 空 —</div>
+</section>
+
+<section lang="ar">
+  <h2>lang="ar" — Arabic (RTL)</h2>
+  <button id="ar-button"
+    fx-إجراء="../fragments/marhaba.html"
+    fx-هدف="#ar-target"
+    fx-تبديل="innerHTML">تحميل (العربية)</button>
+  <div id="ar-target" class="target">— فارغ —</div>
+</section>
+
+</body>
+</html>
