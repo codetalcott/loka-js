@@ -6,10 +6,7 @@
 // use whichever feels natural. After registration, scans for
 // `<template p:datos>` (the Spanish entry directive) and inits each one.
 //
-// This module imports canonical psatina source as-is: there is no fork.
-// The same effect could be achieved against the codeberg source if it
-// shipped a proper ESM bundle that re-exports templateDirectives (the
-// current published bundle drops the export during minification).
+// Canonical psatina source is imported as-is; no fork.
 
 import { psatina, templateDirectives } from '../psatina.js'
 import { withFunc, ieval, flatMap } from '../common.js'

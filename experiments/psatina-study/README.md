@@ -4,9 +4,9 @@ A study demonstrating that registry-based localization works on **canonical [psa
 
 > The relevant change is upstream: [Deniz Akşimşek's psatina](https://codeberg.org/dz4k/psatina) exports the `templateDirectives` Map ([`lib/psatina.ts:23`](https://codeberg.org/dz4k/psatina/src/branch/main/lib/psatina.ts#L23)), so anyone can register additional directives without modifying the core. This study is a thin Spanish locale module on top of canonical source — not a refactor, not a fork, not a competing distribution. **The right next step for actual users is to use canonical psatina from codeberg.**
 
-## Why the source is vendored anyway
+## What's in `lib/`
 
-The canonical published bundle at `psatina.dz4k.com/psatina.min.js` is missing the `templateDirectives` export — the minifier drops the re-export during the build. Until that lands in a published bundle, this study vendors the canonical TypeScript source from codeberg with TypeScript syntax mechanically stripped (no semantic changes; the bundle structure mirrors codeberg exactly):
+TypeScript-stripped copies of canonical psatina source from codeberg. No semantic changes; the file structure mirrors codeberg exactly. Built-in directives (`for`, `if`, `on`, `set`, `init`, `ref`, `data`) and auto-init for `<template p:data>` stay registered — canonical psatina, untouched.
 
 | File | Source |
 | --- | --- |
@@ -16,7 +16,7 @@ The canonical published bundle at `psatina.dz4k.com/psatina.min.js` is missing t
 | [lib/render.js](lib/render.js) | [render.ts](https://codeberg.org/dz4k/psatina/src/branch/main/lib/render.ts) |
 | [lib/psatina.js](lib/psatina.js) | [psatina.ts](https://codeberg.org/dz4k/psatina/src/branch/main/lib/psatina.ts) |
 
-Each file carries a provenance header pointing at the canonical version. The built-in directives (`for`, `if`, `on`, `set`, `init`, `ref`, `data`) and auto-init for `<template p:data>` are **not** removed — they're canonical psatina, untouched. **When Deniz publishes a bundle that includes the `templateDirectives` export, this vendored copy can be replaced with a CDN import.**
+Each file carries a provenance header pointing at the canonical version.
 
 ## What the Spanish locale module does
 
