@@ -1,9 +1,9 @@
 (()=>{
 	if(document.__fixi_mo) return;
 	let h = window.fixi ??= {}
-	let nm = h.name      ??= (e,k) => `fx-${k}`
-	let ev = h.event     ??= (e,v) => v
-	let sl = h.sel       ??= (k)   => `[fx-${k}]`
+	let nm = h.name ??= (e, k)=>`fx-${k}`
+	let ev = h.event ??= (e, v)=>v
+	let sl = h.sel ??= (k)=>`[fx-${k}]`
 	let igSl = h.ignoreSel ??= "[fx-ignore]"
 	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
 	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))

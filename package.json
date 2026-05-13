@@ -4,9 +4,16 @@
   "description": "Polyglot fixi-family: a 3-hook contract for per-element language selection without DOM mutation.",
   "license": "0BSD",
   "author": "Wm Talcott",
+  "main": "fixi.js",
+  "files": [
+    "fixi.js",
+    "orchestrator.js",
+    "locales/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "gen": "node scripts/gen-locales.mjs",
-    "build": "node scripts/build.mjs",
     "test": "node test/loka-js.spec.mjs"
   },
   "keywords": [

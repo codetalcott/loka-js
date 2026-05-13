@@ -18,7 +18,7 @@ When no language module is loaded, the patched fixi is behaviorally identical to
 <head>
   <script src="./orchestrator.js"></script>
   <script src="./locales/es.js"></script>
-  <script src="./packages/fixi/dist/fixi.js"></script>
+  <script src="./fixi.js"></script>
 </head>
 <body>
   <button fx-acción="/api" fx-disparador="clic" fx-objetivo="#out">Cargar</button>
@@ -61,11 +61,11 @@ Language modules override these via the orchestrator. See [orchestrator.js](./or
 
 ## Repo layout
 
-```
-packages/fixi/         The patched fixi.js + dist bundles
+```text
+fixi.js                The patched fixi (single file, no build step — fixi-family convention)
 orchestrator.js        Installs window.fixi.{name,event,sel} hooks
 locales/*.js           24 locale data files (generated from @lokascript/semantic profiles)
-scripts/               Locale generator + build
+scripts/               Locale generator
 demo/                  Multi-language demos including the per-element-lang case
 test/                  Playwright acceptance suite
 upstream-patches/      Diff artifact for upstream contribution
