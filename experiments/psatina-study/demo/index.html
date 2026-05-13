@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>psatina-study (English)</title>
+  <link rel="stylesheet" href="https://unpkg.com/missing.css@1.1.3">
+  <style>
+    main { max-width: 40rem; }
+  </style>
+  <!-- Canonical psatina (vendored as type-stripped ESM from codeberg).
+       English is the default: built-in directives + auto-init for
+       <template p:data> are registered by psatina.js itself. No locale
+       module is needed. -->
+  <script type="module" src="../lib/psatina.js"></script>
+</head>
+<body>
+<main>
+
+<h1>psatina-study <small>(English)</small></h1>
+<p>
+  Canonical psatina, loaded directly. Built-in directives
+  (<code>data</code>, <code>if</code>, <code>for</code>, <code>on</code>,
+  <code>set</code>, <code>init</code>, <code>ref</code>) and auto-init for
+  <code>&lt;template p:data&gt;</code> work as upstream does.
+</p>
+
+<template p:data="{
+  q: '',
+  users: [
+    { name: 'Alice', email: 'alice@example.com' },
+    { name: 'Bob',   email: 'bob@example.com' },
+    { name: 'Carol', email: 'carol@example.com' },
+    { name: 'Dave',  email: 'dave@example.com' },
+  ],
+}">
+  <p>
+    <input
+      type="search"
+      placeholder="filter by name…"
+      p:on:input="update(() => q = event.target.value)">
+  </p>
+  <ul>
+    <li p:for:user="users.filter(u => u.name.toLowerCase().includes(q.toLowerCase()))">
+      <strong>[| user.name |]</strong>
+      &mdash;
+      <a href="mailto:[| user.email |]">[| user.email |]</a>
+    </li>
+  </ul>
+  <p p:if="users.filter(u => u.name.toLowerCase().includes(q.toLowerCase())).length === 0">
+    <em>No matches.</em>
+  </p>
+</template>
+
+<hr>
+<p>
+  <small>
+    Spanish version: <a href="es.html">es.html</a> — same UI, Spanish
+    attribute names, served by adding a thin locale module on top of the
+    same canonical core.
+  </small>
+</p>
+
+</main>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// Verify the joint fixi + psatina-modular demo behaves correctly.
+// Verify the joint fixi + psatina-study demo behaves correctly.
 //
 // Checks:
 //   - psatina template renders 5 fruits initially
@@ -10,8 +10,8 @@
 
 import { chromium } from 'playwright';
 
-const BASE = process.env.BASE || 'http://127.0.0.1:8124';
-const URL = `${BASE}/loka-js/demo/joint-fixi-psatina/index.html`;
+const BASE = process.env.BASE || 'http://127.0.0.1:8125';
+const URL = `${BASE}/demo/joint-fixi-psatina/index.html`;
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext();

@@ -21,9 +21,10 @@
 <script src="../../locales/es.js"></script>
 <script src="../../fixi.js"></script>
 
-<!-- psatina-modular Spanish locale (ES module — imports core + shared
-     loka-js dom-vocab for events/props). -->
-<script type="module" src="../../../psatina-modular/lib/locales/es.js"></script>
+<!-- psatina-study Spanish locale (ES module — imports canonical psatina
+     source from experiments/psatina-study/, adds Spanish-named directives,
+     and shares loka-js dom-vocab/es.js for event/property names). -->
+<script type="module" src="../../experiments/psatina-study/lib/locales/es.js"></script>
 
 <!-- Joint rescan: re-inits psatina templates that arrive via fixi swaps.
      Must come AFTER psatina's es.js in document order. -->
@@ -41,7 +42,7 @@
 </p>
 <p class="vocab">
   Vocabulario compartido: <code>loka-js/dom-vocab/es.js</code> exporta
-  <code>{ events, props }</code> que psatina-modular importa. Una sola fuente
+  <code>{ events, props }</code> que psatina-study importa. Una sola fuente
   de verdad para <code>clic→click</code>, <code>entrada→input</code>,
   <code>valor→value</code>, etc.
 </p>
