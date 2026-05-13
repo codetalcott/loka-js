@@ -27,6 +27,7 @@ window.loka.register('es', {
       desenfoque: 'blur',
       iniciar: 'init',
       inicializar: 'init',
+      pulsacion: 'keydown',
     },
   },
 });

@@ -10,11 +10,13 @@
 // Inputs:
 //   - ../hyperfixi/packages/semantic/src/generators/profiles/{profile}.ts
 //     (event vocab — sibling-checkout dependency)
-//   - scripts/fx-vocab.mjs (per-library attr/event vocab)
+//   - scripts/fx-vocab.mjs (per-library attr/event vocab + props)
 //
-// Output:
-//   - locales/{code}.js with per-library shape:
-//     window.loka.register(code, { fixi: { attrs, events } })
+// Outputs (both regenerated together):
+//   - locales/{code}.js     — fixi-specific (script-tag loaded; calls window.loka.register)
+//   - dom-vocab/{code}.js   — shared DOM-keyword vocab (ES module; consumed by
+//                             psatina-modular and any other library that needs
+//                             event/property name translation)
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -25,6 +27,7 @@ import { LOCALES } from './fx-vocab.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const LOCALES_DIR = path.resolve(ROOT, 'locales');
+const DOM_VOCAB_DIR = path.resolve(ROOT, 'dom-vocab');
 const PROFILES_DIR = path.resolve(
   ROOT,
   '../hyperfixi/packages/semantic/src/generators/profiles'
@@ -114,6 +117,24 @@ function stripIdentity(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([k, v]) => k !== v));
 }
 
+function renderDomVocabFile(code, spec, events) {
+  const props = spec.props ?? {};
+  const eventsBlock = formatObject(stripIdentity(events), 0);
+  const propsBlock = formatObject(stripIdentity(props), 0);
+  return `// AUTO-GENERATED — do not edit by hand.
+// Source: hyperfixi/packages/semantic/src/generators/profiles/${spec.profile}.ts (events)
+//         loka-js/scripts/fx-vocab.mjs (event overrides + props)
+// Regenerate: cd loka-js && npm run gen
+//
+// DOM-keyword vocabulary for the '${code}' locale. Shared between loka-js
+// (fixi fx-trigger value translation) and any other consumer that needs
+// to translate event or DOM-property names (e.g., psatina-modular's
+// p:on:<event> and p:set:<prop> directives).
+export const events = ${eventsBlock};
+export const props = ${propsBlock};
+`;
+}
+
 function renderLocaleFile(code, spec, fixiEvents) {
   const unreviewedBanner = spec.reviewed
     ? ''
@@ -165,6 +186,9 @@ function main() {
   if (!fs.existsSync(LOCALES_DIR)) {
     fs.mkdirSync(LOCALES_DIR, { recursive: true });
   }
+  if (!fs.existsSync(DOM_VOCAB_DIR)) {
+    fs.mkdirSync(DOM_VOCAB_DIR, { recursive: true });
+  }
 
   if (args.locale && !LOCALES[args.locale]) {
     console.error(`Unknown locale: ${args.locale}`);
@@ -196,15 +220,27 @@ function main() {
     const output = renderLocaleFile(code, spec, events);
     const outPath = path.join(LOCALES_DIR, `${code}.js`);
 
+    const domVocabOutput = renderDomVocabFile(code, spec, events);
+    const domVocabPath = path.join(DOM_VOCAB_DIR, `${code}.js`);
+
     if (args.dryRun) {
-      console.log(`  [DRY] ${code}: ${Object.keys(events).length} events, ${Object.keys(spec.fixi?.attrs ?? {}).length} attrs`);
+      console.log(`  [DRY] ${code}: ${Object.keys(events).length} events, ${Object.keys(spec.fixi?.attrs ?? {}).length} attrs, ${Object.keys(spec.props ?? {}).length} props`);
     } else {
+      // locales/{code}.js
       const prev = fs.existsSync(outPath) ? fs.readFileSync(outPath, 'utf-8') : '';
       if (prev === output) {
-        console.log(`  [SAME] ${code}`);
+        console.log(`  [SAME] locales/${code}.js`);
       } else {
         fs.writeFileSync(outPath, output);
-        console.log(`  [WROTE] ${code}: locales/${code}.js`);
+        console.log(`  [WROTE] locales/${code}.js`);
+      }
+      // dom-vocab/{code}.js
+      const prevDV = fs.existsSync(domVocabPath) ? fs.readFileSync(domVocabPath, 'utf-8') : '';
+      if (prevDV === domVocabOutput) {
+        console.log(`  [SAME] dom-vocab/${code}.js`);
+      } else {
+        fs.writeFileSync(domVocabPath, domVocabOutput);
+        console.log(`  [WROTE] dom-vocab/${code}.js`);
       }
       writeCount++;
     }

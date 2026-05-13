@@ -2,9 +2,10 @@
 //
 // Each locale entry has library-agnostic metadata (profile, name, reviewed)
 // plus per-library sub-objects (currently only `fixi`; `moxi`, `ssexi`, ...
-// will join in a future version). The generator at scripts/gen-locales.mjs
-// reads this file alongside the corresponding semantic profile and emits
-// locales/{code}.js.
+// will join in a future version) and shared DOM-keyword vocab (props).
+// The generator at scripts/gen-locales.mjs reads this file alongside the
+// semantic profile and emits both locales/{code}.js (fixi-specific) and
+// dom-vocab/{code}.js (shared events+props for psatina-modular etc.).
 //
 // Reviewed locales: es, ja, ar — vocabulary matches the prior dixi locales
 // that were exercised by 80+ Playwright checks. Other locales are
@@ -16,7 +17,12 @@
 //   reviewed     true if a native speaker has reviewed fixi vocabulary
 //   fixi.attrs   localized HTML attribute name -> canonical English name
 //   fixi.events  event-name translations not present in the semantic profile
-//                (some profiles only define focus/blur/init; this fills gaps)
+//                (some profiles only define focus/blur/init; this fills gaps,
+//                and lets non-fixi consumers like psatina-modular extend the
+//                DOM event vocabulary, e.g., `pulsacion: 'keydown'`)
+//   props        localized DOM property name -> canonical (e.g., `valor: 'value'`).
+//                Currently used by psatina-modular's p:set:<prop> directive.
+//                fixi does not consume `props`.
 
 /**
  * @typedef {{
@@ -27,6 +33,7 @@
  *     attrs: Record<string, string>,
  *     events?: Record<string, string>,
  *   },
+ *   props?: Record<string, string>,
  * }} LocaleSpec
  */
 
@@ -51,6 +58,12 @@ export const LOCALES = {
         'fx-objetivo': 'fx-target',
         'fx-intercambio': 'fx-swap',
       },
+      events: {
+        pulsacion: 'keydown',
+      },
+    },
+    props: {
+      valor: 'value',
     },
   },
 
