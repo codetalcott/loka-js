@@ -17,5 +17,8 @@
     "html",
     "attributes",
     "polyglot"
-  ]
+  ],
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
 }

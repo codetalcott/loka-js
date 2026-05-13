@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>loka-js: behavior-preservation smoke</title>
+<!-- Patched fixi.js loaded WITHOUT the orchestrator.
+     Defaults via ??= should make this behave identically to upstream fixi. -->
+<script src="../fixi.js"></script>
+</head>
+<body>
+<button id="btn"
+  fx-action="./hello.txt"
+  fx-trigger="click"
+  fx-target="#out"
+  fx-swap="innerHTML">Load</button>
+<div id="out">— empty —</div>
+</body>
+</html>
