@@ -1,0 +1,21 @@
+{
+  "name": "loka-js",
+  "version": "0.0.1",
+  "description": "Polyglot fixi-family: a 3-hook contract for per-element language selection without DOM mutation.",
+  "license": "0BSD",
+  "author": "Wm Talcott",
+  "scripts": {
+    "gen": "node scripts/gen-locales.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node test/loka-js.spec.mjs"
+  },
+  "keywords": [
+    "fixi",
+    "i18n",
+    "internationalization",
+    "hypermedia",
+    "html",
+    "attributes",
+    "polyglot"
+  ]
+}
