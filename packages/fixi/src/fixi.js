@@ -1,10 +1,15 @@
 (()=>{
 	if(document.__fixi_mo) return;
+	let h = window.fixi ??= {}
+	let nm = h.name      ??= (e,k) => `fx-${k}`
+	let ev = h.event     ??= (e,v) => v
+	let sl = h.sel       ??= (k)   => `[fx-${k}]`
+	let igSl = h.ignoreSel ??= "[fx-ignore]"
 	document.__fixi_mo = new MutationObserver((recs)=>recs.forEach((r)=>r.type === "childList" && r.addedNodes.forEach((n)=>process(n))))
 	let send = (elt, type, detail, bub)=>elt.dispatchEvent(new CustomEvent("fx:" + type, {detail, cancelable:true, bubbles:bub !== false, composed:true}))
 	let attr = (elt, name, defaultVal)=>elt.getAttribute(name) || defaultVal
 	let dflt = (n, d)=>(window.fixiCfg ?? {})[n] ?? d
-	let ignore = (elt)=>elt.closest("[fx-ignore]") != null
+	let ignore = (elt)=>elt.closest(igSl) != null
 	let init = (elt)=>{
 		let options = {}
 		if (elt.__fixi || ignore(elt) || !send(elt, "init", {options})) return
@@ -16,10 +21,10 @@
 			let ac = new AbortController()
 			let cfg = {
 				trigger:evt,
-				action:attr(elt, "fx-action"),
-				method:attr(elt, "fx-method", "GET").toUpperCase(),
-				target:document.querySelector(attr(elt, "fx-target")) ?? elt,
-				swap:attr(elt, "fx-swap", dflt("swap", "outerHTML")),
+				action:attr(elt, nm(elt, "action")),
+				method:attr(elt, nm(elt, "method"), "GET").toUpperCase(),
+				target:document.querySelector(attr(elt, nm(elt, "target"))) ?? elt,
+				swap:attr(elt, nm(elt, "swap"), dflt("swap", "outerHTML")),
 				body,
 				drop:reqs.size,
 				headers:{"FX-Request":"true", ...window.fixiCfg?.headers},
@@ -71,16 +76,16 @@
 			send(elt, "swapped", {cfg})
 			if (!document.contains(elt)) send(document, "swapped", {cfg})
 		}
-		elt.__fixi.evt = attr(elt, "fx-trigger", elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click")
+		elt.__fixi.evt = ev(elt, attr(elt, nm(elt, "trigger"), elt.matches("form") ? "submit" : elt.matches("input:not([type=button]),select,textarea") ? "change" : "click"))
 		elt.addEventListener(elt.__fixi.evt, elt.__fixi, options)
 		send(elt, "inited", {}, false)
 	}
 	let process = (n)=>{
 		if (n.matches){
 			if (ignore(n)) return
-			if (n.matches("[fx-action]")) init(n)
+			if (n.matches(sl("action"))) init(n)
 		}
-		if(n.querySelectorAll) n.querySelectorAll("[fx-action]").forEach(init)
+		if(n.querySelectorAll) n.querySelectorAll(sl("action")).forEach(init)
 	}
 	document.addEventListener("fx:process", (evt)=>process(evt.target))
 	document.addEventListener("DOMContentLoaded", ()=>{
