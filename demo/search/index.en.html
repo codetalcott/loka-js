@@ -9,9 +9,11 @@
 <script src="../../orchestrator.js"></script>
 <script src="../../locales/en.js"></script>
 
-<!-- Family processors: patched fixi (3-hook contract) + upstream moxi (canonical English handlers) -->
-<script src="../../fixi.js"></script>
+<!-- Family processors: moxi before fixi (fixiproject convention — moxi must
+     register its fx:init / fx:process listeners before fixi dispatches them
+     on DOMContentLoaded). -->
 <script src="https://cdn.jsdelivr.net/gh/bigskysoftware/moxi@6760e60/moxi.js"></script>
+<script src="../../fixi.js"></script>
 </head>
 <body>
 

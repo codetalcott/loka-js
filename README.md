@@ -64,12 +64,21 @@ Language modules override these via the orchestrator. See [orchestrator.js](./or
 ```text
 fixi.js                The patched fixi (single file, no build step — fixi-family convention)
 orchestrator.js        Installs window.fixi.{name,event,sel} hooks
-locales/*.js           24 locale data files (generated from @lokascript/semantic profiles)
+lang-resolver.js       Reusable per-element langOf helper (ES module for other libraries)
+locales/*.js           24 locale data files (script-tag loaded; calls window.loka.register)
+dom-vocab/*.js         24 ES modules exporting shared { events, props } — consumed by
+                       psatina-modular and any other library that needs DOM-keyword translation
 scripts/               Locale generator
-demo/                  Multi-language demos including the per-element-lang case
+demo/                  Multi-language demos including per-element-lang + joint fixi/psatina
 test/                  Playwright acceptance suite
 upstream-patches/      Diff artifact for upstream contribution
 ```
+
+## The pattern this represents
+
+loka-js is one instance of a broader pattern: **expose a library's directive/attribute registry; let language modules register vocabulary instead of mutating the DOM ahead of the library.** Fixi-family attribute names (`fx-action`, …) become hook-resolved at processing time, so a Spanish author's `fx-acción` is what fixi reads — and what devtools shows.
+
+The same pattern applied to a templating library is [**psatina-modular**](https://github.com/codetalcott/psatina-modular) (sibling repo at `~/projects/psatina-modular`): instead of hardcoded `templateDirectives.set('if', …)` etc. in the bundle, the directive set is exposed as a `Map` and per-locale modules register Spanish-named directives (`si`, `para`, `datos`, …) directly. The joint demo at [demo/joint-fixi-psatina/](./demo/joint-fixi-psatina/) uses both libraries together on one Spanish page, sharing this repo's `dom-vocab/es.js` vocabulary.
 
 ## Relationship to dixi
 

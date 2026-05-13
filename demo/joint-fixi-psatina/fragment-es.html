@@ -1,0 +1,11 @@
+<h2>Fragmento cargado</h2>
+<p>
+  Este fragmento llegó vía fixi (<code>fx-acción</code>) y contiene una
+  plantilla de psatina (<code>p:datos</code>) que se inicializa
+  automáticamente después del intercambio.
+</p>
+<template p:datos="{ contador: 0 }">
+  <p>Contador: <strong>[| contador |]</strong></p>
+  <button p:en:clic="update(() => contador++)">Incrementar</button>
+  <button p:en:clic="update(() => contador = 0)">Reiniciar</button>
+</template>

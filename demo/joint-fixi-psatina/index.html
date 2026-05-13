@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Demo conjunta: fixi + psatina, ambos en español</title>
+<link rel="stylesheet" href="https://unpkg.com/missing.css@1.1.3">
+<style>
+  main { max-width: 48rem; }
+  section { border: 1px solid #ddd; padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 6px; }
+  h2 { margin: 0 0 .5rem; font-size: 1.1rem; }
+  .target { margin-top: .75rem; padding: .75rem; background: #f6f8fa; border-radius: 4px; min-height: 2em; }
+  code { background: #eef; padding: 1px 4px; border-radius: 3px; }
+  .vocab { font-size: .85rem; color: #555; }
+</style>
+
+<!-- loka-js: orchestrator + Spanish locale + patched fixi.
+     Loaded synchronously in document order. Orchestrator pre-installs
+     window.fixi.{name,event,sel} hooks; the locale file populates the
+     vocabulary; fixi reads via the hooks at process-time. -->
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../fixi.js"></script>
+
+<!-- psatina-modular Spanish locale (ES module — imports core + shared
+     loka-js dom-vocab for events/props). -->
+<script type="module" src="../../../psatina-modular/lib/locales/es.js"></script>
+
+<!-- Joint rescan: re-inits psatina templates that arrive via fixi swaps.
+     Must come AFTER psatina's es.js in document order. -->
+<script type="module" src="./rescan.js"></script>
+</head>
+<body>
+<main>
+
+<h1>fixi + psatina, juntos en español</h1>
+<p>
+  Una sola página combina dos bibliotecas multilingües. <strong>Sin mutar el
+  DOM en ningún lado.</strong> Abre DevTools → Elementos para confirmar que
+  los nombres localizados (<code>fx-acción</code>, <code>p:datos</code>,
+  <code>p:en:entrada</code>) permanecen en la fuente HTML.
+</p>
+<p class="vocab">
+  Vocabulario compartido: <code>loka-js/dom-vocab/es.js</code> exporta
+  <code>{ events, props }</code> que psatina-modular importa. Una sola fuente
+  de verdad para <code>clic→click</code>, <code>entrada→input</code>,
+  <code>valor→value</code>, etc.
+</p>
+
+<section>
+  <h2>psatina-modular &mdash; isla reactiva (Spanish-native)</h2>
+  <p class="vocab">
+    Directivas: <code>p:datos</code>, <code>p:para</code>, <code>p:en:entrada</code>,
+    <code>p:si</code>. Reactividad pura del cliente, sin red.
+  </p>
+  <template p:datos="{
+    filtro: '',
+    frutas: ['manzana', 'banana', 'cereza', 'durazno', 'mandarina'],
+  }">
+    <p>
+      <input type="search" placeholder="filtrar frutas..."
+        p:en:entrada="update(() => filtro = event.target.value)">
+    </p>
+    <ul>
+      <li p:para:f="frutas.filter(x => x.toLowerCase().includes(filtro.toLowerCase()))">[| f |]</li>
+    </ul>
+    <p p:si="frutas.filter(x => x.toLowerCase().includes(filtro.toLowerCase())).length === 0">
+      <em>Sin coincidencias.</em>
+    </p>
+  </template>
+</section>
+
+<section>
+  <h2>fixi &mdash; intercambio de fragmento (Spanish-native)</h2>
+  <p class="vocab">
+    Atributos: <code>fx-acción</code>, <code>fx-objetivo</code>,
+    <code>fx-intercambio</code>. El fragmento descargado contiene su propia
+    plantilla psatina, que el helper <code>rescan.js</code> inicializa al
+    recibir el evento <code>fx:swapped</code>.
+  </p>
+  <button
+    fx-acción="./fragment-es.html"
+    fx-objetivo="#fragment-target"
+    fx-intercambio="innerHTML">
+    Cargar fragmento
+  </button>
+  <div id="fragment-target" class="target">— vacío —</div>
+</section>
+
+<section>
+  <h2>Para verificar en DevTools</h2>
+  <ol>
+    <li><code>document.querySelector('[fx-acción]')</code> retorna el botón &mdash; no fue renombrado.</li>
+    <li><code>document.querySelector('template[p\:datos]')</code> retorna la plantilla &mdash; no fue renombrada.</li>
+    <li><code>window.fixi.name(document.body, 'action')</code> retorna <code>'fx-acción'</code>.</li>
+    <li>Después de cargar el fragmento, <code>document.querySelectorAll('[data-rescan]').length</code> debe ser 2 (la plantilla original + la del fragmento).</li>
+  </ol>
+</section>
+
+</main>
+</body>
+</html>

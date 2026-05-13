@@ -10,8 +10,10 @@
 <script src="../../orchestrator.js"></script>
 <script src="../../locales/es.js"></script>
 
-<script src="../../fixi.js"></script>
+<!-- moxi antes que fixi: convención de fixiproject. moxi debe registrar sus
+     listeners fx:init / fx:process antes de que fixi los dispare. -->
 <script src="https://cdn.jsdelivr.net/gh/bigskysoftware/moxi@6760e60/moxi.js"></script>
+<script src="../../fixi.js"></script>
 </head>
 <body>
 

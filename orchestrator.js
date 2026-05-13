@@ -1,10 +1,24 @@
 // loka-js orchestrator — installs window.fixi.{name,event,sel,ignoreSel}
 // hooks from per-locale data registered by locale modules.
 //
-// Load order:
+// Load order (synchronous <script> tags in <head>):
 //   1. orchestrator.js  (this file — defines window.loka and pre-installs hooks)
 //   2. locales/xx.js    (one or more — each calls window.loka.register)
-//   3. fixi.js          (patched; reads window.fixi.* hooks via ??= defaults)
+//   3. moxi.js          (only if you're using moxi; before fixi per fixiproject
+//                        convention — moxi must register its fx:init / fx:process
+//                        listeners before fixi dispatches them on DOMContentLoaded)
+//   4. fixi.js          (patched; reads window.fixi.* hooks via ??= defaults)
+//
+// Why this order matters:
+//   * orchestrator before locales: window.loka must exist for register() calls.
+//   * locales before fixi: fixi captures the hook functions and ignoreSel
+//     string at load time. Locales added after fixi loads will affect later
+//     hook calls (sel, name, event read live from REG) but fixi's already-
+//     captured ignoreSel string won't reflect post-fixi-load locale additions.
+//   * moxi before fixi: fixiproject convention — see
+//     https://fixiproject.org/  ("you will want to load moxi.js before fixi.js
+//     so that on-fx:init and on-fx:process handlers are registered before
+//     fixi.js dispatches those events on page load").
 //
 // Language resolution per element:
 //   data-loka-lang   (explicit override on the element or any ancestor)
@@ -13,9 +27,22 @@
 //
 // License: 0BSD.
 (()=>{
+	// Misorder guard: if fixi has already initialized its MutationObserver,
+	// it loaded before us — our hooks won't take effect because fixi captured
+	// the default implementations into local variables at its own load time.
+	if (document.__fixi_mo) {
+		console.warn(
+			'[loka-js] orchestrator.js loaded after fixi.js — hooks will not take effect. ' +
+			'Move <script src="orchestrator.js"></script> above <script src="fixi.js"></script> in your <head>.'
+		)
+	}
+
 	let REG = {}                                 // { code: { fixi: { attrs, events } } }
 	let nameByKey = {}                           // { code: { action: 'fx-acción', ... } }
 
+	// langOf + normLang: inlined for non-module script-tag load. The ES-module
+	// version lives in lang-resolver.js and is imported by other libraries
+	// (psatina-modular etc.) — keep the two in sync.
 	let normLang = (s)=>s.split('-')[0].toLowerCase()
 	let langOf = (elt)=>{
 		let v = elt.getAttribute?.('data-loka-lang')

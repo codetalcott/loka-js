@@ -10,8 +10,10 @@
 <script src="../../orchestrator.js"></script>
 <script src="../../locales/ar.js"></script>
 
-<script src="../../fixi.js"></script>
+<!-- moxi قبل fixi: تقليد fixiproject — يجب أن يسجل moxi مستمعي fx:init و
+     fx:process قبل أن يطلقهما fixi عند DOMContentLoaded. -->
 <script src="https://cdn.jsdelivr.net/gh/bigskysoftware/moxi@6760e60/moxi.js"></script>
+<script src="../../fixi.js"></script>
 </head>
 <body>
 

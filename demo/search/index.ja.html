@@ -10,8 +10,10 @@
 <script src="../../orchestrator.js"></script>
 <script src="../../locales/ja.js"></script>
 
-<script src="../../fixi.js"></script>
+<!-- moxi → fixi の順 (fixiproject 規約): moxi が fx:init / fx:process の
+     リスナーを fixi の DOMContentLoaded ディスパッチより前に登録するため。 -->
 <script src="https://cdn.jsdelivr.net/gh/bigskysoftware/moxi@6760e60/moxi.js"></script>
+<script src="../../fixi.js"></script>
 </head>
 <body>
 
