@@ -12,6 +12,8 @@ Per-element language is the killer feature: a `<section lang="es">` and a `<sect
 
 **Who this is for:** web developers whose first language isn't English, especially beginners encountering hypermedia patterns for the first time.
 
+**Who this is NOT for:** English-fluent devs. Use [canonical fixiproject](https://fixiproject.org/) directly — the libraries are smaller, the docs are upstream, and the community knowledge is already there. loka-js trades a small amount of bytes and indirection for accessibility; if you can read English fixi attributes fluently, don't pay that cost. loka-js doesn't sit alongside the other fixiproject libraries as a peer — it's a parallel distribution for a different audience.
+
 ## Try it
 
 ```html
@@ -109,6 +111,12 @@ The same pattern applied to a templating library is [psatina-modular](https://gi
 ## Relationship to dixi
 
 [dixi](https://github.com/codetalcott/hyperfixi/tree/main/experiments/dixi) is the preprocessor-based predecessor: it walks the DOM and rewrites `fx-acción` → `fx-action` before fixi reads it. loka-js takes the same locale vocabulary and applies it at read-time via the hook contract, eliminating dixi's MutationObserver overhead and unlocking per-element language. The locale data here is generated from the same `@lokascript/semantic` profile source.
+
+## Relationship to lokascript
+
+[lokascript.org](https://lokascript.org) is the multilingual counterpart for **hyperscript** — write rich behaviors like `on click set my.count to ...` in 24 languages. loka-js is the same idea applied to the **fixi family** — write minimal hypermedia attributes (`fx-action`, `fx-target`, ...) in those same 24 languages. Both share the `@lokascript/semantic` vocabulary source, so a "click" is `clic` in both worlds and a Spanish-speaking dev moving between the two doesn't relearn DOM-event names.
+
+Use whichever matches your library choice. If you're writing rich client-side behaviors, reach for hyperscript / lokascript. If you're writing minimal HTTP-attribute hypermedia, loka-js + fixi-family. The two compose on one page if you mix lokascript-driven behaviors with fixi-family hypermedia — they don't conflict.
 
 ## Other work in this repo (internal / in-progress)
 
