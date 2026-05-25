@@ -1,5 +1,14 @@
 # Incident triage (es) — end-to-end agent demo
 
+> ## Internal demo / not for external sharing yet
+>
+> This directory combines the **stable loka localization work** with the
+> **in-progress agent-affordance work** ([`GRAIL_HTML_BINDING.md`](../../GRAIL_HTML_BINDING.md)).
+> Because the affordance side is parked pending a naming/scope review,
+> this whole demo is internal too. Run it as a working proof of concept;
+> don't share publicly until the affordance work crystallizes (or gets
+> moved to a separate repo).
+
 A working demonstration of the full stack: **Spanish-localized HTML page
 with GRAIL affordance attributes → reader extracts canonical
 GRAIL JSON → scripted agent plans backward from a goal → agent executes
@@ -84,7 +93,7 @@ The scripted agent prints six phases:
 The LLM agent prints turn-by-turn what Claude decides. Sample output
 from a real run (Claude Haiku 4.5, 13 turns to goal):
 
-```
+```text
 [turn 1] I'll start by checking the current state of incident #42 …
 ▸ get_state → 1 true: incident.alert.received
 
@@ -138,7 +147,7 @@ Notable observations:
 
 Sample output excerpt (last few lines):
 
-```
+```text
 [10/10 resolve-incident] POST http://127.0.0.1:8091/incidents/5/resolve … HTTP 200
 
 6. Final truth vector (after plan execution):

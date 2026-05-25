@@ -1,3 +1,8 @@
+// INTERNAL / IN-PROGRESS — see GRAIL_HTML_BINDING.md and the main README
+// for status. This tool is part of the parked affordance work, not the
+// loka localization pitch. Used by examples/incident-triage-es/ internally;
+// not yet ready for external use or public reference.
+//
 // Reference reader for the HTML attribute binding for GRAIL defined in
 // GRAIL_HTML_BINDING.md (v0.3). Two roles:
 //

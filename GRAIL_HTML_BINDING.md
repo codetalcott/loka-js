@@ -1,11 +1,32 @@
 # HTML attribute binding for GRAIL
 
+> ## Internal / parked
+>
+> This spec is **not ready for external use or public reference.** Two
+> specific blockers, both noted in the [main README](README.md):
+>
+> 1. **Terminology under review.** The name "GRAIL" is borrowed from
+>    [Mike Amundsen's work](https://www.amundsen.com/talks.html); the
+>    sibling `~/projects/grail-spec` is the user's interpretation of
+>    that framework, and may diverge from Amundsen's canonical spec.
+>    Until coordinated with Amundsen (or renamed), treat this document
+>    as a working draft, not a published name.
+> 2. **Scope unclear vs. existing protocols.** The HTML-binding-for-
+>    agents space already has Siren, schema.org Actions, LSE, OpenAPI,
+>    JSON-LD. What this binding uniquely demonstrates is not yet
+>    clearly differentiated from those.
+>
+> The file is kept in-repo because it documents real exploration and
+> the [reference reader](tools/agent-reader.mjs) +
+> [incident-triage demo](examples/incident-triage-es/) build against
+> it. Use it internally; don't link to it publicly.
+
 **Status:** v0.3 — a rewrite of the v0.1/v0.2 `AGENT_AFFORDANCES.md` after
 discovering that the sibling `projects/grail-spec` (v1.0.0, released
 2026-04-20) defines the canonical protocol for the problem space this
-work was sketching. v0.3 aligns terminology with GRAIL, drops the
-parallel inventions, and positions the work as an HTML-attribute
-**binding** for the protocol — not a competing standard.
+work was sketching. v0.3 aligns terminology with the user's grail-spec,
+drops the parallel inventions, and positions the work as an HTML-
+attribute binding for that protocol.
 
 Pre-v1.0 and subject to change; feedback welcome at
 <https://github.com/codetalcott/loka-js/issues>.
