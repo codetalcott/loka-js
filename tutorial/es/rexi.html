@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>rexi · tutorial (es)</title>
+<link rel="stylesheet" href="../styles.css">
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../rexi.js"></script>
+</head>
+<body>
+
+<nav class="crumbs">
+  <a href="../index.html">tutorial</a><span>›</span> rexi (es)
+</nav>
+
+<main>
+  <h1>rexi <small>— envoltorio cómodo de <code>fetch()</code> para llamadas desde JS</small></h1>
+
+  <p>
+    <code>rexi.js</code> expone seis verbos HTTP como funciones globales
+    (<code>get</code>, <code>head</code>, <code>post</code>, <code>put</code>,
+    <code>patch</code>, <code>del</code>) que devuelven una <em>promesa
+    decorada</em>: encadenas <code>.text()</code>, <code>.json()</code>,
+    <code>.html()</code> o <code>.blob()</code> sin la danza del doble await.
+  </p>
+  <p>
+    En español, los mismos verbos están disponibles bajo:
+    <code>obtener</code>, <code>cabecera</code>, <code>publicar</code>,
+    <code>poner</code>, <code>parchear</code>, <code>eliminar</code>. Apuntan
+    al mismo objeto función; ambos nombres siguen funcionando.
+  </p>
+
+  <h2>Ejemplo: cargar texto</h2>
+  <div class="two-up">
+    <div class="example" lang="es">
+      <h3>Español</h3>
+      <button id="btn-es">obtener("/hello.txt")</button>
+      <pre id="out-es" style="min-height:1.5rem">— vacío —</pre>
+<pre><code>let texto = await obtener("./hello.txt").text()
+document.getElementById('out').textContent = texto</code></pre>
+    </div>
+    <div class="example" lang="en">
+      <h3>Canonical (en)</h3>
+      <button id="btn-en">get("/hello.txt")</button>
+      <pre id="out-en" style="min-height:1.5rem">— empty —</pre>
+<pre><code>let text = await get("./hello.txt").text()
+document.getElementById('out').textContent = text</code></pre>
+    </div>
+  </div>
+  <script>
+    document.getElementById('btn-es').addEventListener('click', async () => {
+      document.getElementById('out-es').textContent = await obtener('../../demo/rexi/hello.txt').text()
+    })
+    document.getElementById('btn-en').addEventListener('click', async () => {
+      document.getElementById('out-en').textContent = await get('../../demo/rexi/hello.txt').text()
+    })
+  </script>
+
+  <h2>Vocabulario</h2>
+  <table class="vocab">
+    <thead><tr><th>Español</th><th>Inglés (canónico)</th><th>Verbo HTTP</th></tr></thead>
+    <tbody>
+      <tr><td><code>obtener(url)</code></td><td><code>get(url)</code></td><td>GET</td></tr>
+      <tr><td><code>cabecera(url)</code></td><td><code>head(url)</code></td><td>HEAD</td></tr>
+      <tr><td><code>publicar(url, body)</code></td><td><code>post(url, body)</code></td><td>POST</td></tr>
+      <tr><td><code>poner(url, body)</code></td><td><code>put(url, body)</code></td><td>PUT</td></tr>
+      <tr><td><code>parchear(url, body)</code></td><td><code>patch(url, body)</code></td><td>PATCH</td></tr>
+      <tr><td><code>eliminar(url)</code></td><td><code>del(url)</code></td><td>DELETE</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Los métodos encadenados (<code>.json()</code>, <code>.text()</code>,
+    <code>.html()</code>, <code>.blob()</code>) permanecen en inglés — son
+    nombres establecidos del SDK.
+  </p>
+
+  <p class="attribution">
+    Basado en
+    <a href="https://fixiproject.org/rexi.html" target="_blank" rel="noopener">fixiproject.org/rexi.html</a>.
+  </p>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>paxi · tutorial (es)</title>
+<link rel="stylesheet" href="../styles.css">
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../paxi.js"></script>
+<script src="../../fixi.js"></script>
+</head>
+<body>
+
+<nav class="crumbs">
+  <a href="../index.html">tutorial</a><span>›</span> paxi (es)
+</nav>
+
+<main>
+  <h1>paxi <small>— morfismo del DOM que preserva foco y estado de formularios</small></h1>
+
+  <p>
+    <code>paxi.js</code> añade una estrategia de intercambio que <em>actualiza</em>
+    el árbol DOM en lugar de reemplazarlo. Los elementos con <code>id</code>
+    conservan su identidad: el foco, el contenido tipeado en
+    <code>&lt;input&gt;</code> y los listeners se mantienen.
+  </p>
+  <p>
+    En inglés se usa <code>fx-swap="morph"</code>. En español:
+    <code>fx-intercambio="morfar"</code>. El alias global
+    <code>window.morfar</code> apunta a la función <code>window.morph</code>.
+  </p>
+
+  <h2>Ejemplo: reordenar sin perder el texto tipeado</h2>
+  <div class="two-up">
+    <div class="example" lang="es">
+      <h3>Español</h3>
+      <ul id="list-es" style="list-style:none;padding:0">
+        <li id="es-a"><label>A: <input type="text"></label></li>
+        <li id="es-b"><label>B: <input type="text"></label></li>
+        <li id="es-c"><label>C: <input type="text"></label></li>
+      </ul>
+      <button fx-acción="./paxi-frag-es.html" fx-objetivo="#list-es" fx-intercambio="morfar">Reordenar (morfar)</button>
+<pre><code>&lt;ul id="list"&gt;
+  &lt;li id="a"&gt;...&lt;/li&gt;
+  &lt;li id="b"&gt;...&lt;/li&gt;
+  &lt;li id="c"&gt;...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;button fx-acción="reorder.html"
+        fx-objetivo="#list"
+        fx-intercambio="morfar"&gt;
+  Reordenar
+&lt;/button&gt;</code></pre>
+    </div>
+    <div class="example" lang="en">
+      <h3>Canonical (en)</h3>
+      <ul id="list-en" style="list-style:none;padding:0">
+        <li id="en-a"><label>A: <input type="text"></label></li>
+        <li id="en-b"><label>B: <input type="text"></label></li>
+        <li id="en-c"><label>C: <input type="text"></label></li>
+      </ul>
+      <button fx-action="./paxi-frag-en.html" fx-target="#list-en" fx-swap="morph">Reorder (morph)</button>
+<pre><code>&lt;ul id="list"&gt;
+  &lt;li id="a"&gt;...&lt;/li&gt;
+  &lt;li id="b"&gt;...&lt;/li&gt;
+  &lt;li id="c"&gt;...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;button fx-action="reorder.html"
+        fx-target="#list"
+        fx-swap="morph"&gt;
+  Reorder
+&lt;/button&gt;</code></pre>
+    </div>
+  </div>
+  <p>
+    Escribe en los <code>&lt;input&gt;</code> antes de pulsar el botón —
+    el orden cambiará a C, A, B pero el texto tipeado permanece.
+  </p>
+
+  <h2>Vocabulario</h2>
+  <table class="vocab">
+    <thead><tr><th>Español</th><th>Inglés (canónico)</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td><code>fx-intercambio="morfar"</code></td><td><code>fx-swap="morph"</code></td><td>Valor para fx-swap que activa el morfismo de paxi</td></tr>
+      <tr><td><code>morfar(target, html)</code></td><td><code>morph(target, html)</code></td><td>Función global para morfar imperativamente desde JS</td></tr>
+    </tbody>
+  </table>
+
+  <p class="attribution">
+    Basado en
+    <a href="https://fixiproject.org/paxi.html" target="_blank" rel="noopener">fixiproject.org/paxi.html</a>.
+  </p>
+</main>
+
+</body>
+</html>

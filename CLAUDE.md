@@ -4,25 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-loka-js is a tiny patch (~110 bytes minified) to [fixi.js](https://github.com/bigskysoftware/fixi) that replaces 6 hardcoded `fx-*` attribute literals with 3 defaulted hooks on `window.fixi`. With those hooks, locale modules can register localized vocabulary and fixi resolves the right attribute name **at processing time** — no DOM mutation, no MutationObserver overhead, and per-element language selection (mixing `<section lang="es">` and `<section lang="ja">` on the same page).
+loka-js applies a hook-contract pattern to the [fixiproject family](https://fixiproject.org/) (fixi, moxi, ssexi, paxi, rexi) so locale modules can register localized authoring vocabulary that each library resolves at processing time — no DOM mutation, no MutationObserver overhead, per-element language via `lang` ancestor.
 
-Status: v0 — fixi-i18n only. moxi/ssexi/paxi/rexi support is deferred to v1.
+Status: **v1** — all five fixiproject libraries supported. fixi/moxi/paxi are patched (small hook contracts in the style upstream maintainers can land); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
 
-When no locale module is loaded, the patched fixi.js is behaviorally identical to upstream (the `??=` defaults reproduce the original literals).
+When no locale module is loaded, every patched library is behaviorally identical to upstream (the `??=` defaults reproduce the original literals).
 
 ## Repository convention: flat root, no build step
 
-This follows the fixi-family convention — single-file source at the repo root, no bundler, no compile step.
+Single-file sources at the repo root, no bundler, no compile step.
 
-- [fixi.js](./fixi.js) — the patched fixi (single file)
-- [orchestrator.js](./orchestrator.js) — installs `window.fixi.{name,event,sel,ignoreSel}` hooks; defines `window.loka.register`
-- [locales/](./locales/) — 24 generated locale data files
+- [fixi.js](./fixi.js), [moxi.js](./moxi.js), [paxi.js](./paxi.js) — patched libraries (each a single file)
+- [ssexi.js](./ssexi.js), [rexi.js](./rexi.js) — verbatim upstream copies (no patches; localized from outside)
+- [orchestrator.js](./orchestrator.js) — installs hooks on all five libraries; defines `window.loka.register` and `window.loka.alias`
+- [locales/](./locales/) — 24 generated locale data files (each calls `window.loka.register`)
 - [scripts/](./scripts/) — locale generator + per-library vocab table
-- [demo/](./demo/) — multi-language demos including the per-element-lang case
-- [test/](./test/) — Playwright acceptance suite
-- [upstream-patches/](./upstream-patches/) — diff artifact (`fixi.patch`) prepared for `git am` against bigskysoftware/fixi
+- [demo/](./demo/) — multi-language demos including per-element-lang and `joint-all` (all 5 libs on one Spanish page)
+- [tutorial/](./tutorial/) — Spanish per-library tutorial pages mirroring fixiproject.org examples
+- [test/](./test/) — Playwright acceptance suite (9 phases) + behavior-preservation harness
+- [upstream-patches/](./upstream-patches/) — diff artifacts (`fixi.patch`, `moxi.patch`, `paxi.patch`) prepared for `git am` against the bigskysoftware repos
 
-Do not introduce a build step, dist directory, or package bundling. Edits to `fixi.js` must keep the patch surface small (the patch is meant to land upstream).
+Do not introduce a build step, dist directory, or package bundling. Edits to patched library files must keep their patch surface small — the patches are meant to land upstream.
 
 ## Commands
 
@@ -46,28 +48,45 @@ The test script does not start its own server; start one before running.
 
 ## Architecture
 
-### The 3-hook contract
-
-`fixi.js` reads four hooks off `window.fixi`, defaulting them via `??=` if unset:
+### Per-library hook contracts
 
 ```js
+// fixi (patched)
 window.fixi.name      = (elt, key) => `fx-${key}`     // attribute-name resolver
 window.fixi.event     = (elt, value) => value         // trigger-value translator
 window.fixi.sel       = (key) => `[fx-${key}]`        // discovery selector
 window.fixi.ignoreSel = "[fx-ignore]"                 // ignore selector
+
+// moxi (patched)
+window.moxi.name      = (elt, key) => key             // resolves "live" / "on-" / "mx-ignore"
+window.moxi.event     = (elt, val) => val             // event-name after on- prefix
+window.moxi.modifier  = (mod) => mod                  // dotted modifiers (.prevent, .once, ...)
+window.moxi.ignoreSel = "[mx-ignore]"
+window.moxi.xpath     = () => "descendant-or-self::*[@live or @*[starts-with(name(),'on-')]]"
+
+// paxi (patched)
+window.paxi.isSwap    = (s) => s === "morph"          // recognize localized morph aliases
+
+// ssexi (NO patch) — orchestrator listens for fx:sse:<canonical> and re-fires
+//                    fx:sse:<localized> on the same target.
+// rexi  (NO patch) — orchestrator aliases globals via window.loka.alias({obtener:'get', ...})
 ```
 
-Every attribute read in `fixi.js` now goes through `attr(elt, nm(elt, "action"))` instead of a literal `"fx-action"`. The hook receives the element so resolution can be per-element-context (e.g., walking up to the nearest `[lang]`).
+Per-element hooks receive the element so resolution can walk up to the nearest `[lang]`. Document-level hooks (`fixi.sel`, `moxi.xpath`, `paxi.isSwap`, `moxi.ignoreSel`) read the registry union of all locales.
 
 ### Load order (matters)
 
 ```html
-<script src="./orchestrator.js"></script>   <!-- defines window.loka, pre-installs hooks -->
+<script src="./orchestrator.js"></script>   <!-- defines window.loka, pre-installs hooks on every library namespace -->
 <script src="./locales/es.js"></script>     <!-- one or more; each calls window.loka.register -->
-<script src="./fixi.js"></script>           <!-- reads window.fixi.* via ??= defaults -->
+<script src="./moxi.js"></script>           <!-- moxi must precede fixi (fixiproject convention) -->
+<script src="./ssexi.js"></script>          <!-- any order before fixi -->
+<script src="./paxi.js"></script>           <!-- any order before fixi -->
+<script src="./rexi.js"></script>           <!-- any order; rexi is standalone -->
+<script src="./fixi.js"></script>           <!-- last among fixi-family -->
 ```
 
-`orchestrator.js` must run **before** `fixi.js`, otherwise fixi installs its own no-op defaults and locale resolution silently won't happen. Locale files can load in any order between them.
+`orchestrator.js` must run **before** any patched library. If a patched lib loads first, its `??=` defaults take effect and the orchestrator's hooks are silently ignored.
 
 ### Per-element language resolution
 
@@ -109,18 +128,25 @@ Reviewed locales (native-speaker reviewed for fixi attrs): `es`, `ja`, `ar`. Oth
 
 ## Test phases
 
-The acceptance suite ([test/loka-js.spec.mjs](./test/loka-js.spec.mjs)) has four phases:
+The acceptance suite ([test/loka-js.spec.mjs](./test/loka-js.spec.mjs)) has nine phases:
 
-- **A** — M2 button demo across Latin/CJK/RTL, dynamic injection
-- **B** — M2.5 search demo per locale (`en/es/ja/ar`); verifies that moxi handlers remain canonical English (moxi is not yet patched in v0) while fixi attrs are localized
+- **A** — M2 button demo across Latin/CJK/RTL, dynamic injection (fixi)
+- **B** — M2.5 search demo per locale (`en/es/ja/ar`); this demo predates v1 so its moxi handlers use English `on-*` while fixi attrs are localized
 - **C** — Per-element language, the dixi-impossible case
-- **D** — Devtools faithfulness: confirms localized attribute names are **still present** in DOM (no mutation happened) and that `window.fixi.name(elt, 'action')` returns the expected localized name
+- **D** — Devtools faithfulness: localized attribute names still present in DOM
+- **E** — moxi: `vivo` / `al-` / `.prevenir` + globals (`consulta`/`esperar`/`transicion`)
+- **F** — ssexi: synthetic `fx:sse:message` re-fires as `fx:sse:mensaje` on the same target
+- **G** — paxi: `fx-intercambio="morfar"` triggers morph; `window.morfar === window.morph`
+- **H** — rexi: verb aliases (`obtener=get`, `publicar=post`, ...) on globalThis
+- **I** — joint: all five libraries loaded together on one Spanish page, no conflicts
 
-Key invariant the tests enforce: **attributes are never rewritten**. `fx-acción` stays `fx-acción` in devtools; fixi resolves it via the hook.
+The [behavior-preservation harness](./test/preservation.mjs) loads each patched library (fixi, paxi, moxi) WITHOUT the orchestrator and verifies the `??=` defaults match upstream.
+
+Key invariant the tests enforce: **attributes are never rewritten**. `fx-acción` / `al-clic` / `fx-intercambio="morfar"` stay verbatim in the DOM; libraries resolve via hooks.
 
 ## Upstream patch discipline
 
-The patch in [upstream-patches/fixi.patch](./upstream-patches/fixi.patch) is meant to land in bigskysoftware/fixi as the canonical version. Keep changes to `fixi.js` minimal and faithful to the existing style (single-IIFE, `??=` defaults, short var names like `nm`, `ev`, `sl`). Behavior must remain bit-identical to upstream when no orchestrator is loaded.
+The patches in [upstream-patches/](./upstream-patches/) (`fixi.patch`, `moxi.patch`, `paxi.patch`) are meant to land in the bigskysoftware repos as the canonical versions. Keep changes minimal and faithful to each project's existing style (single-IIFE, `??=` defaults, short var names). Behavior must remain bit-identical to upstream when no orchestrator is loaded — verified by `test/preservation.mjs`.
 
 ## Parent CLAUDE.md
 

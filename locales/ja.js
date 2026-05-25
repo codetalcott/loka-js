@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/japanese.ts (events)
-//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides)
+//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
 // Regenerate: cd loka-js && npm run gen
 window.loka.register('ja', {
   fixi: {

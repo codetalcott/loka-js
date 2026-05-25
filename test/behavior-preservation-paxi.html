@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>loka-js: paxi behavior-preservation smoke</title>
+<!-- Patched paxi.js loaded WITHOUT the orchestrator.
+     Default isSwap via ??= should make this behave identically to upstream paxi. -->
+<script src="../paxi.js"></script>
+<script src="../fixi.js"></script>
+</head>
+<body>
+<ul id="list">
+  <li id="a"><label>A: <input type="text"></label></li>
+  <li id="b"><label>B: <input type="text"></label></li>
+  <li id="c"><label>C: <input type="text"></label></li>
+</ul>
+<button id="btn"
+  fx-action="../demo/paxi/fragment.html"
+  fx-trigger="click"
+  fx-target="#list"
+  fx-swap="morph">Morph</button>
+</body>
+</html>

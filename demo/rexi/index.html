@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>loka-js + rexi (es)</title>
+
+<!-- Load order: orchestrator → locales → rexi -->
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../rexi.js"></script>
+
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 1.5rem; max-width: 40rem; }
+  button { padding: .5rem 1rem; cursor: pointer; margin-right: .5rem; }
+  pre { background: #f4f4f4; padding: .75rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>rexi · verbos HTTP en español</h1>
+
+<p>
+  rexi expone verbos HTTP como funciones globales (<code>get</code>,
+  <code>post</code>, …). Con loka, también están disponibles bajo nombres
+  en español (<code>obtener</code>, <code>publicar</code>, …) — el mismo
+  objeto función, dos nombres.
+</p>
+
+<button id="btn-en">get(/hello.txt)</button>
+<button id="btn-es">obtener("/hello.txt")</button>
+
+<pre id="out">— vacío —</pre>
+
+<script>
+  // Inline moxi-free script — directly attached for demo simplicity.
+  document.getElementById('btn-en').addEventListener('click', async () => {
+    const text = await get('./hello.txt').text()
+    document.getElementById('out').textContent = `[get] ${text}`
+  })
+  document.getElementById('btn-es').addEventListener('click', async () => {
+    const text = await obtener('./hello.txt').text()
+    document.getElementById('out').textContent = `[obtener] ${text}`
+  })
+</script>
+
+</body>
+</html>

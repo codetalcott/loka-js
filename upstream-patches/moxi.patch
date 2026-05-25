@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Wm Talcott <wtalcott@gmail.com>
+Subject: [PATCH] moxi: 5-hook contract for language-agnostic attribute/modifier
+ resolution
+
+Replace hardcoded "live", "on-", "mx-ignore" literals plus the modifier
+parsing path with 5 defaulted hooks on window.moxi:
+
+  - name(elt, key)   resolves "live" / "on-" / "mx-ignore" per element
+                     (default: identity)
+  - event(elt, val)  translates the event-name portion after the on- prefix
+                     (default: identity)
+  - modifier(mod)    translates a dotted modifier (".prevent", ".once", ...)
+                     (default: identity)
+  - ignoreSel        ignore selector string (default: "[mx-ignore]")
+  - xpath()          discovery XPath; can be widened to include localized
+                     variants of `live` and `on-` prefixes
+                     (default: "descendant-or-self::*[@live or
+                                @*[starts-with(name(),'on-')]]")
+
+Behavior is identical to upstream when window.moxi is unset (defaults
+via ??= reproduce the original literals). Net size: ~150 bytes minified.
+
+Enables localized moxi authoring (e.g., `<button al-clic.prevenir="...">`
+in Spanish) without DOM mutation; per-element-lang via `lang` ancestor
+resolution; safe to ship alongside upstream-named modules.
+
+Based on bigskysoftware/moxi@6760e60.
+
+See https://github.com/codetalcott/loka-js for the language-module
+ecosystem this is part of.
+---
+ moxi.js | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/moxi.js b/moxi.js
+--- a/moxi.js
++++ b/moxi.js
+@@ -1,6 +1,11 @@
+ (()=>{
+ 	let doc = document
+ 	if(doc.__moxi_mo) return
++	let mxh = window.moxi ??= {}
++	let nm = mxh.name ??= (e, k)=>k
++	let evh = mxh.event ??= (e, v)=>v
++	let modf = mxh.modifier ??= (m)=>m
++	let igSl = mxh.ignoreSel ??= "[mx-ignore]"
++	let xpath = mxh.xpath ??= ()=>"descendant-or-self::*[@live or @*[starts-with(name(),'on-')]]"
+ 	let liveFns = new Set(), pending = false,
+ 	recompute = ()=>{
+ 		if (pending) return
+@@ -20,7 +25,7 @@
+ 	mkDb = ()=>{let last = 0, j; return ms=>new Promise((r,rj)=>{j?.(DB); j = rj; let id = ++last; setTimeout(()=>id == last && (j = null, r()), ms)})},
+ 	mkWait = ctx=>x=>new Promise(r=>typeof x == "number" ? setTimeout(r,x) : el(ctx,x,r,{once:1})),
+-	ignore = elt=>elt.closest("[mx-ignore]"),
++	ignore = elt=>elt.closest(igSl),
+ 	one = x=>x?[x]:[],
+ 	POS = {before:"beforebegin",after:"afterend",start:"afterbegin",end:"beforeend"},
+ 	proxy = elts=>new Proxy({}, {
+@@ -65,15 +70,18 @@
+ 		if (!fire(elt, "mx:init", {})) return
+ 		elt.__moxi = {}
+ 		let q = mkq(elt), wait = mkWait(elt), trigger = fire.bind(0,elt), liveRuns = []
++		let liveAttr = nm(elt, "live"), onPrefix = nm(elt, "on-")
+ 		for (let a of elt.attributes){
+-			if (a.name == "live"){
++			if (a.name == liveAttr){
+ 				let fn = new AF(...HARGS, a.value),
+ 				debounce = mkDb(),
+ 				run = ()=>elt.isConnected ? fn.call(elt, q, wait, trigger, debounce) : liveFns.delete(run)
+ 				liveFns.add(run)
+ 				liveRuns.push(run)
+-			} else if (a.name.startsWith("on-")){
+-				let [name, ...mods] = a.name.slice(3).split("."),
+-				has = m=>mods.includes(m), h = has("halt"), debounce = mkDb()
++			} else if (a.name.startsWith(onPrefix)){
++				let [name, ...mods] = a.name.slice(onPrefix.length).split(".")
++				mods = mods.map(modf)
++				name = evh(elt, name)
++				let has = m=>mods.includes(m), h = has("halt"), debounce = mkDb()
+ 				if (has("cc")) name = name.replace(/-([a-z])/g, (_,c)=>c.toUpperCase())
+ 				let target = has("outside") ? doc : elt,
+@@ -94,7 +102,7 @@
+ 	},
+ 	process = n=>{
+ 		if (n.nodeType != 1 || ignore(n)) return
+-		let r = doc.evaluate("descendant-or-self::*[@live or @*[starts-with(name(),'on-')]]", n, null, 7, null)
++		let r = doc.evaluate(xpath(), n, null, 7, null)
+ 		for (let i = 0; i < r.snapshotLength; i++) init(r.snapshotItem(i))
+ 	},
+ 	gt = globalThis, de = doc.documentElement
+--
+2.50.0

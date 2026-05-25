@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>ssexi · tutorial (es)</title>
+<link rel="stylesheet" href="../styles.css">
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../ssexi.js"></script>
+<script src="../../fixi.js"></script>
+</head>
+<body>
+
+<nav class="crumbs">
+  <a href="../index.html">tutorial</a><span>›</span> ssexi (es)
+</nav>
+
+<main>
+  <h1>ssexi <small>— Server-Sent Events sobre fixi</small></h1>
+
+  <p>
+    <code>ssexi.js</code> extiende fixi con soporte para HTTP de larga
+    duración: cuando el servidor responde con
+    <code>Content-Type: text/event-stream</code>, los mensajes
+    <code>data:</code> se insertan progresivamente en el objetivo
+    (<code>fx-objetivo</code> / <code>fx-intercambio</code> de fixi).
+  </p>
+  <p>
+    <strong>ssexi no añade ningún atributo nuevo</strong>; se monta sobre los
+    de fixi. Lo que sí localiza loka son los <em>nombres de los eventos</em>
+    que ssexi dispara: el orquestador escucha el evento canónico y re-emite
+    su alias en español en el mismo objetivo.
+  </p>
+
+  <h2>Ejemplo: simular un mensaje SSE</h2>
+  <p>
+    En esta demo no hay un servidor SSE real; disparamos manualmente el
+    evento canónico <code>fx:sse:message</code> con el botón. El listener
+    está registrado con el nombre <em>en español</em>
+    (<code>fx:sse:mensaje</code>) — el orquestador hace el puente.
+  </p>
+  <div class="example" lang="es">
+    <h3>Español</h3>
+    <button id="sim">Simular mensaje</button>
+    <div id="stream" style="margin-top:.5rem;background:var(--code-bg);padding:.5rem;border-radius:4px;min-height:3rem"></div>
+<pre><code>document.querySelector('#stream')
+  .addEventListener('fx:sse:mensaje', (e) =&gt; {
+    let row = document.createElement('div')
+    row.textContent = e.detail.message.data
+    e.target.appendChild(row)
+  })</code></pre>
+  </div>
+
+  <script>
+    document.getElementById('stream').addEventListener('fx:sse:mensaje', (e) => {
+      let row = document.createElement('div')
+      row.textContent = `[${new Date().toLocaleTimeString()}] ${e.detail?.message?.data || '(sin datos)'}`
+      e.target.appendChild(row)
+    })
+    let n = 0
+    document.getElementById('sim').addEventListener('click', () => {
+      document.getElementById('stream').dispatchEvent(new CustomEvent('fx:sse:message', {
+        detail: { message: { data: 'tick ' + (++n) } }, bubbles: true,
+      }))
+    })
+  </script>
+
+  <h2>Vocabulario de eventos</h2>
+  <table class="vocab">
+    <thead><tr><th>Español</th><th>Inglés (canónico)</th><th>Cuándo se dispara</th></tr></thead>
+    <tbody>
+      <tr><td><code>fx:sse:abrir</code></td><td><code>fx:sse:open</code></td><td>Se detecta una transmisión SSE</td></tr>
+      <tr><td><code>fx:sse:mensaje</code></td><td><code>fx:sse:message</code></td><td>Antes de cada inserción</td></tr>
+      <tr><td><code>fx:sse:intercambiado</code></td><td><code>fx:sse:swapped</code></td><td>Tras la inserción (útil para auto-scroll)</td></tr>
+      <tr><td><code>fx:sse:cerrar</code></td><td><code>fx:sse:close</code></td><td>El stream terminó normalmente</td></tr>
+      <tr><td><code>fx:sse:error</code></td><td><code>fx:sse:error</code></td><td>Error durante el streaming (mismo nombre en ambos idiomas)</td></tr>
+    </tbody>
+  </table>
+
+  <p class="attribution">
+    Basado en
+    <a href="https://fixiproject.org/ssexi.html" target="_blank" rel="noopener">fixiproject.org/ssexi.html</a>.
+  </p>
+</main>
+
+</body>
+</html>

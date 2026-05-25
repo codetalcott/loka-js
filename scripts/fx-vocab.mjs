@@ -1,37 +1,65 @@
 // Per-library, per-locale vocabulary for loka-js.
 //
 // Each locale entry has library-agnostic metadata (profile, name, reviewed)
-// plus per-library sub-objects (currently only `fixi`; `moxi`, `ssexi`, ...
-// will join in a future version) and shared DOM-keyword vocab (props).
-// The generator at scripts/gen-locales.mjs reads this file alongside the
-// semantic profile and emits both locales/{code}.js (fixi-specific) and
+// plus per-library sub-objects (`fixi`, `moxi`, `ssexi`, `paxi`, `rexi`)
+// and shared DOM-keyword vocab (props). The generator at
+// scripts/gen-locales.mjs reads this file alongside the semantic profile
+// and emits both locales/{code}.js (calls window.loka.register) and
 // dom-vocab/{code}.js (shared events+props for psatina-modular etc.).
 //
-// Reviewed locales: es, ja, ar — vocabulary matches the prior dixi locales
-// that were exercised by 80+ Playwright checks. Other locales are
-// best-effort translations that warrant native-speaker review.
+// Reviewed locales (fixi attrs): es, ja, ar. Others are best-effort and
+// warrant native-speaker review. The per-library `reviewed` flag inside
+// each library's vocab tracks library-specific review status — a locale
+// can have reviewed fixi vocab but unreviewed paxi vocab.
 //
 // Fields:
-//   profile      basename of the semantic profile file (without .ts)
-//   name         display name for the language
-//   reviewed     true if a native speaker has reviewed fixi vocabulary
-//   fixi.attrs   localized HTML attribute name -> canonical English name
-//   fixi.events  event-name translations not present in the semantic profile
-//                (some profiles only define focus/blur/init; this fills gaps,
-//                and lets non-fixi consumers like psatina-modular extend the
-//                DOM event vocabulary, e.g., `pulsacion: 'keydown'`)
-//   props        localized DOM property name -> canonical (e.g., `valor: 'value'`).
-//                Currently used by psatina-modular's p:set:<prop> directive.
-//                fixi does not consume `props`.
+//   profile        basename of the semantic profile file (without .ts)
+//   name           display name for the language
+//   reviewed       true if a native speaker has reviewed fixi vocabulary
+//   globalsOptIn   if true, emit window.loka.alias calls for {moxi,paxi,rexi}.globals
+//                  so localized JS function names land on globalThis. Off by
+//                  default to avoid namespace pollution for locales that only
+//                  want localized attributes.
+//   fixi.attrs     localized HTML attribute name -> canonical English name
+//   fixi.events    event-name translations not present in the semantic profile
+//                  (some profiles only define focus/blur/init; this fills gaps,
+//                  and lets non-fixi consumers like psatina-modular extend the
+//                  DOM event vocabulary, e.g., `pulsacion: 'keydown'`)
+//   paxi.swaps     localized fx-swap value -> canonical (e.g., `morfar: 'morph'`)
+//   paxi.globals   localized JS global -> canonical (e.g., `morfar: 'morph'`)
+//   paxi.reviewed  true if paxi vocab has been native-speaker reviewed
+//   props          localized DOM property name -> canonical (e.g., `valor: 'value'`).
+//                  Currently used by psatina-modular's p:set:<prop> directive.
+//                  fixi does not consume `props`.
 
 /**
  * @typedef {{
  *   profile: string,
  *   name: string,
  *   reviewed: boolean,
+ *   globalsOptIn?: boolean,
  *   fixi: {
  *     attrs: Record<string, string>,
  *     events?: Record<string, string>,
+ *   },
+ *   paxi?: {
+ *     reviewed?: boolean,
+ *     swaps?: Record<string, string>,
+ *     globals?: Record<string, string>,
+ *   },
+ *   rexi?: {
+ *     reviewed?: boolean,
+ *     globals?: Record<string, string>,
+ *   },
+ *   ssexi?: {
+ *     reviewed?: boolean,
+ *     events?: Record<string, string>,
+ *   },
+ *   moxi?: {
+ *     reviewed?: boolean,
+ *     attrs?: Record<string, string>,      // 'vivo': 'live', 'al-': 'on-', 'mx-ignorar': 'mx-ignore'
+ *     modifiers?: Record<string, string>,  // dotted modifiers: 'prevenir': 'prevent'
+ *     globals?: Record<string, string>,
  *   },
  *   props?: Record<string, string>,
  * }} LocaleSpec
@@ -50,6 +78,7 @@ export const LOCALES = {
     profile: 'spanish',
     name: 'Spanish',
     reviewed: true,
+    globalsOptIn: true,
     fixi: {
       attrs: {
         'fx-acción': 'fx-action',
@@ -60,6 +89,56 @@ export const LOCALES = {
       },
       events: {
         pulsacion: 'keydown',
+      },
+    },
+    paxi: {
+      reviewed: true,
+      swaps: { morfar: 'morph' },
+      globals: { morfar: 'morph' },
+    },
+    rexi: {
+      reviewed: false,
+      globals: {
+        obtener: 'get',
+        publicar: 'post',
+        poner: 'put',
+        parchear: 'patch',
+        cabecera: 'head',
+        eliminar: 'del',
+      },
+    },
+    ssexi: {
+      reviewed: false,
+      events: {
+        abrir: 'open',
+        mensaje: 'message',
+        intercambiado: 'swapped',
+        cerrar: 'close',
+        // 'error' is identical in both languages; stripIdentity drops it.
+      },
+    },
+    moxi: {
+      reviewed: false,
+      attrs: {
+        vivo: 'live',
+        'al-': 'on-',
+        'mx-ignorar': 'mx-ignore',
+      },
+      modifiers: {
+        prevenir: 'prevent',
+        detener: 'stop',
+        parar: 'halt',
+        unavez: 'once',
+        mismo: 'self',
+        fuera: 'outside',
+        captura: 'capture',
+        pasivo: 'passive',
+        // 'cc' is technical (camelCase conversion); stays English.
+      },
+      globals: {
+        consulta: 'q',
+        esperar: 'wait',
+        transicion: 'transition',
       },
     },
     props: {

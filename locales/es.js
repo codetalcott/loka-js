@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/spanish.ts (events)
-//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides)
+//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
 // Regenerate: cd loka-js && npm run gen
 window.loka.register('es', {
   fixi: {
@@ -30,4 +30,53 @@ window.loka.register('es', {
       pulsacion: 'keydown',
     },
   },
+  paxi: {
+    swaps: {
+      morfar: 'morph',
+    },
+    globals: {
+      morfar: 'morph',
+    },
+  },
+  rexi: {
+    globals: {
+      obtener: 'get',
+      publicar: 'post',
+      poner: 'put',
+      parchear: 'patch',
+      cabecera: 'head',
+      eliminar: 'del',
+    },
+  },
+  ssexi: {
+    events: {
+      abrir: 'open',
+      mensaje: 'message',
+      intercambiado: 'swapped',
+      cerrar: 'close',
+    },
+  },
+  moxi: {
+    attrs: {
+      vivo: 'live',
+      'al-': 'on-',
+      'mx-ignorar': 'mx-ignore',
+    },
+    modifiers: {
+      prevenir: 'prevent',
+      detener: 'stop',
+      parar: 'halt',
+      unavez: 'once',
+      mismo: 'self',
+      fuera: 'outside',
+      captura: 'capture',
+      pasivo: 'passive',
+    },
+    globals: {
+      consulta: 'q',
+      esperar: 'wait',
+      transicion: 'transition',
+    },
+  },
+  globalsOptIn: true,
 });

@@ -146,7 +146,7 @@ function renderLocaleFile(code, spec, fixiEvents) {
 
   const header = `// AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/${spec.profile}.ts (events)
-//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides)
+//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
 // Regenerate: cd loka-js && npm run gen
 ${unreviewedBanner}`;
 
@@ -162,11 +162,51 @@ window.loka.register('en', { fixi: { attrs: {}, events: {} } });
   const attrsBlock = formatObject(attrs, 4);
   const eventsBlock = formatObject(events, 4);
 
-  return `${header}window.loka.register('${code}', {
-  fixi: {
+  const fields = [`  fixi: {
     attrs: ${attrsBlock},
     events: ${eventsBlock},
-  },
+  },`];
+
+  // paxi — emit if any paxi vocab is present
+  const paxiSwaps = stripIdentity(spec.paxi?.swaps ?? {});
+  const paxiGlobals = stripIdentity(spec.paxi?.globals ?? {});
+  if (Object.keys(paxiSwaps).length || Object.keys(paxiGlobals).length) {
+    const parts = [];
+    if (Object.keys(paxiSwaps).length)   parts.push(`    swaps: ${formatObject(paxiSwaps, 4)},`);
+    if (Object.keys(paxiGlobals).length) parts.push(`    globals: ${formatObject(paxiGlobals, 4)},`);
+    fields.push(`  paxi: {\n${parts.join('\n')}\n  },`);
+  }
+
+  // rexi — globals only (pure JS API)
+  const rexiGlobals = stripIdentity(spec.rexi?.globals ?? {});
+  if (Object.keys(rexiGlobals).length) {
+    fields.push(`  rexi: {\n    globals: ${formatObject(rexiGlobals, 4)},\n  },`);
+  }
+
+  // ssexi — events only (no attributes; localization via event re-fire)
+  const sseEvents = stripIdentity(spec.ssexi?.events ?? {});
+  if (Object.keys(sseEvents).length) {
+    fields.push(`  ssexi: {\n    events: ${formatObject(sseEvents, 4)},\n  },`);
+  }
+
+  // moxi — attrs + modifiers + globals (events shared with fixi)
+  const moxiAttrs = stripIdentity(spec.moxi?.attrs ?? {});
+  const moxiMods = stripIdentity(spec.moxi?.modifiers ?? {});
+  const moxiGlobals = stripIdentity(spec.moxi?.globals ?? {});
+  if (Object.keys(moxiAttrs).length || Object.keys(moxiMods).length || Object.keys(moxiGlobals).length) {
+    const parts = [];
+    if (Object.keys(moxiAttrs).length)   parts.push(`    attrs: ${formatObject(moxiAttrs, 4)},`);
+    if (Object.keys(moxiMods).length)    parts.push(`    modifiers: ${formatObject(moxiMods, 4)},`);
+    if (Object.keys(moxiGlobals).length) parts.push(`    globals: ${formatObject(moxiGlobals, 4)},`);
+    fields.push(`  moxi: {\n${parts.join('\n')}\n  },`);
+  }
+
+  if (spec.globalsOptIn) {
+    fields.push(`  globalsOptIn: true,`);
+  }
+
+  return `${header}window.loka.register('${code}', {
+${fields.join('\n')}
 });
 `;
 }

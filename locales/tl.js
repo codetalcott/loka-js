@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/tl.ts (events)
-//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides)
+//         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
 // Regenerate: cd loka-js && npm run gen
 // ⚠ Unreviewed: fixi attribute names for this locale have not been
 //   native-speaker reviewed. Event-name vocabulary IS reviewed (from

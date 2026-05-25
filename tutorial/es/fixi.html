@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>fixi · tutorial (es)</title>
+<link rel="stylesheet" href="../styles.css">
+
+<!-- Orquestador + locale antes de fixi para que se instalen los hooks. -->
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../fixi.js"></script>
+</head>
+<body>
+
+<nav class="crumbs">
+  <a href="../index.html">tutorial</a><span>›</span> fixi (es)
+</nav>
+
+<main>
+  <h1>fixi <small>— atributos HTML para HTTP y reemplazo de HTML</small></h1>
+
+  <p>
+    <code>fixi.js</code> añade seis atributos HTML que permiten enviar una
+    petición HTTP cuando ocurre un evento y reemplazar parte de la página
+    con la respuesta — sin escribir JavaScript.
+  </p>
+  <p>
+    En español, los atributos se escriben en español: <code>fx-acción</code>,
+    <code>fx-objetivo</code>, <code>fx-disparador</code>, <code>fx-método</code>,
+    <code>fx-intercambio</code>. El navegador y el devtools los conservan tal
+    cual — fixi los resuelve al momento de leerlos.
+  </p>
+
+  <h2>Ejemplo: cargar un fragmento</h2>
+  <div class="two-up">
+    <div class="example" lang="es">
+      <h3>Español</h3>
+      <button fx-acción="../../demo/fragments/hola.html"
+              fx-objetivo="#salida-es"
+              fx-intercambio="innerHTML">
+        Cargar saludo
+      </button>
+      <div id="salida-es" style="margin-top:.6rem">— vacío —</div>
+<pre><code>&lt;button fx-acción="hola.html"
+        fx-objetivo="#salida"
+        fx-intercambio="innerHTML"&gt;
+  Cargar saludo
+&lt;/button&gt;
+&lt;div id="salida"&gt;&lt;/div&gt;</code></pre>
+    </div>
+    <div class="example" lang="en">
+      <h3>Canonical (en)</h3>
+      <button fx-action="../../demo/fragments/hello.html"
+              fx-target="#out-en"
+              fx-swap="innerHTML">
+        Load greeting
+      </button>
+      <div id="out-en" style="margin-top:.6rem">— empty —</div>
+<pre><code>&lt;button fx-action="hello.html"
+        fx-target="#out"
+        fx-swap="innerHTML"&gt;
+  Load greeting
+&lt;/button&gt;
+&lt;div id="out"&gt;&lt;/div&gt;</code></pre>
+    </div>
+  </div>
+
+  <h2>Vocabulario</h2>
+  <table class="vocab">
+    <thead><tr><th>Español</th><th>Inglés (canónico)</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td><code>fx-acción</code></td><td><code>fx-action</code></td><td>URL a la que enviar la petición</td></tr>
+      <tr><td><code>fx-objetivo</code></td><td><code>fx-target</code></td><td>Selector del elemento que recibe la respuesta</td></tr>
+      <tr><td><code>fx-disparador</code></td><td><code>fx-trigger</code></td><td>Evento que dispara la petición (<code>clic</code>, <code>cambio</code>, ...)</td></tr>
+      <tr><td><code>fx-método</code></td><td><code>fx-method</code></td><td>Verbo HTTP (<code>GET</code>, <code>POST</code>, ...)</td></tr>
+      <tr><td><code>fx-intercambio</code></td><td><code>fx-swap</code></td><td>Cómo reemplazar el objetivo (<code>innerHTML</code>, <code>outerHTML</code>, <code>morfar</code> con paxi, ...)</td></tr>
+    </tbody>
+  </table>
+
+  <p class="attribution">
+    Basado en
+    <a href="https://fixiproject.org/fixi.html" target="_blank" rel="noopener">fixiproject.org/fixi.html</a>.
+  </p>
+</main>
+
+</body>
+</html>

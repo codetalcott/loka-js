@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>loka-js · fixi + moxi + ssexi + paxi + rexi (es)</title>
+
+<!-- Canonical fixiproject load order:
+     orchestrator → locales → moxi → ssexi → paxi → rexi → fixi -->
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../moxi.js"></script>
+<script src="../../ssexi.js"></script>
+<script src="../../paxi.js"></script>
+<script src="../../rexi.js"></script>
+<script src="../../fixi.js"></script>
+
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 1.5rem; max-width: 50rem; }
+  section { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+  h2 { margin-top: 0; font-size: 1rem; color: #444; }
+  button { padding: .5rem 1rem; cursor: pointer; margin-right: .5rem; }
+  pre, output { background: #f4f4f4; padding: .5rem .75rem; border-radius: 4px; display: block; margin-top: .5rem; min-height: 1.5rem; font-family: monospace; }
+  ul#list { list-style: none; padding: 0; }
+  ul#list li { padding: .35rem .5rem; border: 1px solid #ccc; margin: .25rem 0; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Demo conjunta — todas las bibliotecas en español</h1>
+<p>Una sola página en <code>lang="es"</code> usando atributos y APIs en español de cada biblioteca de la familia fixi.</p>
+
+<section>
+  <h2>fixi · <code>fx-acción</code> / <code>fx-objetivo</code> / <code>fx-disparador</code></h2>
+  <button fx-acción="./fixi-frag.html" fx-objetivo="#fixi-out" fx-intercambio="innerHTML">Cargar fragmento</button>
+  <div id="fixi-out">— vacío —</div>
+</section>
+
+<section>
+  <h2>moxi · <code>vivo</code> / <code>al-clic.prevenir</code> / global <code>consulta</code></h2>
+  <input id="name" placeholder="tu nombre">
+  <output id="hi" vivo="this.innerText = consulta('#name').value ? 'hola ' + consulta('#name').value : '—'">—</output>
+  <form id="form" al-submit.prevenir="consulta('#form-out').innerText = 'enviado'">
+    <button type="submit">Enviar (no recarga)</button>
+    <div id="form-out"></div>
+  </form>
+</section>
+
+<section>
+  <h2>paxi · <code>fx-intercambio="morfar"</code></h2>
+  <ul id="list">
+    <li id="a"><label>A: <input type="text" value="estado A"></label></li>
+    <li id="b"><label>B: <input type="text" value="estado B"></label></li>
+    <li id="c"><label>C: <input type="text" value="estado C"></label></li>
+  </ul>
+  <button fx-acción="../paxi/fragment.html" fx-objetivo="#list" fx-intercambio="morfar">Reordenar (morfar)</button>
+</section>
+
+<section>
+  <h2>rexi · <code>obtener(...)</code></h2>
+  <button id="rexi-btn" al-clic="consulta('#rexi-out').innerText = '...'; obtener('../rexi/hello.txt').text().then(t=>consulta('#rexi-out').innerText = t)">obtener("/hello.txt")</button>
+  <pre id="rexi-out">— vacío —</pre>
+</section>
+
+<section>
+  <h2>ssexi · listener en español <code>fx:sse:mensaje</code></h2>
+  <button id="sim-sse" al-clic="consulta('#sse-out').dispatchEvent(new CustomEvent('fx:sse:message', {detail:{message:{data:'tick ' + Date.now()}}, bubbles:true}))">Simular mensaje SSE</button>
+  <div id="sse-out"></div>
+  <script>
+    // Spanish-named listener works via the orchestrator's re-fire.
+    document.getElementById('sse-out').addEventListener('fx:sse:mensaje', (e) => {
+      const row = document.createElement('div')
+      row.textContent = e.detail?.message?.data
+      e.target.appendChild(row)
+    })
+  </script>
+</section>
+
+</body>
+</html>

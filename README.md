@@ -2,13 +2,13 @@
 
 > Polyglot fixi-family: a 3-hook contract for per-element language selection without DOM mutation.
 
-**Status:** v0 — fixi-i18n only. moxi/ssexi/paxi/rexi are deferred until v1.
+**Status:** v1 — full fixiproject family (fixi, moxi, ssexi, paxi, rexi).
 
 ## What it is
 
-A tiny patch to [fixi.js](https://github.com/bigskysoftware/fixi) (about 110 bytes minified) that replaces 6 hardcoded `fx-*` attribute literals with 3 defaulted hooks: `name`, `event`, `sel`. With those hooks in place, language modules can register locale-specific vocabulary and fixi reads the right attribute name **at processing time** — no DOM mutation, no MutationObserver overhead, no race conditions, and **per-element language selection** (mix `<section lang="es">` and `<section lang="ja">` on the same page).
+A small set of patches and one orchestrator that bring localized authoring vocabulary to the [fixiproject family](https://fixiproject.org/) — fixi, moxi, ssexi, paxi, and rexi. Each library gets a tiny hook contract that defaults to upstream behavior; locale modules register vocabulary that the libraries resolve **at processing time** — no DOM mutation, no MutationObserver overhead, no race conditions, and **per-element language selection** (mix `<section lang="es">` and `<section lang="ja">` on the same page).
 
-When no language module is loaded, the patched fixi is behaviorally identical to upstream.
+When no language module is loaded, each patched library is behaviorally identical to upstream. Patch sizes are small enough to land upstream: fixi ~110 bytes, paxi ~30 bytes, moxi ~150 bytes. ssexi and rexi need no patch at all — ssexi is localized via listener-side event re-fire, rexi via a global-alias registry.
 
 ## Quick start
 
@@ -47,31 +47,51 @@ The author writes `fx-acción`, devtools shows `fx-acción`, and fixi processes 
 
 Each `<section>`'s buttons resolve via the nearest `lang` ancestor. This case the preprocessor-based approach ([dixi](https://github.com/codetalcott/hyperfixi/tree/main/experiments/dixi)) cannot do.
 
-## The contract
+## The contracts
 
 ```js
-// Defaults installed by fixi when window.fixi.{name,event,sel} are not set.
+// fixi (patched)
 window.fixi.name      = (elt, key) => `fx-${key}`             // attribute-name resolver
 window.fixi.event     = (elt, value) => value                 // trigger-value translator
 window.fixi.sel       = (key) => `[fx-${key}]`                // discovery selector
 window.fixi.ignoreSel = "[fx-ignore]"                         // ignore selector
+
+// moxi (patched)
+window.moxi.name      = (elt, key) => key                     // resolves "live" / "on-" / "mx-ignore"
+window.moxi.event     = (elt, val) => val                     // event-name translator
+window.moxi.modifier  = (mod) => mod                          // .prevent / .once / ...
+window.moxi.ignoreSel = "[mx-ignore]"
+window.moxi.xpath     = () => "descendant-or-self::*[@live or @*[starts-with(name(),'on-')]]"
+
+// paxi (patched)
+window.paxi.isSwap    = (s) => s === "morph"                  // recognize localized morph aliases
+
+// ssexi (no patch) — orchestrator listens for fx:sse:<canonical> and
+//                    re-fires fx:sse:<localized> on the same target.
+
+// rexi (no patch) — orchestrator aliases globals (e.g., obtener = get).
 ```
 
-Language modules override these via the orchestrator. See [orchestrator.js](./orchestrator.js).
+Language modules register vocabulary via `window.loka.register(code, data)`. See [orchestrator.js](./orchestrator.js).
 
 ## Repo layout
 
 ```text
-fixi.js                The patched fixi (single file, no build step — fixi-family convention)
-orchestrator.js        Installs window.fixi.{name,event,sel} hooks
+fixi.js                Patched fixi (single file, no build step — fixi-family convention)
+moxi.js                Patched moxi
+paxi.js                Patched paxi
+ssexi.js               Unpatched ssexi (verbatim upstream; localized by orchestrator)
+rexi.js                Unpatched rexi (verbatim upstream; localized by orchestrator)
+orchestrator.js        Installs hooks on all 4 patched/unpatched libraries + loka.alias
 lang-resolver.js       Reusable per-element langOf helper (ES module for other libraries)
 locales/*.js           24 locale data files (script-tag loaded; calls window.loka.register)
 dom-vocab/*.js         24 ES modules exporting shared { events, props } — consumed by
                        psatina-modular and any other library that needs DOM-keyword translation
 scripts/               Locale generator
-demo/                  Multi-language demos including per-element-lang + joint fixi/psatina
-test/                  Playwright acceptance suite
-upstream-patches/      Diff artifact for upstream contribution
+demo/                  Multi-language demos including per-element-lang + joint-all (all 5 libs)
+tutorial/              Spanish per-library tutorial pages mirroring fixiproject.org examples
+test/                  Playwright acceptance suite (9 phases) + behavior-preservation harness
+upstream-patches/      Diff artifacts for upstream contribution (fixi, moxi, paxi)
 ```
 
 ## The pattern this represents

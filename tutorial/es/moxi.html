@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>moxi · tutorial (es)</title>
+<link rel="stylesheet" href="../styles.css">
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../moxi.js"></script>
+</head>
+<body>
+
+<nav class="crumbs">
+  <a href="../index.html">tutorial</a><span>›</span> moxi (es)
+</nav>
+
+<main>
+  <h1>moxi <small>— manejadores inline y reactividad sobre el DOM</small></h1>
+
+  <p>
+    <code>moxi.js</code> ejecuta JavaScript inline cuando ocurre un evento
+    (<code>on-click</code> en inglés, <code>al-clic</code> en español) y
+    recalcula expresiones cuando el DOM o el estado de formulario cambia
+    (<code>live</code> en inglés, <code>vivo</code> en español).
+  </p>
+  <p>
+    Los modificadores en el nombre del atributo (<code>.prevent</code>,
+    <code>.once</code>, ...) también se traducen
+    (<code>.prevenir</code>, <code>.unavez</code>, ...). Las funciones
+    globales <code>q()</code>, <code>wait()</code> y <code>transition()</code>
+    tienen alias en español: <code>consulta()</code>, <code>esperar()</code>,
+    <code>transicion()</code>.
+  </p>
+
+  <h2>Ejemplo: contador con reactividad</h2>
+  <div class="two-up">
+    <div class="example" lang="es">
+      <h3>Español</h3>
+      <input id="nombre-es" placeholder="escribe tu nombre">
+      <output vivo="this.innerText = consulta('#nombre-es').value
+                ? 'hola ' + consulta('#nombre-es').value : ''"></output>
+<pre><code>&lt;input id="nombre" placeholder="tu nombre"&gt;
+&lt;output vivo="this.innerText = consulta('#nombre').value
+              ? 'hola ' + consulta('#nombre').value : ''"&gt;&lt;/output&gt;
+&lt;button al-clic="consulta('#nombre').value = ''"&gt;limpiar&lt;/button&gt;</code></pre>
+    </div>
+    <div class="example" lang="en">
+      <h3>Canonical (en)</h3>
+      <input id="name-en" placeholder="type your name">
+      <output live="this.innerText = q('#name-en').value
+                ? 'hello ' + q('#name-en').value : ''"></output>
+<pre><code>&lt;input id="name" placeholder="type your name"&gt;
+&lt;output live="this.innerText = q('#name').value
+              ? 'hello ' + q('#name').value : ''"&gt;&lt;/output&gt;
+&lt;button on-click="q('#name').value = ''"&gt;clear&lt;/button&gt;</code></pre>
+    </div>
+  </div>
+
+  <h2>Modificadores</h2>
+  <p>Se encadenan con puntos en el nombre del atributo:
+    <code>al-clic.prevenir.detener="..."</code>.</p>
+
+  <h2>Vocabulario</h2>
+  <table class="vocab">
+    <thead><tr><th>Español</th><th>Inglés (canónico)</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td><code>vivo="..."</code></td><td><code>live="..."</code></td><td>Re-ejecuta cuando cambia el DOM o el formulario</td></tr>
+      <tr><td><code>al-&lt;evento&gt;</code></td><td><code>on-&lt;event&gt;</code></td><td>Ejecuta cuando ocurre el evento</td></tr>
+      <tr><td><code>mx-ignorar</code></td><td><code>mx-ignore</code></td><td>moxi no procesa este árbol</td></tr>
+      <tr><td><code>.prevenir</code></td><td><code>.prevent</code></td><td><code>event.preventDefault()</code></td></tr>
+      <tr><td><code>.detener</code></td><td><code>.stop</code></td><td><code>event.stopPropagation()</code></td></tr>
+      <tr><td><code>.parar</code></td><td><code>.halt</code></td><td>prevenir + detener</td></tr>
+      <tr><td><code>.unavez</code></td><td><code>.once</code></td><td>Solo se ejecuta la primera vez</td></tr>
+      <tr><td><code>.mismo</code></td><td><code>.self</code></td><td>Solo si el evento ocurrió en este elemento</td></tr>
+      <tr><td><code>.fuera</code></td><td><code>.outside</code></td><td>Solo si ocurrió fuera de este elemento</td></tr>
+      <tr><td><code>.captura</code> / <code>.pasivo</code></td><td><code>.capture</code> / <code>.passive</code></td><td>Opciones de <code>addEventListener</code></td></tr>
+      <tr><td><code>consulta(x)</code></td><td><code>q(x)</code></td><td>Selector que devuelve un proxy con métodos de colección</td></tr>
+      <tr><td><code>esperar(x)</code></td><td><code>wait(x)</code></td><td>Promesa que se resuelve tras ms o un evento</td></tr>
+      <tr><td><code>transicion(fn)</code></td><td><code>transition(fn)</code></td><td>Envuelve en la View Transition API</td></tr>
+    </tbody>
+  </table>
+
+  <p class="attribution">
+    Basado en
+    <a href="https://fixiproject.org/moxi.html" target="_blank" rel="noopener">fixiproject.org/moxi.html</a>.
+  </p>
+</main>
+
+</body>
+</html>

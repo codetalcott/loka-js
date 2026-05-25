@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>loka-js: moxi behavior-preservation smoke</title>
+<!-- Patched moxi.js loaded WITHOUT the orchestrator.
+     Default hooks via ??= should make this behave identically to upstream moxi. -->
+<script src="../moxi.js"></script>
+</head>
+<body>
+<input id="name" placeholder="type">
+<output id="g" live="this.innerText = q('#name').value ? 'hello ' + q('#name').value : ''"></output>
+
+<button id="inc" on-click="q('#count').innerText = (+q('#count').innerText || 0) + 1">+1</button>
+<span id="count">0</span>
+
+<form id="form" on-submit.prevent="q('#out').innerText = 'sent (no reload)'">
+  <button type="submit" id="submit">Send</button>
+  <div id="out"></div>
+</form>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>loka-js + paxi (es)</title>
+
+<!-- Load order: orchestrator → locales → paxi → fixi -->
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../paxi.js"></script>
+<script src="../../fixi.js"></script>
+
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 1.5rem; max-width: 40rem; }
+  ul   { list-style: none; padding: 0; }
+  li   { padding: .4rem .6rem; border: 1px solid #ccc; margin: .25rem 0; border-radius: 4px; }
+  button { padding: .5rem 1rem; cursor: pointer; }
+  .note { color: #555; font-size: .85em; margin-top: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>paxi · morfar (morph) en español</h1>
+
+<p>
+  Este botón usa <code>fx-intercambio="morfar"</code> — el valor en español
+  para la estrategia <code>morph</code> de paxi. La lista se reordena, pero
+  los elementos conservan su identidad DOM (foco, estado de formulario, etc).
+</p>
+
+<ul id="list">
+  <li id="a"><label>A: <input type="text" value="estado A"></label></li>
+  <li id="b"><label>B: <input type="text" value="estado B"></label></li>
+  <li id="c"><label>C: <input type="text" value="estado C"></label></li>
+</ul>
+
+<button id="btn"
+        fx-acción="fragment.html"
+        fx-objetivo="#list"
+        fx-intercambio="morfar">
+  Reordenar (morfar)
+</button>
+
+<p class="note">
+  Sin morfar/morph, el swap por defecto (<code>outerHTML</code>) reemplazaría
+  toda la lista y perdería el contenido de los <code>&lt;input&gt;</code>.
+  Con morfar, los elementos existentes se mueven en su lugar.
+</p>
+
+<p class="note">
+  El global <code>window.morfar</code> existe junto a <code>window.morph</code>
+  (gracias a <code>globalsOptIn: true</code> en el locale es).
+</p>
+
+</body>
+</html>

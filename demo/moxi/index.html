@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>loka-js + moxi (es)</title>
+
+<!-- Load order: orchestrator → locales → moxi -->
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../moxi.js"></script>
+
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 1.5rem; max-width: 40rem; }
+  button { padding: .5rem 1rem; cursor: pointer; margin-right: .5rem; }
+  input { padding: .4rem; }
+  .row { margin: 1rem 0; }
+  .panel { background: #f4f4f4; padding: .75rem; border-radius: 4px; margin-top: 1rem; }
+  output { font-family: monospace; }
+</style>
+</head>
+<body>
+
+<h1>moxi · atributos y modificadores en español</h1>
+
+<p>
+  Atributos: <code>vivo</code> (live), <code>al-</code> (on- prefix),
+  <code>mx-ignorar</code> (mx-ignore). Modificadores:
+  <code>.prevenir</code>, <code>.detener</code>, <code>.unavez</code>, etc.
+  Funciones globales aliased: <code>consulta</code> (q), <code>esperar</code> (wait),
+  <code>transicion</code> (transition).
+</p>
+
+<div class="row">
+  <label>Nombre: <input id="name" placeholder="escribe tu nombre"></label>
+  <output id="greeting" vivo="this.innerText = consulta('#name').value ? 'hola ' + consulta('#name').value : ''"></output>
+</div>
+
+<div class="row">
+  <button id="inc" al-clic="consulta('#count').innerText = (+consulta('#count').innerText || 0) + 1">+1</button>
+  <button id="reset" al-clic="consulta('#count').innerText = 0">reset</button>
+  Contador: <span id="count">0</span>
+</div>
+
+<form id="form" class="panel" al-submit.prevenir="consulta('#out').innerText = 'enviado (sin recargar)'">
+  <label>Mensaje: <input name="msg" value="hola"></label>
+  <button type="submit">Enviar</button>
+  <div id="out"></div>
+  <small>El modificador <code>.prevenir</code> evita la recarga de página.</small>
+</form>
+
+<div class="panel" al-clic.unavez="this.innerText = 'clic recibido (una sola vez)'" style="cursor:pointer">
+  Haz clic aquí (al-clic.unavez)
+</div>
+
+</body>
+</html>

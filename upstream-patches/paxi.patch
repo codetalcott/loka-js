@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Wm Talcott <wtalcott@gmail.com>
+Subject: [PATCH] paxi: swap-strategy hook for localized morph aliases
+
+Replace the hardcoded "morph" string-equality test with a defaulted
+predicate on window.paxi:
+
+  - isSwap(s) -> boolean   (default: s === "morph")
+
+Behavior is identical to upstream when window.paxi is unset (the ??=
+default reproduces the original literal comparison). Net size: ~30
+bytes minified.
+
+Enables language modules to register localized swap-strategy names
+(e.g., "morfar" in Spanish) that resolve to the canonical morph
+implementation, without paxi needing to know the language vocabulary.
+
+Based on bigskysoftware/paxi@c9b194e.
+
+See https://github.com/codetalcott/loka-js for the language-module
+ecosystem this is part of.
+---
+ paxi.js | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/paxi.js b/paxi.js
+--- a/paxi.js
++++ b/paxi.js
+@@ -1,4 +1,6 @@
+ (()=>{
++	let p = window.paxi ??= {}
++	let isMorph = p.isSwap ??= (s)=>s === "morph"
+ 	let mx = (o, n, ids)=>{
+ 		if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName){
+ 			n.querySelectorAll?.("[id]").forEach((ne)=>{
+@@ -38,6 +40,6 @@
+ 		mx(target, t.content.firstElementChild, ids)
+ 	}
+ 	document.addEventListener("fx:config", (e)=>{
+-		if (e.detail.cfg.swap === "morph") e.detail.cfg.swap = (cfg)=>morph(cfg.target, cfg.text)
++		if (isMorph(e.detail.cfg.swap)) e.detail.cfg.swap = (cfg)=>morph(cfg.target, cfg.text)
+ 	})
+ })()
+--
+2.50.0
