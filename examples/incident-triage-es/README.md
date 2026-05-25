@@ -22,6 +22,22 @@ without changing anything else.
 | Backend (GRAIL Siren server)                 | `~/projects/grail-domains/domains/incident_response/server.py`                 |
 | Scripted agent (this demo)                   | [agent.mjs](agent.mjs)                                                        |
 
+## Two agents (deterministic + LLM)
+
+This directory ships two agents, side-by-side, that both drive the same
+workflow against the same backend. The point of having both: the
+scripted agent is the deterministic floor (proves the data flow); the
+LLM agent is the ceiling (proves the same data flow is consumable by a
+real model).
+
+| | [agent.mjs](agent.mjs) (scripted)             | [llm-agent.mjs](llm-agent.mjs) (LLM)               |
+|---|------------------------------------------------|----------------------------------------------------|
+| **Decision logic** | Backward-chaining planner over the action graph | Claude Haiku 4.5 via `/v1/messages` tool-use |
+| **Dependencies** | playwright (already a dev dep)              | playwright + ANTHROPIC_API_KEY (no SDK; raw fetch) |
+| **Field values** | Hardcoded `FIELD_STUBS` table in agent      | Model generates contextually (e.g., P1 severity for "DB outage", real postmortem prose) |
+| **Surprises** | None — runs the only legal sequence         | Model picks reasonable priorities, writes realistic content, follows system-prompt rules |
+| **What it proves** | Data flow round-trip works end-to-end       | LLM can consume the loka HTML binding's output and act on it correctly |
+
 ## How to run
 
 ```bash
@@ -35,14 +51,19 @@ cd ~/projects/loka-js
 npx http-server . -p 3036 -s
 # → http://127.0.0.1:3036
 
-# Terminal 3 — the agent
+# Terminal 3 — the deterministic agent
 cd ~/projects/loka-js
 node examples/incident-triage-es/agent.mjs
+
+# Or — the LLM agent (needs an Anthropic API key in env)
+export ANTHROPIC_API_KEY="sk-ant-..."
+# (or: set -a; . ~/projects/modfixi/examples/agent-harness/.env; set +a)
+node examples/incident-triage-es/llm-agent.mjs
 ```
 
-## What you'll see
+## What you'll see (scripted agent)
 
-The agent prints six phases:
+The scripted agent prints six phases:
 
 1. **Reads the Spanish page** → 10 actions extracted, intent and condition
    names already in canonical English (Spanish → English vocab resolution
@@ -57,6 +78,63 @@ The agent prints six phases:
    notes/summary/postmortem/items).
 6. **Final truth vector** — all 11 conditions true. `incident.resolved`
    reached.
+
+## What you'll see (LLM agent)
+
+The LLM agent prints turn-by-turn what Claude decides. Sample output
+from a real run (Claude Haiku 4.5, 13 turns to goal):
+
+```
+[turn 1] I'll start by checking the current state of incident #42 …
+▸ get_state → 1 true: incident.alert.received
+
+[turn 2] Good! The incident has been received. Now I'll begin the
+incident response workflow by acknowledging it.
+▸ acknowledge … HTTP 200
+
+[turn 3] Excellent! Now I'll classify its severity. Given this is a DB
+outage, I'll classify it as P1 (highest priority).
+▸ classify-severity body={"severity":"p1"} … HTTP 200
+
+[turn 4] Perfect! Now I'll assign an owner.
+▸ assign-owner body={"owner":"DBA Lead"} … HTTP 200
+
+[turn 5] Now I'll investigate with root-cause analysis notes.
+▸ investigate body={"notes":"Root cause analysis: Database server in
+eu-west region became unresponsive due to connection pool exhaustion.
+Memory leak in connection handling code caused gradual accumulation of
+stale connections. …"} … HTTP 200
+
+[… 7 more turns, each with realistic Spanish/English content …]
+
+◇ stop_with_summary: Successfully drove incident #4 (DB outage in
+eu-west) to incident.resolved status. Completed all workflow steps:
+acknowledged the incident, classified severity as P1, assigned DBA
+Lead as owner, investigated and identified root cause (connection pool
+memory leak), mitigated by restarting database and applying hotfix,
+verified system health, notified stakeholders, wrote comprehensive
+postmortem, and created six follow-up action items. All 11 conditions
+are now true and the incident is fully resolved.
+
+✓ GOAL REACHED: incident.resolved
+```
+
+Notable observations:
+
+- **The LLM picked P1 severity unprompted** by reading "DB outage in
+  eu-west" from the incident title and inferring criticality.
+- **The LLM wrote a ~600-word postmortem with realistic structure**
+  (summary, timeline, root cause, mitigation, follow-ups, lessons) —
+  the scripted agent's `FIELD_STUBS` table just has placeholder strings.
+- **No 409 errors.** The LLM correctly ordered actions per the
+  preconditions visible in each tool's description. That's the GRAIL
+  design paying off — the schema carries enough information for the
+  model to plan without hand-holding.
+- **The model operates in canonical English** (tool names, condition
+  names) even though the source page is Spanish. The author's `fx-confirm`
+  Spanish messages are present in the page but not currently surfaced
+  through the reader's per-action output to the LLM — that's a gap
+  worth closing in a future iteration.
 
 Sample output excerpt (last few lines):
 
@@ -102,22 +180,26 @@ are decorative for this scenario but available for richer agents.
 
 ## What it does NOT prove (yet)
 
-- An actual LLM consuming the action graph. The scripted agent's logic
-  could be ported into a Claude API call where the LLM picks each step
-  (or rejects steps that need human approval per `fx-confirm`); not done
-  in this demo.
 - Dynamic page generation. The HTML page is hand-coded for the
   10-affordance workflow. A real system would server-render this from
   the live Siren response, possibly with `<lse-intent>` elements.
-- Failure recovery. The agent assumes every POST succeeds. A real agent
-  would handle 409 (precondition not met — re-plan) and 4xx/5xx
-  (different recovery paths).
+- Failure recovery. The agents assume every POST succeeds. A real
+  agent would handle 409 (precondition not met — re-plan) and 4xx/5xx
+  (different recovery paths). The existing
+  [`grail-domains/packages/grail_agent/executor.py`](../../../../grail-domains/packages/grail_agent/executor.py)
+  has a Python plan executor with 409 recovery that could serve as
+  inspiration.
 - Page-level GRAIL state (e.g. showing which conditions are currently
   true based on a backend fetch). The page is purely static affordance
   metadata.
 - Multi-locale agents. Only Spanish is wired up. The pattern extends to
   all 24 loka locales if their vocab tables get the incident-domain
   entries.
+- The author's `fx-confirm` Spanish messages aren't surfaced through
+  the LLM agent's tool descriptions — they're visible in the page but
+  the LLM doesn't see them. A future iteration would include `confirm`
+  in the tool description so the LLM can defer when the message
+  indicates human approval is required.
 
 ## Friction this surfaced
 
@@ -152,8 +234,30 @@ enforces preconditions and reports state. That cross-implementation
 neutrality is the GRAIL design principle, now demonstrated through the
 loka HTML binding.
 
+## Relationship to existing GRAIL agent harnesses
+
+This demo is intentionally narrow — it tests one specific claim: **the
+loka HTML binding's reader output is consumable by a real LLM driving
+the workflow.** Other harnesses cover broader claims:
+
+- [`modfixi/examples/agent-harness`](../../../../modfixi/examples/agent-harness/README.md)
+  — domain-agnostic web UI that drives ANY GRAIL server via an LLM
+  loop. Already proves "LLM can navigate incident_response" via the
+  backend's Siren response directly. The complementary path to this
+  demo's "via the HTML page's affordance attrs."
+- [`siren-grail/packages/siren-agent`](../../../../siren-grail/packages/siren-agent/)
+  — full TypeScript agent framework: `SirenAgent`, `OODAAgent`,
+  `ToolUseAgent` (Claude-native), MCP bridge, workflow DSL.
+- [`grail-domains/packages/grail_agent`](../../../../grail-domains/packages/grail_agent/)
+  — Python plan executor with 409 recovery and ETag handling.
+
+If you want the broader "any GRAIL server, any domain" agent
+demonstration, run the modfixi harness. This directory is specifically
+for the localized-HTML-binding-as-input proof.
+
 ## Files
 
 - [index.html](index.html) — Spanish affordance manifest (10 cards, one per affordance)
 - [agent.mjs](agent.mjs) — deterministic backward-chaining agent (~140 lines)
+- [llm-agent.mjs](llm-agent.mjs) — Claude Haiku-driven agent via raw fetch to `/v1/messages` (~190 lines)
 - [README.md](README.md) — this file
