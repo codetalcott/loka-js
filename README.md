@@ -53,7 +53,7 @@ Three things to notice:
 </html>
 ```
 
-Each section's buttons resolve via the nearest `lang` ancestor. The preprocessor-based predecessor [dixi](https://github.com/codetalcott/hyperfixi/tree/main/experiments/dixi) can't do this — it commits to one language at DOM-walk time. loka-js resolves at attribute-read time, per element.
+Each section's buttons resolve via the nearest `lang` ancestor at attribute-read time. The markup is never rewritten — devtools shows what you wrote.
 
 ## See it working
 
@@ -108,10 +108,6 @@ loka-js is one instance of a broader pattern: **expose a library's directive/att
 
 The same pattern applied to a templating library is [psatina-modular](https://github.com/codetalcott/psatina-modular): the directive set is exposed as a `Map` and per-locale modules register Spanish-named directives (`si`, `para`, `datos`, …). The [joint fixi+psatina demo](demo/joint-fixi-psatina/) uses both libraries on one Spanish page, sharing this repo's `dom-vocab/es.js` vocabulary.
 
-## Relationship to dixi
-
-[dixi](https://github.com/codetalcott/hyperfixi/tree/main/experiments/dixi) is the preprocessor-based predecessor: it walks the DOM and rewrites `fx-acción` → `fx-action` before fixi reads it. loka-js takes the same locale vocabulary and applies it at read-time via the hook contract, eliminating dixi's MutationObserver overhead and unlocking per-element language. The locale data here is generated from the same `@lokascript/semantic` profile source.
-
 ## Relationship to lokascript
 
 [lokascript.org](https://lokascript.org) is the multilingual counterpart for **hyperscript** — write rich behaviors like `on click set my.count to ...` in 24 languages. loka-js is the same idea applied to the **fixi family** — write minimal hypermedia attributes (`fx-action`, `fx-target`, ...) in those same 24 languages. Both share the `@lokascript/semantic` vocabulary source, so a "click" is `clic` in both worlds and a Spanish-speaking dev moving between the two doesn't relearn DOM-event names.
@@ -136,4 +132,3 @@ If you're here for localization, skip these. They'll either crystallize into som
 
 - Built on [`fixi.js`](https://github.com/bigskysoftware/fixi) and the broader [fixiproject family](https://fixiproject.org/) by Big Sky Software (Carson Gross).
 - Event-name vocabulary derived from [`@lokascript/semantic`](https://github.com/codetalcott/hyperfixi/tree/main/packages/semantic) language profiles.
-- Locale resolution pattern inherits from [`dixi`](https://github.com/codetalcott/hyperfixi/tree/main/experiments/dixi).
