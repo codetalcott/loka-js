@@ -16,6 +16,9 @@ change; feedback welcome at
   intents dropped with warnings
 - App-specific intent registration pattern (workaround for free-form
   intent vocabulary)
+- New section [Relationship to LSE](#relationship-to-lse) acknowledging
+  the existing `@lokascript/intent` protocol and surfacing three framings
+  for how affordances might converge with it (open question)
 - Open questions 1, 4, 5 resolved; question 3 deferred to v0.3; question 2
   resolved tentatively (no multi-value `fx-class` until a real use case
   surfaces).
@@ -520,7 +523,108 @@ app's intents in vocab" than to ship inconsistent tool names.
 - **`fx-success`** / **`fx-failure`** — finer-grained verification than
   `fx-postcondition`. May fold in once we have agent reader feedback.
 
-## Composition with existing standards
+## Relationship to LSE
+
+The sibling repository `~/projects/hyperfixi` contains a developed
+intent-protocol ecosystem that overlaps this spec's conceptual space
+and is more mature in several dimensions. **Anyone working on the
+affordance vocabulary should be aware of it.**
+
+- **[`@lokascript/intent`](https://github.com/codetalcott/hyperfixi/tree/main/packages/intent)**
+  (v2.5.1, MIT, zero deps): a language-agnostic intent IR. Actions are
+  `SemanticNode` with `(action, roles)` shape; roles map names (`patient`,
+  `destination`, `source`, ...) to typed values
+  (`SelectorValue`, `LiteralValue`, `ReferenceValue`, `ExpressionValue`,
+  `FlagValue`, `PropertyPathValue`). Bracket syntax (`[toggle
+  patient:.active on:click]`) plus a Protocol JSON wire format (v1.0–1.2).
+  Schema primitives (`defineCommand`, `defineRole`). Diagnostics with
+  error/warning/info severity (same ladder this spec picked
+  independently). This is the **action-structure protocol**.
+- **[`@hyperfixi/intent-element`](https://github.com/codetalcott/hyperfixi/tree/main/packages/intent-element)**:
+  the `<lse-intent>` custom element. Embeds LSE Protocol JSON in HTML
+  via inline `<script type="application/lse+json">` or `src=` fetch.
+  Validates the JSON against the LSE schema, executes through a
+  sandboxed runtime. The action travels as data, not imperative code.
+- **[`@lokascript/mcp-multilingual-intent`](https://github.com/codetalcott/hyperfixi/tree/main/packages/mcp-multilingual-intent)**:
+  an MCP server that parses natural language in 24 languages into
+  canonical LSE Protocol JSON, exposed to LLM agents (Claude Desktop,
+  Cursor, etc.) as MCP tools. This is the **NL → structured intent**
+  side of the agent loop that complements this spec's HTML → structured
+  intent direction.
+
+### Conceptual overlap
+
+| Affordance spec (v0.2)        | LSE (`@lokascript/intent`)                         |
+|-------------------------------|----------------------------------------------------|
+| `fx-intent` (action name)     | `SemanticNode.action`                              |
+| `fx-class` (taxonomy)         | not directly; could be a SemanticNode annotation   |
+| `fx-subject` (operand)        | `roles.patient` (SelectorValue / ReferenceValue)   |
+| Reader output (custom JSON)   | LSE Protocol JSON (with envelope, validated)       |
+| Validator severity ladder     | `ProtocolDiagnostic.severity` (same enum)          |
+
+If the affordance spec were started knowing LSE existed, it would
+probably use `(action, roles)` instead of the
+`intent`/`subject`/`target` triplet, and emit LSE Protocol JSON as its
+canonical output format.
+
+### Where LSE does NOT go (the gap this spec fills)
+
+LSE describes what the action **is** — structure, mechanics, validation.
+It does not standardize what an agent should know about **acting on it
+safely**:
+
+- `fx-confirm` — what level of confirmation is required
+- `fx-reversible` + `fx-undo` — recovery paths
+- `fx-authority` — permission required
+- `fx-precondition` / `fx-postcondition` — state assertions for
+  verifiability
+- `fx-effect` — server-state vs client-state vs external
+
+LSE's `SemanticNode` has `metadata` and `Annotation` fields that could
+hold these — but the names and value spaces aren't standardized there.
+
+### Three open framings (not yet decided)
+
+How the two protocols should ultimately relate is an open question for
+the project. The current options under consideration:
+
+1. **Affordances as LSE annotations.** Canonicalize the affordance
+   fields as standardized annotation names on `SemanticNode.metadata`.
+   HTML `fx-confirm` / `fx-reversible` / etc. become the terse
+   author-facing form for pages that use raw fixi attributes; LSE
+   Protocol JSON is the canonical form. The reader converts both shapes
+   to LSE JSON with affordance metadata. (Easiest transition; preserves
+   v0.2 attribute names for HTML authors.)
+2. **Lightweight parallel for fixi-only pages.** LSE for pages with
+   `<lse-intent>` or LSE JSON endpoints; affordance attributes for
+   pages using raw fixi. Both formats coexist; agent tooling handles
+   both. (Most flexible; creates ecosystem fragmentation.)
+3. **Retire the affordance spec, contribute concepts to LSE.** Add
+   standardized annotation names for confirm/reversibility/undo/
+   pre&post-conditions to a future LSE protocol version (v1.3?). The
+   `<lse-intent>` element renders them. This spec becomes documentation
+   of which annotations matter and why, not a parallel protocol.
+   (Cleanest endpoint; biggest transition.)
+
+These are not mutually exclusive transitionally — a path through (1)
+toward (3) is plausible. The decision turns on how the broader
+ecosystem evolves and is left open here.
+
+### Practical implications today
+
+Until the framing settles:
+
+- The reference reader ([tools/agent-reader.mjs](tools/agent-reader.mjs))
+  outputs its own action graph, not LSE Protocol JSON. A `--format=lse`
+  flag is a plausible v0.3 addition.
+- Pages may use `fx-intent` AND `<lse-intent>` simultaneously. The
+  reader walks `[fx-action]` elements; an LSE-aware reader would walk
+  `lse-intent` elements too.
+- App-specific intent vocabulary (the [v0.2 workaround](#app-specific-intents-v02-workaround))
+  shares a registration mechanism with what LSE's `defineCommand` does;
+  unifying these is on the table.
+
+## Composition with other standards
 
 - **ARIA:** Use `aria-label` for human/screen-reader-facing text;
   `fx-intent` is for semantic identity. They serve different consumers.
@@ -532,7 +636,8 @@ app's intents in vocab" than to ship inconsistent tool names.
 - **Siren:** Server-side affordance protocol (separate JSON document).
   This spec is the client-side analog — the page IS the affordance
   manifest. Sites using both should keep the vocabularies aligned (e.g.,
-  Siren's `class` ↔ this spec's `fx-class`).
+  Siren's `class` ↔ this spec's `fx-class`). Note: `@lokascript/mcp-multilingual-intent`
+  builds on `siren-mcp` from the `siren-grail` project.
 - **OpenAPI / function-calling schemas:** Used to describe an API in
   bulk. This spec describes individual page-level actions; an agent that
   has both would prefer OpenAPI for "what can I call?" and this spec for
@@ -605,6 +710,11 @@ Feedback on any of these welcome.
 
 ## Changelog
 
+- **v0.2.1 (2026-05-25):** added [Relationship to LSE](#relationship-to-lse)
+  section. The affordance work was originally drafted without awareness
+  of `@lokascript/intent` / `<lse-intent>` / `mcp-multilingual-intent`
+  in the sibling `hyperfixi` repo. Three convergence framings are now
+  documented as an open project decision; no protocol change yet.
 - **v0.2 (2026-05-25):** postcondition format documented; page-level
   defaults via meta tag; validator rules codified; tool schema
   generation contract (canonical-only); app-specific intent
