@@ -54,7 +54,7 @@ If a new library's translation surface requires parsing, the answer is no. Docum
 2. `lang` on element or ancestor (HTML standard — `<html lang>`, `<section lang>`)
 3. Falls back to `"en"`
 
-This is the capability that distinguishes loka from preprocessor approaches like [dixi](../hyperfixi/experiments/dixi/) — dixi commits to one language at DOM-walk time. loka resolves at attribute-read time per-element.
+This is the capability that distinguishes loka from preprocessor-style approaches generally: loka resolves at attribute-read time per element, so a single page can mix `<section lang="es">` and `<section lang="ja">` without rewriting markup.
 
 ## Vocab pipeline
 

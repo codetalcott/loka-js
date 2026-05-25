@@ -28,8 +28,9 @@ declares its own <code>lang</code>. <strong>Each section's fixi attributes
 are resolved against its own language</strong> — Spanish in the Spanish
 section, Japanese in the Japanese section, English at the top level.</p>
 
-<p class="note">The preprocessor-based approach (e.g. dixi) commits to one
-language at preprocess time and can't do this.</p>
+<p class="note">A preprocessor that rewrites attributes before fixi reads them
+would have to commit to one language at preprocess time. loka resolves
+per-element at read-time, so mixed-language sections compose cleanly.</p>
 
 <section>
   <h2>Outer (lang="en" inherited from &lt;html&gt;)</h2>

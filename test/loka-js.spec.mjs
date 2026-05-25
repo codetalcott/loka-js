@@ -4,8 +4,8 @@
 //   node test/loka-js.spec.mjs
 //
 // Phase A: M2 button demo (Latin/CJK/RTL, fetch + swap, dynamic injection).
-//          Verifies that the orchestrator + patched fixi handle the same
-//          interactions dixi handled, with no DOM mutation.
+//          Verifies that the orchestrator + patched fixi handle multilingual
+//          attribute interactions correctly, with no DOM mutation.
 //
 // Phase B: M2.5 search demo per-locale (search filter via moxi on-input,
 //          sidebar toggle via moxi on-click, doc-loading via patched fixi).
@@ -14,8 +14,9 @@
 //
 // Phase C: Per-element language — a page with <html lang="en"> containing
 //          <section lang="es"> and <section lang="ja"> sections, each with
-//          their own localized fx-* buttons. This case the preprocessor
-//          approach (dixi) cannot do.
+//          their own localized fx-* buttons. Preprocessor-style approaches
+//          (rewrite attributes ahead of fixi) can't do this; loka resolves
+//          per-element at read-time.
 //
 // Phase D: Devtools faithfulness + no-MutationObserver verification.
 //
@@ -189,7 +190,7 @@ async function phaseB(locale) {
 }
 
 // ---------------------------------------------------------------------------
-// Phase C — Per-element language (the dixi-impossible case)
+// Phase C — Per-element language (mixed-lang sections on one page)
 // ---------------------------------------------------------------------------
 async function phaseC() {
   log('\n=== Phase C: per-element language ===');

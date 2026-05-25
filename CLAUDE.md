@@ -96,7 +96,7 @@ Per-element hooks receive the element so resolution can walk up to the nearest `
 2. `lang` on element or ancestor (HTML standard — e.g. `<html lang>` or `<section lang>`)
 3. Falls back to `"en"`
 
-This is the key capability that the preprocessor-based predecessor [dixi](https://github.com/codetalcott/hyperfixi/tree/main/experiments/dixi) cannot do: dixi commits to one language at DOM-walk time. loka resolves at attribute-read time per-element.
+This is the key capability that distinguishes loka from any preprocessor-style approach: loka resolves at attribute-read time per element, not at DOM-walk time. A single page can mix `<section lang="es">` and `<section lang="ja">` and each section's buttons resolve via its own ancestor.
 
 ### Selector building
 
@@ -132,7 +132,7 @@ The acceptance suite ([test/loka-js.spec.mjs](./test/loka-js.spec.mjs)) has nine
 
 - **A** — M2 button demo across Latin/CJK/RTL, dynamic injection (fixi)
 - **B** — M2.5 search demo per locale (`en/es/ja/ar`); this demo predates v1 so its moxi handlers use English `on-*` while fixi attrs are localized
-- **C** — Per-element language, the dixi-impossible case
+- **C** — Per-element language: one page mixes `lang="es"` and `lang="ja"` sections, each resolving its own vocabulary
 - **D** — Devtools faithfulness: localized attribute names still present in DOM
 - **E** — moxi: `vivo` / `al-` / `.prevenir` + globals (`consulta`/`esperar`/`transicion`)
 - **F** — ssexi: synthetic `fx:sse:message` re-fires as `fx:sse:mensaje` on the same target
@@ -158,4 +158,4 @@ If a maintainer ever wants the hooks upstream, the patches are ready to apply ag
 
 ## Parent CLAUDE.md
 
-Inherits from [`../CLAUDE.md`](../CLAUDE.md) (the `~/projects/` cross-portfolio guide). Loka-js relates to the broader fixi-family / dixi / hyperfixi ecosystem cataloged there.
+Inherits from [`../CLAUDE.md`](../CLAUDE.md) (the `~/projects/` cross-portfolio guide). Loka-js relates to the broader fixi-family / hyperfixi ecosystem cataloged there.
