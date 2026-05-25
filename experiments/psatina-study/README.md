@@ -2,7 +2,7 @@
 
 A study demonstrating that registry-based localization works on **canonical [psatina](https://codeberg.org/dz4k/psatina)** today, with no fork required.
 
-> The relevant change is upstream: [Deniz Akşimşek's psatina](https://codeberg.org/dz4k/psatina) exports the `templateDirectives` Map ([`lib/psatina.ts:23`](https://codeberg.org/dz4k/psatina/src/branch/main/lib/psatina.ts#L23)), so anyone can register additional directives without modifying the core. This study is a thin Spanish locale module on top of canonical source — not a refactor, not a fork, not a competing distribution. **The right next step for actual users is to use canonical psatina from codeberg.**
+> The relevant change is upstream: [Deniz Akşimşek's psatina](https://codeberg.org/dz4k/psatina) exports the `templateDirectives` Map ([`lib/psatina.ts:23`](https://codeberg.org/dz4k/psatina/src/branch/main/lib/psatina.ts#L23)), so anyone can register additional directives without modifying the core. This study is a thin Spanish locale module on top of canonical source — not a refactor, not a fork, not a competing distribution.
 
 ## What's in `lib/`
 

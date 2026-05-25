@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 loka-js applies a hook-contract pattern to the [fixiproject family](https://fixiproject.org/) (fixi, moxi, ssexi, paxi, rexi) so locale modules can register localized authoring vocabulary that each library resolves at processing time — no DOM mutation, no MutationObserver overhead, per-element language via `lang` ancestor.
 
-Status: **v1** — all five fixiproject libraries supported. fixi/moxi/paxi are patched (small hook contracts in the style upstream maintainers can land); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
+Status: **v1** — all five fixiproject libraries supported. fixi/moxi/paxi are patched (small hook contracts; faithful to upstream style for fork hygiene, not because we're pursuing upstream merges — see "Patch discipline" below); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
 
 When no locale module is loaded, every patched library is behaviorally identical to upstream (the `??=` defaults reproduce the original literals).
 
