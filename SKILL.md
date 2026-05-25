@@ -91,6 +91,13 @@ es: {
 
 ## How to: add a new library to the pattern
 
+**Fork first: is this a fixi-family library or a library with its own native registry?**
+
+- **Fixi-family library** (no native registry; needs hooks via `??=` slots): follow the recipe below. The orchestrator installs hooks on `window.<libname>` and collects per-locale vocab from `data.<libname>` blocks. Current fixi-family members: fixi, moxi, paxi, ssexi, rexi.
+- **Library with its own native registry** (exposes a Map / `addX` method / `register` function / etc.): **don't extend the orchestrator.** Write a small locale module that fills the native registry directly and imports `dom-vocab/<lang>.js` for shared DOM-keyword vocab. See [experiments/psatina-study/](experiments/psatina-study/) as the worked example — psatina exports its `templateDirectives` Map; psatina-study's 40-line [`lib/locales/es.js`](experiments/psatina-study/lib/locales/es.js) does `templateDirectives.set('si', ...)` etc., importing `{events, props}` from this repo's `dom-vocab/`. The orchestrator never knows about psatina.
+
+The rest of this section is the **fixi-family recipe**.
+
 Before patching anything, decide: does the library require a patch, or can it be localized from outside (like ssexi/rexi)?
 
 - **No patch needed** if: the library fires DOM events that bubble (listener re-fire works) OR exposes only JS APIs with no DOM attributes (global aliasing works).
@@ -125,10 +132,16 @@ We considered a data-driven `LIBRARIES` table (each entry has `name` + `collect`
 
 - hyperfixi has no analogous pattern to align with (`DomainRegistry` exists but solves a different problem — heavyweight DSL/MCP plumbing, not thin per-library hook installation).
 - Net win was ~5 lines saved with the same legibility.
-- The 5-library scope is stable; the fixiproject family isn't growing.
 - Per-library state slots (`MORPH_NAMES`, `LIVE_NAMES`, etc.) are heterogeneous in shape and don't tabulate cleanly without losing the per-library readability.
 
-Revisit if the family grows past ~8 libraries, or if a different consumer wants to plug in a non-fixi-family library that needs the same orchestration machinery.
+**Architectural boundary.** The orchestrator's responsibility is bounded to **fixi-family hook installation** — patched libraries whose `??=` slots need filling at load time. Libraries with their own native registries (e.g. psatina) don't go through the orchestrator at all; they import `dom-vocab/<lang>.js` directly and call their own native `register` / `set` method. Adding "library N+1 to the loka ecosystem" usually doesn't mean N+1 collectors in the orchestrator — it often means a new entry in `dom-vocab/` only (or nothing, if the library shares vocabulary that's already there). [experiments/psatina-study/](experiments/psatina-study/) is the existence proof.
+
+**Revisit the LIBRARIES-table refactor if:**
+
+- The fixi-family itself grows past ~8 libraries (currently 5: fixi, moxi, paxi, ssexi, rexi).
+- A new library that genuinely needs `??=` hook installation (no native registry, like fixi-family) joins the orchestrator.
+
+**Do NOT revisit just because** a non-fixi-family library starts using loka vocab. That's the dom-vocab path — already worked out via psatina-study and doesn't pressure the orchestrator's shape.
 
 ## Footguns we hit in v1
 
