@@ -102,10 +102,33 @@ If patching:
 2. Design the minimal hook contract — usually 1–5 hooks, defaulted via `??=` to preserve upstream behavior.
 3. Write the patched library file at repo root, matching upstream code style (single-IIFE, short var names, no extra whitespace).
 4. Build the patch artifact at `reference-patches/<lib>.patch` in `git format-patch` shape — this is documentation of the fork's diff, not a PR submission. Placeholder SHA `0000…` is fine for the repo artifact; only regenerate via real `git format-patch` from a clone if you're hand-delivering the patch to a maintainer who specifically asked for it.
-5. Extend the [orchestrator.js](orchestrator.js) `register()` flow to collect per-locale vocab for this library and update the relevant hooks.
+5. Extend the [orchestrator.js](orchestrator.js) `register()` flow to collect per-locale vocab for this library and update the relevant hooks. See [the four orchestrator touch-points](#orchestrator-the-four-places-to-touch) below.
 6. Extend the LocaleSpec typedef + a per-library section in [scripts/gen-locales.mjs](scripts/gen-locales.mjs) `renderLocaleFile`.
 7. Add a test phase to [test/loka-js.spec.mjs](test/loka-js.spec.mjs) and a behavior-preservation case to [test/preservation.mjs](test/preservation.mjs).
 8. Write a demo under `demo/<lib>/` and a tutorial page at `tutorial/es/<lib>.html`.
+
+### Orchestrator: the four places to touch
+
+When you reach step 5 above, the orchestrator needs changes in four places. The current code (paxi, moxi, ssexi, rexi) shows all four patterns; copy the closest match for your new library.
+
+1. **Per-library state**, at the top of the file in a `// ── <libname> ──` section. Examples:
+   - `let MORPH_NAMES = new Set(['morph'])` (paxi — Set of localized swap-strategy aliases)
+   - `let LIVE_NAMES = new Set(['live']); let ON_PREFIXES = new Set(['on-']); let MX_MODIFIERS = {}` (moxi — three slots)
+   - `let SSE_REFIRES = new Set()` (ssexi — set of already-wired re-fire event names)
+2. **Hook installation** — `let X = window.<libname> ??= {}` then `X.<hookName> = (args) => ...`. The hook closes over the per-library state so updates are picked up live (the library captures the function by reference; the function reads state at call time).
+3. **Collector function** — `let collect<Lib> = (data, code) => { ... }`. Reads `data?.<libname>?.<vocabKey>` from the locale block and updates the per-library state. Pattern: iterate `Object.entries(...)` of the localized-to-canonical map, push localized values into the state slot.
+4. **Wire into `register()`** — add a single call `collect<Lib>(data, c)` in the chain (currently after `collectMoxi`). If your library has `globals` to alias onto `globalThis`, **also add the library name to the hardcoded `['paxi', 'rexi', 'moxi']` list in `collectAliases`** — this is the one piece of duplication left in the orchestrator (see the design note below).
+
+### Design note: why no LIBRARIES table
+
+We considered a data-driven `LIBRARIES` table (each entry has `name` + `collect` fields; `register()` and `collectAliases` iterate it). **Skipped on 2026-05-25** because:
+
+- hyperfixi has no analogous pattern to align with (`DomainRegistry` exists but solves a different problem — heavyweight DSL/MCP plumbing, not thin per-library hook installation).
+- Net win was ~5 lines saved with the same legibility.
+- The 5-library scope is stable; the fixiproject family isn't growing.
+- Per-library state slots (`MORPH_NAMES`, `LIVE_NAMES`, etc.) are heterogeneous in shape and don't tabulate cleanly without losing the per-library readability.
+
+Revisit if the family grows past ~8 libraries, or if a different consumer wants to plug in a non-fixi-family library that needs the same orchestration machinery.
 
 ## Footguns we hit in v1
 
