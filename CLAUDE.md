@@ -22,9 +22,9 @@ Single-file sources at the repo root, no bundler, no compile step.
 - [demo/](./demo/) — multi-language demos including per-element-lang and `joint-all` (all 5 libs on one Spanish page)
 - [tutorial/](./tutorial/) — Spanish per-library tutorial pages mirroring fixiproject.org examples
 - [test/](./test/) — Playwright acceptance suite (9 phases) + behavior-preservation harness
-- [upstream-patches/](./upstream-patches/) — diff artifacts (`fixi.patch`, `moxi.patch`, `paxi.patch`) prepared for `git am` against the bigskysoftware repos
+- [reference-patches/](./reference-patches/) — diff artifacts (`fixi.patch`, `moxi.patch`, `paxi.patch`) showing what our patched copies differ from upstream; kept as documentation of the fork, not PR submissions
 
-Do not introduce a build step, dist directory, or package bundling. Edits to patched library files must keep their patch surface small — the patches are meant to land upstream.
+Do not introduce a build step, dist directory, or package bundling. Edits to patched library files should keep their patch surface small — not because the patches are headed upstream, but because small surface area minimizes drift when we re-port against upstream changes.
 
 ## Commands
 
@@ -144,9 +144,17 @@ The [behavior-preservation harness](./test/preservation.mjs) loads each patched 
 
 Key invariant the tests enforce: **attributes are never rewritten**. `fx-acción` / `al-clic` / `fx-intercambio="morfar"` stay verbatim in the DOM; libraries resolve via hooks.
 
-## Upstream patch discipline
+## Patch discipline (we are a fork, not a PR queue)
 
-The patches in [upstream-patches/](./upstream-patches/) (`fixi.patch`, `moxi.patch`, `paxi.patch`) are meant to land in the bigskysoftware repos as the canonical versions. Keep changes minimal and faithful to each project's existing style (single-IIFE, `??=` defaults, short var names). Behavior must remain bit-identical to upstream when no orchestrator is loaded — verified by `test/preservation.mjs`.
+loka-js is an alternate distribution of the fixiproject family — we ship patched copies of fixi/moxi/paxi, we don't pursue upstream merges. fixiproject's minimalism is a deliberate position (every byte matters in 1.8–3.5 KB libraries; localized authoring vocabulary benefits ~5% of users), and asking Carson to absorb that cost on behalf of our audience (non-English-native beginners) is the wrong frame.
+
+The patches in [reference-patches/](./reference-patches/) (`fixi.patch`, `moxi.patch`, `paxi.patch`) are documentary artifacts — they show what our patched copies differ from upstream HEAD as of pinned commits. Keep changes:
+
+- **Bit-identical to upstream when no orchestrator is loaded** — verified by [test/preservation.mjs](./test/preservation.mjs). This is the contract that lets `loka.js` users who don't load a locale get unchanged behavior, and lets us cleanly re-port against upstream changes.
+- **Faithful to upstream code style** (single-IIFE, `??=` defaults, short var names like `nm`, `ev`, `sl`). Not because we're trying to look mergeable, but because diff minimality reduces re-port friction.
+- **Hook surface as small as it can be** — extra hooks mean extra drift surface when upstream changes.
+
+If a maintainer ever wants the hooks upstream, the patches are ready to apply against the based-on commit. Don't optimize for that outcome.
 
 ## Parent CLAUDE.md
 

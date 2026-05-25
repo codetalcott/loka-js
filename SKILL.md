@@ -101,7 +101,7 @@ If patching:
 1. Identify the translation surface — attribute name literals, magic string values, modifier names. List them.
 2. Design the minimal hook contract — usually 1–5 hooks, defaulted via `??=` to preserve upstream behavior.
 3. Write the patched library file at repo root, matching upstream code style (single-IIFE, short var names, no extra whitespace).
-4. Build the patch artifact at `upstream-patches/<lib>.patch` in `git format-patch` shape. Note: placeholder SHA `0000…` is fine for the repo artifact; before opening an upstream PR, regenerate via real `git format-patch` from a clone.
+4. Build the patch artifact at `reference-patches/<lib>.patch` in `git format-patch` shape — this is documentation of the fork's diff, not a PR submission. Placeholder SHA `0000…` is fine for the repo artifact; only regenerate via real `git format-patch` from a clone if you're hand-delivering the patch to a maintainer who specifically asked for it.
 5. Extend the [orchestrator.js](orchestrator.js) `register()` flow to collect per-locale vocab for this library and update the relevant hooks.
 6. Extend the LocaleSpec typedef + a per-library section in [scripts/gen-locales.mjs](scripts/gen-locales.mjs) `renderLocaleFile`.
 7. Add a test phase to [test/loka-js.spec.mjs](test/loka-js.spec.mjs) and a behavior-preservation case to [test/preservation.mjs](test/preservation.mjs).
@@ -125,20 +125,25 @@ These will bite again if you don't watch for them.
 
 - **ssexi event re-fire is cancellation-independent.** Calling `e.preventDefault()` on the canonical `fx:sse:open` does **not** cancel the re-fired `fx:sse:abrir`. SSE events are mostly notifications so this is OK, but don't rely on cross-language cancellation propagation.
 
-## Patch discipline
+## Patch discipline (we are a fork, not a PR queue)
 
-The patches in [upstream-patches/](upstream-patches/) are meant to land in `bigskysoftware/{fixi,moxi,paxi}`. Keep edits to the patched library files:
+loka-js is an **alternate distribution** of the fixiproject family. We ship patched copies of fixi/moxi/paxi; we do not pursue upstream merges. The rationale: fixiproject's minimalism is a deliberate position (every byte matters in 1.8–3.5 KB libraries; the hook overhead benefits ~5% of users), and asking Carson to absorb that cost on behalf of our audience is the wrong frame. Localized authoring vocabulary is a parallel-distribution concern, not a core-library concern.
 
-- **Bit-identical to upstream when no orchestrator is loaded** — verified by [test/preservation.mjs](test/preservation.mjs). This is the contract that lets the patches plausibly land.
-- **Faithful to upstream code style** — single IIFE, `??=` defaults, short var names (`nm`, `ev`, `sl`, `mxh`, `igSl`), no extra whitespace. Carson is a minimalist; gratuitous formatting changes will get rejected.
-- **Hook surface as small as possible** — every added hook is an argument for rejection. Resist the urge to add hooks "for future flexibility."
+The patches in [reference-patches/](reference-patches/) are **documentary artifacts**, not PR submissions. They show the diff between our patched copies and upstream HEAD at pinned commits. Useful for:
 
-Before opening an upstream PR (don't do this in an automated session — it requires human judgment):
+- Tracking drift when upstream changes (re-port the patch against new HEAD)
+- Explaining to a curious maintainer or contributor what we changed and why
+- Hand-delivering to a maintainer in the unlikely event they want to consider the hooks
 
-1. Clone the actual bigskysoftware repo.
-2. Apply the patch via `git apply upstream-patches/<lib>.patch` (or rewrite by hand on the latest HEAD).
-3. Run the upstream test suite. If it passes, regenerate the patch via `git format-patch HEAD~1`.
-4. Write a PR description framed for a minimalist maintainer: lead with size, then "no behavior change without orchestrator," then the use case (i18n module ecosystem).
+Keep edits to the patched library files:
+
+- **Bit-identical to upstream when no orchestrator is loaded** — verified by [test/preservation.mjs](test/preservation.mjs). This contract lets loka-js users who don't load a locale get unchanged upstream behavior, and lets us re-port cleanly.
+- **Faithful to upstream code style** — single IIFE, `??=` defaults, short var names (`nm`, `ev`, `sl`, `mxh`, `igSl`), no extra whitespace. Not because we're trying to look mergeable, but because diff minimality reduces re-port friction when upstream changes.
+- **Hook surface as small as it can be** — every hook is more code to re-port when upstream changes the surrounding logic.
+
+**Do not open upstream PRs in an automated session.** If a maintainer ever solicits the patches, that's a human-judgment moment requiring a clone, the upstream test suite to pass, and a PR description tuned to that maintainer's framing.
+
+What IS worth filing upstream (when it comes up): documentation issues that benefit English users too — e.g., "paxi's `morph` strips id attrs from non-matching descendants" or "ssexi's `preventDefault` semantics across lifecycle events." Those are bug reports, not feature requests; the audience is fixiproject's existing users.
 
 ## Audience and decision framing
 

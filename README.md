@@ -6,9 +6,11 @@
 
 ## What it is
 
-A small set of patches and one orchestrator that bring localized authoring vocabulary to the [fixiproject family](https://fixiproject.org/) — fixi, moxi, ssexi, paxi, and rexi. Each library gets a tiny hook contract that defaults to upstream behavior; locale modules register vocabulary that the libraries resolve **at processing time** — no DOM mutation, no MutationObserver overhead, no race conditions, and **per-element language selection** (mix `<section lang="es">` and `<section lang="ja">` on the same page).
+loka-js is an **alternate distribution** of the [fixiproject family](https://fixiproject.org/) for authors whose native language isn't English. It ships patched copies of fixi, moxi, and paxi that expose tiny hook contracts (defaulted to upstream behavior); locale modules register vocabulary that the libraries resolve **at processing time** — no DOM mutation, no MutationObserver overhead, no race conditions, and **per-element language selection** (mix `<section lang="es">` and `<section lang="ja">` on the same page).
 
-When no language module is loaded, each patched library is behaviorally identical to upstream. Patch sizes are small enough to land upstream: fixi ~110 bytes, paxi ~30 bytes, moxi ~150 bytes. ssexi and rexi need no patch at all — ssexi is localized via listener-side event re-fire, rexi via a global-alias registry.
+loka-js is to fixiproject what a localized distribution is to any minimalist library: a parallel build for a specific audience the upstream rightly chose not to serve. We don't expect (or ask for) these hooks to land in canonical fixiproject — every byte matters in a 1.8–3.5 KB library, and English-fluent users would download bytes for a feature they'll never use. The hooks are tracked in [reference-patches/](./reference-patches/) as documentation of what the diff looks like, in case a maintainer ever wants them.
+
+When no locale module is loaded, each patched library is behaviorally identical to upstream — verified by the [behavior-preservation harness](./test/preservation.mjs). Patch sizes: fixi ~110 bytes, paxi ~30 bytes, moxi ~150 bytes. ssexi and rexi need no patch — ssexi is localized via listener-side event re-fire from the orchestrator, rexi via a global-alias registry.
 
 ## Quick start
 
@@ -91,7 +93,9 @@ scripts/               Locale generator
 demo/                  Multi-language demos including per-element-lang + joint-all (all 5 libs)
 tutorial/              Spanish per-library tutorial pages mirroring fixiproject.org examples
 test/                  Playwright acceptance suite (9 phases) + behavior-preservation harness
-upstream-patches/      Diff artifacts for upstream contribution (fixi, moxi, paxi)
+reference-patches/     Diff artifacts (fixi, moxi, paxi) showing what loka-js's
+                       patched copies differ from upstream — reference for
+                       maintainers tracking drift, not PR submissions
 ```
 
 ## The pattern this represents
