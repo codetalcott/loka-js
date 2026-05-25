@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Demo de affordances para agentes — CMS pequeño</title>
+<title>GRAIL HTML binding — demo en español (CMS pequeño)</title>
 
-<!-- v0.2: defaults en valores localizados; el reader los resuelve via vocab. -->
-<meta name="fx-affordances" content="default-authority:autenticado, default-confirm:suave">
+<!-- v0.3: defaults en valores localizados; el reader los resuelve via vocab. -->
+<meta name="fx-affordances" content="default-cost:1, default-confirm:¿Guardar los cambios?">
 
 <script src="../../orchestrator.js"></script>
 <script src="../../locales/es.js"></script>
@@ -23,8 +23,8 @@
 </head>
 <body>
 
-<h1>Demo de agentes — gestión de posts (versión en español)</h1>
-<p>Mismos botones que <code>index.html</code> pero con atributos y valores en español. El reader debe resolver los valores al inglés canónico vía la tabla de afordances del locale es.</p>
+<h1>GRAIL HTML binding — gestión de posts (versión en español)</h1>
+<p>Mismos botones que <code>index.html</code> pero con atributos y valores en español. El reader debe resolver los valores al inglés canónico vía la tabla de afordances del locale es (intents, classes, conditions).</p>
 
 <!-- 1. Lectura simple -->
 <section>
@@ -36,8 +36,7 @@
      fx-intercambio="innerHTML"
      fx-intent="enumerar-posts"
      fx-class="leer"
-     fx-effect="ninguno"
-     fx-authority="anónimo">
+     fx-cost="0">
     Ver todos los posts
   </a>
 </section>
@@ -51,10 +50,9 @@
      fx-objetivo="#main"
      fx-intent="abrir-editor"
      fx-class="abrir"
-     fx-effect="estado-cliente"
-     fx-authority="autenticado"
-     fx-precondition="user-authenticated"
-     fx-postcondition="#post-editor">
+     fx-preconditions="usuario.autenticado"
+     fx-effects="editor.abierto"
+     fx-cost="1">
     Nuevo post
   </button>
 </section>
@@ -70,16 +68,14 @@
      fx-intent="editar-post"
      fx-subject="post:42"
      fx-class="actualizar"
-     fx-effect="estado-servidor"
-     fx-authority="dueño"
-     fx-reversible="ventana-temporal"
-     fx-precondition="#post-42"
-     fx-postcondition="#post-42">
+     fx-preconditions="post.existe usuario.rol.dueño"
+     fx-effects="post.actualizado"
+     fx-cost="2">
     Guardar cambios
   </button>
 </section>
 
-<!-- 4. Borrado recuperable (caso canónico) -->
+<!-- 4. Borrado recuperable -->
 <section>
   <h2>Borrado recuperable</h2>
   <button class="danger"
@@ -90,15 +86,32 @@
      fx-intent="borrar-post"
      fx-subject="post:123"
      fx-class="borrar"
-     fx-effect="estado-servidor"
-     fx-confirm="aprobación-humana"
-     fx-authority="dueño"
-     fx-reversible="suave"
-     fx-undo="/posts/123/restaurar"
-     fx-precondition="#post-123"
-     fx-postcondition="!#post-123">
+     fx-preconditions="post.existe usuario.rol.dueño"
+     fx-effects="post.borrado feed.actualizado"
+     fx-cost="2"
+     fx-confirm="¿Borrar el post 123? Se puede recuperar en 30 días.">
     Borrar post (recuperable)
   </button>
+  <small>La acción de restaurar (siguiente sección) es el camino de recuperación — no se usa <code>fx-undo</code>.</small>
+</section>
+
+<!-- 4b. Restaurar — el undo para borrado recuperable -->
+<section>
+  <h2>Restaurar (el undo del borrado recuperable)</h2>
+  <button
+     fx-acción="/posts/123/restore"
+     fx-método="POST"
+     fx-objetivo="#feed"
+     fx-intercambio="morfar"
+     fx-intent="restaurar-post"
+     fx-subject="post:123"
+     fx-class="actualizar"
+     fx-preconditions="post.borrado"
+     fx-effects="post.restaurado !post.borrado"
+     fx-cost="1">
+    Restaurar post 123
+  </button>
+  <small>Precondición <code>post.borrado</code> enlaza esta acción con el borrado; un agente planificando recuperación la descubre por encadenamiento hacia atrás.</small>
 </section>
 
 <!-- 5. Borrado permanente -->
@@ -109,15 +122,13 @@
      fx-método="DELETE"
      fx-objetivo="#feed"
      fx-intercambio="morfar"
-     fx-intent="purge-post"
+     fx-intent="purgar-post"
      fx-subject="post:123"
      fx-class="borrar"
-     fx-effect="estado-servidor"
-     fx-confirm="reautenticar"
-     fx-authority="admin"
-     fx-reversible="no"
-     fx-precondition="post-soft-deleted"
-     fx-postcondition="post-purged-from-backups">
+     fx-preconditions="post.borrado usuario.rol.admin"
+     fx-effects="post.purgado"
+     fx-cost="5"
+     fx-confirm="Escribe BORRAR para purgar permanentemente el post 123 de los respaldos. NO REVERSIBLE.">
     Purgar permanentemente
   </button>
 </section>
@@ -131,29 +142,28 @@
      fx-intent="publicar-post"
      fx-subject="post:123"
      fx-class="actualizar"
-     fx-effect="estado-servidor externo"
-     fx-confirm="suave"
-     fx-authority="dueño"
-     fx-postcondition="post-published-toast">
+     fx-preconditions="post.existe usuario.rol.dueño"
+     fx-effects="post.publicado suscriptores.notificados"
+     fx-cost="3"
+     fx-confirm="¿Publicar el post 123 y notificar a suscriptores?">
     Publicar (notifica a suscriptores)
   </button>
 </section>
 
 <!-- 7. Alternar (idempotente) -->
 <section>
-  <h2>Alternar archivo (idempotente)</h2>
+  <h2>Alternar archivo (idempotente, efecto dinámico)</h2>
   <button
      fx-acción="/posts/123/archive"
      fx-método="POST"
      fx-intent="alternar-archivo"
      fx-subject="post:123"
      fx-class="alternar"
-     fx-effect="estado-servidor"
-     fx-authority="dueño"
-     fx-reversible="suave"
-     fx-undo="/posts/123/archive">
+     fx-effects="post.archivado.{archived}"
+     fx-cost="1">
     Alternar archivo
   </button>
+  <small>Efecto dinámico — <code>{archived}</code> se resuelve al ejecutar.</small>
 </section>
 
 <!-- 8. Sub-etiquetado (debe generar avisos del validador) -->
@@ -165,7 +175,7 @@
      fx-objetivo="#feed">
     Borrar sin metadatos
   </button>
-  <small>Sin fx-class, sin fx-confirm — los agentes deben marcarlo como riesgoso.</small>
+  <small>Sin fx-class, sin fx-confirm, sin fx-preconditions — los agentes deben marcarlo como riesgoso.</small>
 </section>
 
 </body>

@@ -61,14 +61,11 @@
  *     modifiers?: Record<string, string>,  // dotted modifiers: 'prevenir': 'prevent'
  *     globals?: Record<string, string>,
  *   },
- *   affordances?: {                        // see AGENT_AFFORDANCES.md
+ *   affordances?: {                        // see GRAIL_HTML_BINDING.md (v0.3)
  *     reviewed?: boolean,
- *     intents?: Record<string, string>,    // 'borrar-post': 'delete-post'
+ *     intents?: Record<string, string>,    // 'borrar-post': 'soft-delete-post'
  *     classes?: Record<string, string>,    // 'borrar': 'delete'
- *     confirms?: Record<string, string>,
- *     reversibilities?: Record<string, string>,
- *     authorities?: Record<string, string>,
- *     effects?: Record<string, string>,
+ *     conditions?: Record<string, string>, // 'post.existe': 'post.exists'
  *   },
  *   props?: Record<string, string>,
  * }} LocaleSpec
@@ -150,22 +147,31 @@ export const LOCALES = {
         transicion: 'transition',
       },
     },
-    // Agent-affordance vocabulary (see AGENT_AFFORDANCES.md, v0.1).
-    // Translation policy notes:
-    //   - intents: free-form per application; we provide a few common ones
-    //     as examples ('borrar-post' -> 'delete-post'). Real apps will add more.
-    //   - classes: the v0.1 enum (read/create/update/delete/...).
-    //   - confirms / reversibilities / authorities: small enums; translate all.
+    // GRAIL HTML binding vocabulary (see GRAIL_HTML_BINDING.md, v0.3).
+    // Three tables:
+    //   - intents:    free-form per application (we seed common ones).
+    //   - classes:    the canonical taxonomy (read/create/update/delete/...).
+    //   - conditions: condition names used in preconditions/effects. Both
+    //                 fields share this table since they're drawn from
+    //                 the same naming space.
+    // Dropped from v0.2: reversibilities, authorities, effect-taxonomy —
+    // these are representable via GRAIL primitives (e.g., authority is a
+    // precondition like `user.role.admin`; reversibility is the existence
+    // of a paired affordance with linked conditions).
     affordances: {
       reviewed: false,
       intents: {
-        'borrar-post': 'delete-post',
+        'borrar-post': 'soft-delete-post',
+        'restaurar-post': 'restore-post',
+        'purgar-post': 'purge-post',
         'crear-post': 'create-post',
         'editar-post': 'edit-post',
+        'publicar-post': 'publish-post',
         'enviar-comentario': 'submit-comment',
         'abrir-editor': 'open-editor',
         'cerrar-editor': 'close-editor',
         'navegar-inicio': 'navigate-home',
+        'alternar-archivo': 'toggle-archive',
         'buscar': 'search',
       },
       classes: {
@@ -179,29 +185,23 @@ export const LOCALES = {
         abrir: 'open',
         cerrar: 'close',
       },
-      confirms: {
-        ninguno: 'none',
-        suave: 'soft',
-        'aprobación-humana': 'human-approval',
-        reautenticar: 'reauth',
-      },
-      reversibilities: {
-        no: 'no',
-        suave: 'soft',
-        duro: 'hard',
-        'ventana-temporal': 'time-window',
-      },
-      authorities: {
-        anónimo: 'anonymous',
-        autenticado: 'authenticated',
-        dueño: 'owner',
-        admin: 'admin',
-      },
-      effects: {
-        ninguno: 'none',
-        'estado-cliente': 'client-state',
-        'estado-servidor': 'server-state',
-        externo: 'external',
+      conditions: {
+        // resource / state predicates
+        'post.existe': 'post.exists',
+        'post.borrado': 'post.soft-deleted',
+        'post.restaurado': 'post.restored',
+        'post.purgado': 'post.purged',
+        'post.actualizado': 'post.updated',
+        'post.publicado': 'post.published',
+        'post.archivado': 'post.archived',
+        // user / role predicates
+        'usuario.autenticado': 'user.authenticated',
+        'usuario.rol.dueño': 'user.role.owner',
+        'usuario.rol.admin': 'user.role.admin',
+        // UI / system predicates
+        'editor.abierto': 'editor.open',
+        'feed.actualizado': 'feed.refreshed',
+        'suscriptores.notificados': 'subscribers.notified',
       },
     },
     props: {

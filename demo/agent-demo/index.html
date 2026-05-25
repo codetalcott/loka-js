@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Agent affordances demo — tiny CMS</title>
+<title>GRAIL HTML binding demo — tiny CMS</title>
 
-<!-- v0.2: page-level defaults applied to every action when per-action
-     attribute is absent. Localizable via the same vocab. -->
-<meta name="fx-affordances" content="default-authority:authenticated, default-confirm:soft">
+<!-- v0.3: page-level defaults applied when per-action attribute is absent. -->
+<meta name="fx-affordances" content="default-cost:1, default-confirm:Save changes?">
 
 <script src="../../orchestrator.js"></script>
 <script src="../../locales/en.js"></script>
@@ -24,8 +23,8 @@
 </head>
 <body>
 
-<h1>Agent demo — tiny CMS post management</h1>
-<p>Each action below carries v0.1 affordance attributes. Read with <code>node tools/agent-reader.mjs &lt;this-url&gt; --validate</code>.</p>
+<h1>GRAIL HTML binding — tiny CMS post management</h1>
+<p>Each action below carries v0.3 affordance attributes (GRAIL-aligned). Read with <code>node tools/agent-reader.mjs &lt;this-url&gt; --validate</code>.</p>
 
 <!-- 1. Simple read action -->
 <section>
@@ -37,8 +36,7 @@
      fx-swap="innerHTML"
      fx-intent="list-posts"
      fx-class="read"
-     fx-effect="none"
-     fx-authority="anonymous">
+     fx-cost="0">
     View all posts
   </a>
 </section>
@@ -52,10 +50,9 @@
      fx-target="#main"
      fx-intent="open-editor"
      fx-class="open"
-     fx-effect="client-state"
-     fx-authority="authenticated"
-     fx-precondition="user-authenticated"
-     fx-postcondition="#post-editor">
+     fx-preconditions="user.authenticated"
+     fx-effects="editor.open"
+     fx-cost="1">
     New post
   </button>
 </section>
@@ -71,35 +68,50 @@
      fx-intent="edit-post"
      fx-subject="post:42"
      fx-class="update"
-     fx-effect="server-state"
-     fx-authority="owner"
-     fx-reversible="time-window"
-     fx-precondition="#post-42"
-     fx-postcondition="#post-42">
+     fx-preconditions="post.exists user.role.owner"
+     fx-effects="post.updated"
+     fx-cost="2">
     Save changes
   </button>
 </section>
 
-<!-- 4. Soft-reversible delete (the canonical example) -->
+<!-- 4. Soft-reversible delete (recovery is its own affordance, see section 4b) -->
 <section>
-  <h2>Soft-reversible delete</h2>
+  <h2>Soft-delete</h2>
   <button class="danger"
      fx-action="/posts/123"
      fx-method="DELETE"
      fx-target="#feed"
      fx-swap="morph"
-     fx-intent="delete-post"
+     fx-intent="soft-delete-post"
      fx-subject="post:123"
      fx-class="delete"
-     fx-effect="server-state"
-     fx-confirm="human-approval"
-     fx-authority="owner"
-     fx-reversible="soft"
-     fx-undo="/posts/123/restore"
-     fx-precondition="#post-123"
-     fx-postcondition="!#post-123">
-    Delete post (recoverable)
+     fx-preconditions="post.exists user.role.owner"
+     fx-effects="post.soft-deleted feed.refreshed"
+     fx-cost="2"
+     fx-confirm="Soft-delete post 123? It can be restored within 30 days.">
+    Soft-delete post
   </button>
+  <small>The undo path is the restore affordance (next section), not an <code>fx-undo</code> attribute.</small>
+</section>
+
+<!-- 4b. The restore affordance — linked to the soft-delete via condition state -->
+<section>
+  <h2>Restore (the undo for soft-delete)</h2>
+  <button
+     fx-action="/posts/123/restore"
+     fx-method="POST"
+     fx-target="#feed"
+     fx-swap="morph"
+     fx-intent="restore-post"
+     fx-subject="post:123"
+     fx-class="update"
+     fx-preconditions="post.soft-deleted"
+     fx-effects="post.restored !post.soft-deleted"
+     fx-cost="1">
+    Restore post 123
+  </button>
+  <small>Precondition <code>post.soft-deleted</code> links this to the soft-delete; an agent planning recovery finds this action via backward chaining.</small>
 </section>
 
 <!-- 5. Hard / permanent delete -->
@@ -113,17 +125,15 @@
      fx-intent="purge-post"
      fx-subject="post:123"
      fx-class="delete"
-     fx-effect="server-state"
-     fx-confirm="reauth"
-     fx-authority="admin"
-     fx-reversible="no"
-     fx-precondition="post-soft-deleted"
-     fx-postcondition="post-purged-from-backups">
+     fx-preconditions="post.soft-deleted user.role.admin"
+     fx-effects="post.purged"
+     fx-cost="5"
+     fx-confirm="Type DELETE to permanently purge post 123 from backups. NOT REVERSIBLE.">
     Purge permanently
   </button>
 </section>
 
-<!-- 6. External side effect -->
+<!-- 6. External side effect (no taxonomy field; the condition graph carries the meaning) -->
 <section>
   <h2>External effect (sends email + webhook)</h2>
   <button
@@ -132,10 +142,10 @@
      fx-intent="publish-post"
      fx-subject="post:123"
      fx-class="update"
-     fx-effect="server-state external"
-     fx-confirm="soft"
-     fx-authority="owner"
-     fx-postcondition="post-published-toast">
+     fx-preconditions="post.exists user.role.owner"
+     fx-effects="post.published subscribers.notified"
+     fx-cost="3"
+     fx-confirm="Publish post 123 and notify subscribers?">
     Publish (notifies subscribers)
   </button>
 </section>
@@ -149,12 +159,11 @@
      fx-intent="toggle-archive"
      fx-subject="post:123"
      fx-class="toggle"
-     fx-effect="server-state"
-     fx-authority="owner"
-     fx-reversible="soft"
-     fx-undo="/posts/123/archive">
+     fx-effects="post.archived.{archived}"
+     fx-cost="1">
     Toggle archive
   </button>
+  <small>Dynamic effect — <code>{archived}</code> resolves from request body at execution time.</small>
 </section>
 
 <!-- 8. Deliberately under-tagged — should trigger validation warnings -->
@@ -166,7 +175,7 @@
      fx-target="#feed">
     Delete without metadata
   </button>
-  <small>No fx-class, no fx-confirm — agents should flag this as risky.</small>
+  <small>No fx-class, no fx-confirm, no fx-preconditions — agents should flag this as risky.</small>
 </section>
 
 </body>

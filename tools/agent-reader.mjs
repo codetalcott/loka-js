@@ -1,5 +1,5 @@
-// Reference reader for the agent-affordance vocabulary defined in
-// AGENT_AFFORDANCES.md (v0.2). Two roles:
+// Reference reader for the HTML attribute binding for GRAIL defined in
+// GRAIL_HTML_BINDING.md (v0.3). Two roles:
 //
 //   1. Library  — `readAffordances(root)` is a self-contained function (no
 //      imports, no module-scoped closures) so it can be serialized by
@@ -10,27 +10,22 @@
 //      the page in headless chromium and prints the action graph as JSON
 //      to stdout. Supports --validate and --schema=anthropic flags.
 //
-// v0.2 additions over v0.1:
-//   - Page-level defaults via <meta name="fx-affordances" content="key:value,...">
-//   - _meta.unresolved tracks affordance fields whose value isn't in the
-//     canonical enum and didn't get vocab-translated (used by validator and
-//     schema generator to detect localized-but-untranslated values).
-//   - validate() escalates severity when method is destructive AND
-//     metadata is missing.
-//   - toAnthropicSchema returns {tools, warnings} and drops actions whose
-//     intent is suspected-localized-untranslated.
+// v0.3 changes from v0.2 (alignment with grail-spec v1.0.0):
+//   - Renamed: fx-precondition  -> fx-preconditions (plural, GRAIL term)
+//   - Renamed: fx-postcondition -> fx-effects       (GRAIL term)
+//   - Added:   fx-cost          (non-neg int; was deferred in v0.2)
+//   - Changed: fx-confirm is now a free-form message string (was enum)
+//   - Removed: fx-reversible, fx-undo, fx-authority, fx-effect (taxonomy).
+//     These were v0.2 inventions that GRAIL primitives express better
+//     (reversal is just another affordance with linked preconditions;
+//     authority is a precondition like `user.role.admin`).
+//   - Output shape now Siren-action-shaped (href/method/name/preconditions/
+//     effects/cost/confirm) with fixi-side extensions in _extensions.
 
-// Canonical values for enum-shape affordance fields. Used to detect
-// "localized but unresolved" values (when a value is non-null but not in
-// the canonical set, it's either localized-untranslated, a typo, or an
-// application-specific extension).
-const CANONICAL = {
-  classes:         ['read','create','update','delete','navigate','search','toggle','open','close'],
-  confirms:        ['none','soft','human-approval','reauth'],
-  reversibilities: ['no','soft','hard','time-window'],
-  authorities:     ['anonymous','authenticated','owner','admin'],
-  effects:         ['none','client-state','server-state','external'],
-}
+// Canonical taxonomy for fx-class (the only field with a fixed enum in v0.3).
+// Other values (intents, condition names, confirm messages) are application-
+// specific by GRAIL's design.
+const CLASS_TAXONOMY = ['read','create','update','delete','navigate','search','toggle','open','close']
 const DESTRUCTIVE_METHODS = ['DELETE','PUT','POST','PATCH']
 
 // ── In-page reader ─────────────────────────────────────────────────────────
@@ -45,13 +40,7 @@ export function readAffordances(root) {
   const actionSel = (window.fixi && window.fixi.sel) ? window.fixi.sel('action') : '[fx-action]'
 
   // Inline-duplicated so this fn remains self-contained for Playwright.
-  const CANON = {
-    classes:         ['read','create','update','delete','navigate','search','toggle','open','close'],
-    confirms:        ['none','soft','human-approval','reauth'],
-    reversibilities: ['no','soft','hard','time-window'],
-    authorities:     ['anonymous','authenticated','owner','admin'],
-    effects:         ['none','client-state','server-state','external'],
-  }
+  const CLASS_VALUES = ['read','create','update','delete','navigate','search','toggle','open','close']
 
   // Returns {value, resolved} so caller can tell if vocab translation hit.
   const resolveRaw = (table, value, lang) => {
@@ -63,7 +52,6 @@ export function readAffordances(root) {
   const resolve = (table, value, lang) => resolveRaw(table, value, lang).value
 
   // Page-level defaults from <meta name="fx-affordances" content="...">.
-  // Parsed once per readAffordances call; applied when per-action attr missing.
   const parseDefaults = () => {
     const meta = root.querySelector ? root.querySelector('meta[name="fx-affordances"]') : null
     if (!meta) return {}
@@ -79,26 +67,25 @@ export function readAffordances(root) {
     return out
   }
   const defaults = parseDefaults()
+
+  // Apply defaults (with vocab resolution for relevant fields).
   const defaultFor = (field, lang) => {
     const v = defaults['default-' + field]
     if (v == null) return null
-    // Resolve through vocab too (page meta might be in localized form).
-    const tableKey = field === 'class' ? 'classes'
-      : field === 'confirm' ? 'confirms'
-      : field === 'reversible' ? 'reversibilities'
-      : field === 'authority' ? 'authorities'
-      : field === 'effect' ? 'effects'
-      : null
-    return tableKey ? resolve(tableKey, v, lang) : v
+    if (field === 'cost') {
+      const n = parseInt(v, 10)
+      return Number.isFinite(n) ? n : null
+    }
+    // confirm is a free-form string; no vocab resolution
+    return v
   }
 
-  // For each canonical-enum field, decide whether the value is canonical,
-  // resolved-from-vocab, or unresolved (localized-untranslated / typo / extension).
-  const classify = (field, table, raw, lang) => {
+  // Classify fx-class against canonical taxonomy + vocab resolution.
+  const classifyClass = (raw, lang) => {
     if (raw == null) return {value: null, status: 'absent'}
-    const {value, resolved} = resolveRaw(table, raw, lang)
+    const {value, resolved} = resolveRaw('classes', raw, lang)
     if (resolved) return {value, status: 'resolved'}
-    if (CANON[table].includes(value)) return {value, status: 'canonical'}
+    if (CLASS_VALUES.includes(value)) return {value, status: 'canonical'}
     return {value, status: 'unresolved'}
   }
 
@@ -107,43 +94,63 @@ export function readAffordances(root) {
     const lang = langOf(el)
     const attr = (k) => el.getAttribute(nameOf(el, k))
 
-    // Multi-value effect parsed and classified per token.
-    const effectRaw = el.getAttribute('fx-effect')
-    const effectTokens = effectRaw ? effectRaw.split(/\s+/) : null
-    const effectClassified = effectTokens
-      ? effectTokens.map(v => classify('effect', 'effects', v, lang))
-      : null
+    // Mechanical (fixi-side) attrs.
+    const href   = attr('action') || null
+    const method = (attr('method') || 'GET').toUpperCase()
+    const target = attr('target') || null
+    const swap   = attr('swap') || null
 
-    // Per-field classification for enum-shape fields.
-    const cls         = classify('class',      'classes',         el.getAttribute('fx-class'),      lang)
-    const conf        = classify('confirm',    'confirms',        el.getAttribute('fx-confirm'),    lang)
-    const rev         = classify('reversible', 'reversibilities', el.getAttribute('fx-reversible'), lang)
-    const auth        = classify('authority',  'authorities',     el.getAttribute('fx-authority'),  lang)
+    // GRAIL-aligned affordance fields.
+    // preconditions, effects: space-separated condition tokens. Each token
+    // goes through the conditions vocab for localized -> canonical resolution.
+    const splitConditions = (raw) => {
+      if (raw == null) return null
+      const tokens = raw.split(/\s+/).filter(Boolean)
+      return tokens.map(t => resolve('conditions', t, lang))
+    }
+    const preconditions = splitConditions(el.getAttribute('fx-preconditions'))
+    const effects       = splitConditions(el.getAttribute('fx-effects'))
 
-    // Intent: free-form by design. We can't classify as canonical/unresolved
-    // generically; we attempt vocab resolution and mark whether it hit.
+    // cost: integer, with default fallback.
+    let cost = null
+    const costRaw = el.getAttribute('fx-cost')
+    if (costRaw != null) {
+      const n = parseInt(costRaw, 10)
+      cost = Number.isFinite(n) ? n : null
+    }
+    if (cost === null) cost = defaultFor('cost', lang)
+
+    // confirm: free-form string (non-empty = required).
+    let confirm = el.getAttribute('fx-confirm')
+    if (confirm == null) confirm = defaultFor('confirm', lang)
+
+    // intent: free-form, vocab-resolvable.
     const intentRaw = el.getAttribute('fx-intent')
     const intentRes = resolveRaw('intents', intentRaw, lang)
 
-    // Apply page-level defaults when per-action value is absent.
-    const finalConfirm    = conf.value    ?? defaultFor('confirm',    lang)
-    const finalAuthority  = auth.value    ?? defaultFor('authority',  lang)
-    const finalReversible = rev.value     ?? defaultFor('reversible', lang)
+    // class: enum, canonical taxonomy.
+    const cls = classifyClass(el.getAttribute('fx-class'), lang)
 
-    // Track which fields had unresolved localized values (for validators/schema).
+    // subject: free-form, no resolution.
+    const subject = el.getAttribute('fx-subject') || null
+
+    // Track which fields are localized-but-unresolved (for validator/schema).
     const unresolved = []
     if (cls.status === 'unresolved') unresolved.push('class')
-    if (conf.status === 'unresolved') unresolved.push('confirm')
-    if (rev.status === 'unresolved') unresolved.push('reversible')
-    if (auth.status === 'unresolved') unresolved.push('authority')
-    if (effectClassified) {
-      for (let i = 0; i < effectClassified.length; i++) {
-        if (effectClassified[i].status === 'unresolved') unresolved.push('effect[' + i + ']')
-      }
+    if (intentRaw != null && lang !== 'en' && !intentRes.resolved) unresolved.push('intent')
+    // For preconditions and effects, we'd need to know the canonical set per
+    // app; for now, only flag if the raw value contains non-ASCII on non-en
+    // pages (heuristic — Spanish 'usuario.rol.dueño' triggers).
+    const condUnresolved = (raw, field) => {
+      if (raw == null || lang === 'en') return
+      const tokens = raw.split(/\s+/).filter(Boolean)
+      tokens.forEach((t, i) => {
+        const {resolved} = resolveRaw('conditions', t, lang)
+        if (!resolved && /[^\x00-\x7f]/.test(t)) unresolved.push(`${field}[${i}]`)
+      })
     }
-    // Intent is suspect when page is non-en AND vocab didn't resolve it.
-    const intentSuspect = intentRaw != null && lang !== 'en' && !intentRes.resolved
-    if (intentSuspect) unresolved.push('intent')
+    condUnresolved(el.getAttribute('fx-preconditions'), 'preconditions')
+    condUnresolved(el.getAttribute('fx-effects'), 'effects')
 
     actions.push({
       element: {
@@ -152,31 +159,22 @@ export function readAffordances(root) {
         text: (el.textContent || '').trim().slice(0, 120),
       },
       lang,
-      mechanics: {
-        url:     attr('action') || null,
-        method:  (attr('method') || 'GET').toUpperCase(),
-        target:  attr('target') || null,
-        swap:    attr('swap') || null,
-        trigger: attr('trigger') || null,
-      },
-      affordance: {
-        intent:        intentRes.value,
-        subject:       el.getAttribute('fx-subject') || null,
-        class:         cls.value,
-        effect:        effectClassified ? effectClassified.map(e => e.value) : null,
-        confirm:       finalConfirm,
-        authority:     finalAuthority,
-        reversible:    finalReversible,
-        undo:          el.getAttribute('fx-undo') || null,
-        precondition:  el.getAttribute('fx-precondition') || null,
-        postcondition: el.getAttribute('fx-postcondition') || null,
+      mechanics: { href, method, target, swap, trigger: attr('trigger') || null },
+      // GRAIL action shape:
+      name: intentRes.value,                     // Siren `name` / GRAIL action name
+      preconditions,                             // array<string> or null
+      effects,                                   // array<string> or null
+      cost,                                      // int or null
+      confirm,                                   // string or null
+      _extensions: {                             // fixi-side, non-GRAIL fields
+        class: cls.value,
+        subject,
       },
       _meta: {
-        unresolved,                          // localizable fields where value isn't canonical and didn't translate
-        defaultsApplied: {                    // fields whose final value came from page-meta default
-          confirm:    conf.value == null && finalConfirm    != null,
-          authority:  auth.value == null && finalAuthority  != null,
-          reversible: rev.value  == null && finalReversible != null,
+        unresolved,
+        defaultsApplied: {
+          cost: el.getAttribute('fx-cost') == null && cost != null,
+          confirm: el.getAttribute('fx-confirm') == null && confirm != null,
         },
         intentResolved: intentRes.resolved,
       },
@@ -185,9 +183,9 @@ export function readAffordances(root) {
   return actions
 }
 
-// ── Validation ─────────────────────────────────────────────────────────────
-// Surfaces patterns an LLM agent should be cautious about. Severity ladder
-// (error > warning > info) escalates with mechanical destructiveness.
+// ── Validation (v0.3) ──────────────────────────────────────────────────────
+// Severity ladder (error/warning/info) escalates with mechanical
+// destructiveness. Rules are normative — see GRAIL_HTML_BINDING.md.
 export function validate(actions) {
   const warnings = []
   const note = (a, severity, issue) => warnings.push({
@@ -198,105 +196,85 @@ export function validate(actions) {
   })
 
   for (const a of actions) {
-    const aff = a.affordance
     const mech = a.mechanics
     const destructive = DESTRUCTIVE_METHODS.includes(mech.method)
 
-    // v0.2: method-based severity escalation for missing metadata
-    if (!aff.intent && !aff.class) {
-      const sev = destructive ? 'error' : 'warning'
-      const detail = destructive
-        ? `method='${mech.method}' is destructive and has no fx-intent/fx-class — agents cannot reason about safety`
-        : 'no semantic metadata (fx-intent or fx-class) — agent cannot reason about purpose'
-      note(a, sev, detail)
+    // ── Errors ─────────────────────────────────────────────────────────────
+    // Destructive method with no agent-visible metadata at all.
+    if (destructive && !a.name && !a._extensions.class && !a.preconditions) {
+      note(a, 'error',
+        `method='${mech.method}' is destructive and has no fx-intent / fx-class / fx-preconditions — agents cannot reason about safety`)
     }
-
-    // Destructive class without confirm
-    if (aff.class === 'delete' && !aff.confirm) {
+    // Destructive class without confirmation gating.
+    if (a._extensions.class === 'delete' && !a.confirm) {
       note(a, 'error', "class='delete' without fx-confirm — agent may auto-execute destructive action")
     }
-    // External side effects without confirm
-    if (aff.effect && aff.effect.includes('external') && !aff.confirm) {
-      note(a, 'error', "effect contains 'external' without fx-confirm — external side effects should require confirmation")
-    }
-    // Reversibility contract broken
-    if (aff.reversible === 'soft' && !aff.undo) {
-      note(a, 'error', "reversible='soft' but no fx-undo provided — broken contract")
-    }
-    if (aff.reversible === 'no' && aff.undo) {
-      note(a, 'warning', "reversible='no' but fx-undo provided — contradictory")
-    }
-    // Taxonomy coverage
-    if (aff.intent && !aff.class) {
-      note(a, 'info', 'fx-intent set but no fx-class — agent can match by intent name but cannot group taxonomically')
-    }
-    // Effect declaration coverage
-    if (mech.method !== 'GET' && !aff.effect) {
-      note(a, 'info', 'non-GET mechanical method but no fx-effect declared — agent must guess at server-state mutation')
-    }
-    // Postcondition for verifiability
-    if ((aff.class === 'delete' || aff.class === 'update' || aff.class === 'create') && !aff.postcondition) {
-      note(a, 'info', `class='${aff.class}' without fx-postcondition — agent cannot verify success beyond HTTP status`)
-    }
 
-    // v0.2: unresolved localized values
+    // ── Warnings ───────────────────────────────────────────────────────────
+    // Semantic emptiness on non-destructive actions.
+    if (!a.name && !a._extensions.class && !destructive) {
+      note(a, 'warning', 'no semantic metadata (fx-intent or fx-class) — agent cannot reason about purpose')
+    }
+    // Localized values that didn't resolve.
     if (a._meta && a._meta.unresolved && a._meta.unresolved.length) {
       for (const field of a._meta.unresolved) {
-        const value = field.startsWith('effect[')
-          ? aff.effect[Number(field.slice(7, -1))]
-          : aff[field]
+        const value = field === 'class' ? a._extensions.class
+          : field === 'intent' ? a.name
+          : field.startsWith('preconditions[') ? a.preconditions[Number(field.match(/\[(\d+)\]/)[1])]
+          : field.startsWith('effects[') ? a.effects[Number(field.match(/\[(\d+)\]/)[1])]
+          : '?'
         note(a, 'warning',
-          `${field}='${value}' is not in v0.2 canonical vocabulary on a ${a.lang === 'en' ? 'lang=en' : `lang=${a.lang}`} page — likely localized but unresolved, or app-specific extension`)
+          `${field}='${value}' on lang=${a.lang} page is not in canonical vocabulary — likely localized but unresolved, or app-specific`)
       }
+    }
+
+    // ── Info ───────────────────────────────────────────────────────────────
+    if (a.name && !a._extensions.class) {
+      note(a, 'info', 'fx-intent set but no fx-class — agent can match by intent name but cannot group taxonomically')
+    }
+    if (mech.method !== 'GET' && !a.effects) {
+      note(a, 'info', 'non-GET mechanical method but no fx-effects declared — agent cannot reason about state changes')
+    }
+    if ((a._extensions.class === 'delete' || a._extensions.class === 'update' || a._extensions.class === 'create') && !a.effects) {
+      note(a, 'info', `class='${a._extensions.class}' without fx-effects — agent cannot verify success via condition state`)
     }
   }
   return warnings
 }
 
-// ── Anthropic tool-use schema generator (v0.2) ─────────────────────────────
-// Each affordance-tagged action with a resolvable intent becomes a tool an
-// LLM can be asked to invoke. Returns {tools, warnings}:
-//   - tools:    array of {name, description, input_schema}, canonical names only
-//   - warnings: actions that were dropped or have suspect names (with reason)
+// ── Anthropic tool-use schema generator (v0.3) ─────────────────────────────
+// Each affordance-tagged action with a resolvable name becomes a tool.
+// Returns {tools, warnings}. Dropped actions (intent on non-en page that
+// didn't resolve through vocab) appear in warnings.
 //
-// v0.2 invariant: tool names MUST be canonical (English or app-specific
-// English-equivalent) so an LLM can invoke a tool by name without knowing
-// which language the page uses. If an intent is on a non-en page and didn't
-// resolve through vocab, the tool is dropped from the schema and surfaced
-// as a warning so the page author can register canonical intents.
-//
-// Input schema is empty in v0.2 — a future version should extract form
-// fields from the action's associated <form> and surface them.
+// v0.3 invariant: tool names MUST be canonical English. Description text
+// includes GRAIL fields (preconditions, effects, cost) so an LLM has the
+// full picture without a separate fetch.
 export function toAnthropicSchema(actions) {
   const tools = []
   const warnings = []
   for (const a of actions) {
-    const aff = a.affordance
-    if (!aff.intent && !aff.class) continue
+    if (!a.name && !a._extensions.class) continue
 
-    // Drop if intent is suspect-localized (per _meta.unresolved).
     if (a._meta && a._meta.unresolved && a._meta.unresolved.includes('intent')) {
       warnings.push({
         selector: `${a.element.tag}${a.element.id ? '#' + a.element.id : ''}`,
         text: a.element.text.slice(0, 40),
         action: 'dropped',
-        reason: `intent='${aff.intent}' on lang=${a.lang} page did not resolve through vocab; canonical name needed for stable agent tool reference`,
+        reason: `intent='${a.name}' on lang=${a.lang} did not resolve through vocab; canonical name needed for stable agent tool reference`,
       })
       continue
     }
 
-    const name = aff.intent || `${aff.class}-${a.element.id || a.element.tag}`
+    const name = a.name || `${a._extensions.class}-${a.element.id || a.element.tag}`
     const desc = [
-      a.element.text || aff.intent || aff.class,
-      aff.subject ? `Subject: ${aff.subject}.` : null,
-      aff.class ? `Class: ${aff.class}.` : null,
-      aff.effect ? `Effects: ${aff.effect.join(', ')}.` : null,
-      aff.confirm && aff.confirm !== 'none' ? `Requires confirmation: ${aff.confirm}.` : null,
-      aff.authority ? `Authority: ${aff.authority}.` : null,
-      aff.reversible === 'no' ? 'NOT reversible.' :
-        aff.reversible ? `Reversible: ${aff.reversible}${aff.undo ? ` via ${aff.undo}` : ''}.` : null,
-      aff.precondition ? `Precondition: ${aff.precondition}.` : null,
-      aff.postcondition ? `Postcondition: ${aff.postcondition}.` : null,
+      a.element.text || a.name || a._extensions.class,
+      a._extensions.subject ? `Subject: ${a._extensions.subject}.` : null,
+      a._extensions.class ? `Class: ${a._extensions.class}.` : null,
+      a.preconditions ? `Preconditions: ${a.preconditions.join(', ')}.` : null,
+      a.effects ? `Effects: ${a.effects.join(', ')}.` : null,
+      a.cost != null && a.cost !== 1 ? `Cost: ${a.cost}.` : null,
+      a.confirm ? `Confirm: "${a.confirm}".` : null,
     ].filter(Boolean).join(' ')
     tools.push({
       name,
@@ -361,7 +339,6 @@ Examples:
   }
 
   if (validateFlag && warnings.length) {
-    // Sort errors first, warnings second, info last.
     const order = { error: 0, warning: 1, info: 2 }
     const sorted = [...warnings].sort((a, b) => order[a.severity] - order[b.severity])
     console.error(`\n${warnings.length} validation issue(s):`)

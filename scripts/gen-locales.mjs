@@ -201,9 +201,9 @@ window.loka.register('en', { fixi: { attrs: {}, events: {} } });
     fields.push(`  moxi: {\n${parts.join('\n')}\n  },`);
   }
 
-  // affordances — agent-readable vocabulary, see AGENT_AFFORDANCES.md
+  // affordances — GRAIL HTML binding vocabulary, see GRAIL_HTML_BINDING.md (v0.3)
   const aff = spec.affordances ?? {};
-  const affTables = ['intents', 'classes', 'confirms', 'reversibilities', 'authorities', 'effects'];
+  const affTables = ['intents', 'classes', 'conditions'];
   const affParts = [];
   for (const t of affTables) {
     const tbl = stripIdentity(aff[t] ?? {});
