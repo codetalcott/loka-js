@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Triage de incidentes (es) — GRAIL HTML binding demo</title>
+
+<!-- Defaults aplicados cuando un atributo por-acción está ausente. -->
+<meta name="fx-affordances" content="default-cost:1">
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../fixi.js"></script>
+
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; padding: 1.5rem; max-width: 56rem; margin: 0 auto; background: #fafaf8; }
+  h1 { font-size: 1.4rem; margin: 0 0 .3rem; }
+  h1 small { font-weight: normal; color: #777; font-size: .7em; }
+  .incident-meta { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .card { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: .85rem 1rem; }
+  .card h3 { margin: 0 0 .25rem; font-size: .95rem; }
+  .card .meta { color: #777; font-size: .8rem; margin-bottom: .5rem; }
+  .card .conditions { font-size: .78rem; color: #555; margin-bottom: .5rem; font-family: "SF Mono", monospace; }
+  .card .conditions span { display: inline-block; margin-right: .4rem; }
+  .card .pre { color: #888; }
+  .card .eff { color: #2a7; }
+  button, input, textarea { font: inherit; padding: .35rem .6rem; border: 1px solid #bbb; border-radius: 4px; }
+  button { cursor: pointer; background: #fff; }
+  button:hover { background: #f0ede4; }
+  .danger { border-color: #d44; color: #a22; }
+  .field-row { display: flex; gap: .5rem; align-items: center; margin-top: .3rem; }
+  .field-row input, .field-row textarea, .field-row select { flex: 1; }
+  textarea { min-height: 2.5rem; resize: vertical; }
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed #ccc; color: #666; font-size: .85rem; }
+  .footer code { background: #eee; padding: 0 .3rem; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>Triage de incidente #42 <small>— "Caída de base de datos en eu-west"</small></h1>
+
+<div class="incident-meta">
+  <strong>Severidad:</strong> sin clasificar &nbsp;|&nbsp;
+  <strong>Responsable:</strong> sin asignar &nbsp;|&nbsp;
+  <strong>Estado:</strong> alerta recibida
+  <p style="margin: .5rem 0 0; color: #555;">
+    Este es un manifiesto de afordances en español para el dominio
+    <code>incident_response</code> de <code>grail-domains</code>. Un agente LLM
+    (o el script en <code>../incident-triage-es/agent.mjs</code>) lee esta
+    página, traduce los términos al inglés canónico via la tabla
+    <code>conditions</code> del locale es, y ejecuta los pasos contra el
+    backend en <code>http://127.0.0.1:8091</code>.
+  </p>
+</div>
+
+<div class="grid">
+
+  <!-- 1. acknowledge — sin precondiciones, sin formulario -->
+  <div class="card">
+    <h3>1. Reconocer incidente</h3>
+    <div class="meta">El primer paso del ciclo de vida.</div>
+    <div class="conditions">
+      <span class="eff">→ incidente.reconocido</span>
+    </div>
+    <button
+      fx-acción="http://127.0.0.1:8091/incidents/42/acknowledge"
+      fx-método="POST"
+      fx-intent="reconocer-incidente"
+      fx-subject="incident:42"
+      fx-class="actualizar"
+      fx-effects="incidente.reconocido"
+      fx-cost="1">
+      Reconocer
+    </button>
+  </div>
+
+  <!-- 2. classify-severity — requiere severity field -->
+  <div class="card">
+    <h3>2. Clasificar severidad</h3>
+    <div class="meta">Asignar P1–P4 al incidente.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.reconocido</span>
+      <span class="eff">→ incidente.severidad.clasificada</span>
+    </div>
+    <form>
+      <div class="field-row">
+        <select name="severity">
+          <option value="p1">P1 — crítico</option>
+          <option value="p2">P2 — alto</option>
+          <option value="p3">P3 — medio</option>
+          <option value="p4">P4 — bajo</option>
+        </select>
+        <button
+          fx-acción="http://127.0.0.1:8091/incidents/42/classify"
+          fx-método="POST"
+          fx-intent="clasificar-severidad"
+          fx-subject="incident:42"
+          fx-class="actualizar"
+          fx-preconditions="incidente.reconocido"
+          fx-effects="incidente.severidad.clasificada"
+          fx-cost="1">
+          Clasificar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 3. assign-owner — requiere owner field -->
+  <div class="card">
+    <h3>3. Asignar responsable</h3>
+    <div class="meta">Persona responsable del incidente.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.severidad.clasificada</span>
+      <span class="eff">→ incidente.responsable.asignado</span>
+    </div>
+    <form>
+      <div class="field-row">
+        <input name="owner" placeholder="nombre@ejemplo.com" />
+        <button
+          fx-acción="http://127.0.0.1:8091/incidents/42/assign"
+          fx-método="POST"
+          fx-intent="asignar-responsable"
+          fx-subject="incident:42"
+          fx-class="actualizar"
+          fx-preconditions="incidente.severidad.clasificada"
+          fx-effects="incidente.responsable.asignado"
+          fx-cost="1">
+          Asignar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 4. investigate — opcional notes -->
+  <div class="card">
+    <h3>4. Investigar causa raíz</h3>
+    <div class="meta">Documentar los hallazgos.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.responsable.asignado</span>
+      <span class="eff">→ incidente.investigado</span>
+    </div>
+    <form>
+      <textarea name="notes" placeholder="Notas de investigación"></textarea>
+      <div class="field-row" style="margin-top:.4rem">
+        <button
+          fx-acción="http://127.0.0.1:8091/incidents/42/investigate"
+          fx-método="POST"
+          fx-intent="investigar-incidente"
+          fx-subject="incident:42"
+          fx-class="actualizar"
+          fx-preconditions="incidente.responsable.asignado"
+          fx-effects="incidente.investigado"
+          fx-cost="3">
+          Registrar investigación
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 5. mitigate — opcional summary -->
+  <div class="card">
+    <h3>5. Mitigar</h3>
+    <div class="meta">Aplicar la mitigación.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.investigado</span>
+      <span class="eff">→ incidente.mitigado</span>
+    </div>
+    <form>
+      <textarea name="summary" placeholder="Resumen de la mitigación"></textarea>
+      <div class="field-row" style="margin-top:.4rem">
+        <button
+          fx-acción="http://127.0.0.1:8091/incidents/42/mitigate"
+          fx-método="POST"
+          fx-intent="mitigar-incidente"
+          fx-subject="incident:42"
+          fx-class="actualizar"
+          fx-preconditions="incidente.investigado"
+          fx-effects="incidente.mitigado"
+          fx-cost="4">
+          Registrar mitigación
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 6. verify-health — paralelo con notify-stakeholders -->
+  <div class="card">
+    <h3>6. Verificar salud del sistema</h3>
+    <div class="meta">Confirmar que los chequeos pasan post-mitigación.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.mitigado</span>
+      <span class="eff">→ incidente.salud.verificada</span>
+    </div>
+    <button
+      fx-acción="http://127.0.0.1:8091/incidents/42/verify-health"
+      fx-método="POST"
+      fx-intent="verificar-salud"
+      fx-subject="incident:42"
+      fx-class="actualizar"
+      fx-preconditions="incidente.mitigado"
+      fx-effects="incidente.salud.verificada"
+      fx-cost="1">
+      Verificar salud
+    </button>
+  </div>
+
+  <!-- 7. notify-stakeholders — paralelo con verify-health -->
+  <div class="card">
+    <h3>7. Notificar interesados</h3>
+    <div class="meta">Comunicación post-mitigación.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.mitigado</span>
+      <span class="eff">→ incidente.interesados.notificados</span>
+    </div>
+    <button
+      fx-acción="http://127.0.0.1:8091/incidents/42/notify"
+      fx-método="POST"
+      fx-intent="notificar-interesados"
+      fx-subject="incident:42"
+      fx-class="actualizar"
+      fx-preconditions="incidente.mitigado"
+      fx-effects="incidente.interesados.notificados"
+      fx-cost="1">
+      Notificar
+    </button>
+  </div>
+
+  <!-- 8. write-postmortem — junta health + notification -->
+  <div class="card">
+    <h3>8. Escribir postmortem</h3>
+    <div class="meta">Documento de análisis post-incidente.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.salud.verificada</span>
+      <span class="pre">+ incidente.interesados.notificados</span>
+      <span class="eff">→ incidente.postmortem.escrito</span>
+    </div>
+    <form>
+      <textarea name="content" placeholder="Contenido del postmortem"></textarea>
+      <div class="field-row" style="margin-top:.4rem">
+        <button
+          fx-acción="http://127.0.0.1:8091/incidents/42/postmortem"
+          fx-método="POST"
+          fx-intent="escribir-postmortem"
+          fx-subject="incident:42"
+          fx-class="crear"
+          fx-preconditions="incidente.salud.verificada incidente.interesados.notificados"
+          fx-effects="incidente.postmortem.escrito"
+          fx-cost="3">
+          Escribir postmortem
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 9. create-actions — items field -->
+  <div class="card">
+    <h3>9. Crear acciones de seguimiento</h3>
+    <div class="meta">Items de acción derivados del postmortem.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.postmortem.escrito</span>
+      <span class="eff">→ incidente.acciones.creadas</span>
+    </div>
+    <form>
+      <textarea name="items" placeholder="Acciones de seguimiento"></textarea>
+      <div class="field-row" style="margin-top:.4rem">
+        <button
+          fx-acción="http://127.0.0.1:8091/incidents/42/actions"
+          fx-método="POST"
+          fx-intent="crear-acciones"
+          fx-subject="incident:42"
+          fx-class="crear"
+          fx-preconditions="incidente.postmortem.escrito"
+          fx-effects="incidente.acciones.creadas"
+          fx-cost="1">
+          Crear acciones
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 10. resolve-incident — final + confirm -->
+  <div class="card">
+    <h3>10. Resolver incidente</h3>
+    <div class="meta">Cierre formal del ciclo de vida.</div>
+    <div class="conditions">
+      <span class="pre">← incidente.acciones.creadas</span>
+      <span class="eff">→ incidente.resuelto</span>
+    </div>
+    <button
+      class="danger"
+      fx-acción="http://127.0.0.1:8091/incidents/42/resolve"
+      fx-método="POST"
+      fx-intent="resolver-incidente"
+      fx-subject="incident:42"
+      fx-class="cerrar"
+      fx-preconditions="incidente.acciones.creadas"
+      fx-effects="incidente.resuelto"
+      fx-cost="1"
+      fx-confirm="¿Cerrar el incidente #42 como resuelto?">
+      Resolver
+    </button>
+  </div>
+
+</div>
+
+<div class="footer">
+  <strong>Cómo correr este demo:</strong>
+  <ol>
+    <li>Iniciar el backend GRAIL:
+      <code>cd ~/projects/grail-domains && .venv/bin/python -m domains.incident_response.server</code>
+      (puerto 8091)
+    </li>
+    <li>Servir esta página:
+      <code>npx http-server . -p 3036 -s</code> desde la raíz del repo loka-js
+    </li>
+    <li>Leer las afordances:
+      <code>node tools/agent-reader.mjs http://127.0.0.1:3036/examples/incident-triage-es/index.html --validate</code>
+    </li>
+    <li>Correr el agente automático:
+      <code>node examples/incident-triage-es/agent.mjs</code>
+    </li>
+  </ol>
+</div>
+
+</body>
+</html>

@@ -161,6 +161,7 @@ export const LOCALES = {
     affordances: {
       reviewed: false,
       intents: {
+        // tiny-CMS demo intents
         'borrar-post': 'soft-delete-post',
         'restaurar-post': 'restore-post',
         'purgar-post': 'purge-post',
@@ -173,6 +174,17 @@ export const LOCALES = {
         'navegar-inicio': 'navigate-home',
         'alternar-archivo': 'toggle-archive',
         'buscar': 'search',
+        // incident-response intents (matches grail-domains/incident_response affordance names)
+        'reconocer-incidente': 'acknowledge',
+        'clasificar-severidad': 'classify-severity',
+        'asignar-responsable': 'assign-owner',
+        'investigar-incidente': 'investigate',
+        'mitigar-incidente': 'mitigate',
+        'verificar-salud': 'verify-health',
+        'notificar-interesados': 'notify-stakeholders',
+        'escribir-postmortem': 'write-postmortem',
+        'crear-acciones': 'create-actions',
+        'resolver-incidente': 'resolve-incident',
       },
       classes: {
         leer: 'read',
@@ -186,7 +198,7 @@ export const LOCALES = {
         cerrar: 'close',
       },
       conditions: {
-        // resource / state predicates
+        // tiny-CMS demo predicates
         'post.existe': 'post.exists',
         'post.borrado': 'post.soft-deleted',
         'post.restaurado': 'post.restored',
@@ -202,6 +214,18 @@ export const LOCALES = {
         'editor.abierto': 'editor.open',
         'feed.actualizado': 'feed.refreshed',
         'suscriptores.notificados': 'subscribers.notified',
+        // incident-response predicates (matches grail-domains/incident_response condition names)
+        'incidente.alerta.recibida': 'incident.alert.received',
+        'incidente.reconocido': 'incident.acknowledged',
+        'incidente.severidad.clasificada': 'incident.severity.classified',
+        'incidente.responsable.asignado': 'incident.owner.assigned',
+        'incidente.investigado': 'incident.investigated',
+        'incidente.mitigado': 'incident.mitigated',
+        'incidente.salud.verificada': 'incident.health.verified',
+        'incidente.interesados.notificados': 'incident.stakeholders.notified',
+        'incidente.postmortem.escrito': 'incident.postmortem.written',
+        'incidente.acciones.creadas': 'incident.actions.created',
+        'incidente.resuelto': 'incident.resolved',
       },
     },
     props: {
