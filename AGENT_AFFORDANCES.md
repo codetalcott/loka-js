@@ -1,8 +1,24 @@
 # Agent affordance vocabulary for fixi-family pages
 
-**Status:** v0.1 — exploratory draft. The vocabulary is small and intended
-to grow with use. Nothing here is binding; feedback welcome at
-https://github.com/codetalcott/loka-js/issues.
+**Status:** v0.2 — informed by live-testing v0.1 against a reference reader
+([tools/agent-reader.mjs](tools/agent-reader.mjs)) and bilingual demo pages
+([demo/agent-demo/](demo/agent-demo/)). Still pre-v1.0 and subject to
+change; feedback welcome at
+<https://github.com/codetalcott/loka-js/issues>.
+
+**Changes since v0.1:**
+
+- Postcondition format conventions documented (selector vs token by
+  leading character)
+- Page-level defaults via `<meta name="fx-affordances">`
+- Validator rule list codified (the reader's checks become part of the spec)
+- Tool schema generation contract: canonical names only, suspect-localized
+  intents dropped with warnings
+- App-specific intent registration pattern (workaround for free-form
+  intent vocabulary)
+- Open questions 1, 4, 5 resolved; question 3 deferred to v0.3; question 2
+  resolved tentatively (no multi-value `fx-class` until a real use case
+  surfaces).
 
 A small set of HTML attributes that sit alongside the fixi family
 (`fx-action`, `fx-method`, `fx-target`, ...) and describe what an action
@@ -225,9 +241,58 @@ separated list.
 **Example:** `fx-postcondition="!#post-123 #feed-updated-toast"` (post
 element gone, success toast present).
 
+#### Pre/postcondition value format (v0.2)
+
+Values in `fx-precondition` and `fx-postcondition` are space-separated
+tokens. Each token is disambiguated by its leading character:
+
+| Leading char | Type               | Interpretation                                                       |
+|--------------|--------------------|----------------------------------------------------------------------|
+| `#`          | id selector        | `document.querySelector('#x')` must exist                            |
+| `.`          | class selector     | at least one element of that class must exist                        |
+| `[`          | attribute selector | e.g., `[aria-busy="false"]`                                          |
+| `!`          | negation prefix    | apply to the next token; the selector must NOT match                 |
+| (other)      | named token        | semantic identifier; verification by application convention          |
+
+Example: `fx-postcondition="!#post-123 #feed-updated-toast user-authenticated"`
+means "the `#post-123` element must NOT exist, the `#feed-updated-toast`
+element must exist, and the `user-authenticated` token-level condition
+must hold." Token interpretation is application-specific (an agent
+verifies tokens against an out-of-band predicate registry, or treats
+them as advisory).
+
+The reader returns the raw value; consumers interpret. The reference
+reader does not perform postcondition verification itself.
+
+## Page-level defaults (v0.2)
+
+A `<meta name="fx-affordances">` element declares values that apply to
+every action on the page when the per-action attribute is absent.
+
+```html
+<meta name="fx-affordances" content="default-authority:authenticated, default-confirm:soft">
+```
+
+Recognized keys (v0.2): `default-confirm`, `default-authority`,
+`default-reversible`. Each is the unprefixed name of an affordance
+attribute. Per-action attributes override; the default only fills the
+gap.
+
+Defaults pass through locale resolution like any other affordance value
+— a Spanish page may write
+`<meta name="fx-affordances" content="default-confirm:suave">` and the
+reader resolves `suave` → `soft` via the locale vocab.
+
+Future versions may extend to additional defaults (`default-effect`,
+`default-class`) once use cases warrant.
+
 ## Worked example
 
 ```html
+<head>
+  <meta name="fx-affordances" content="default-authority:authenticated, default-confirm:soft">
+</head>
+
 <button
   fx-action="/posts/123"
   fx-method="DELETE"
@@ -306,8 +371,37 @@ window.loka.register('es', {
 strings — same shape as fixi values; localization typically doesn't
 apply.
 
-A reference vocabulary block for `es` should land in
-`scripts/fx-vocab.mjs` once the spec stabilizes.
+A reference vocabulary block for `es` lives in
+[scripts/fx-vocab.mjs](scripts/fx-vocab.mjs) as of v0.2.
+
+### App-specific intents (v0.2 workaround)
+
+`fx-intent` values are free-form by design — applications coin their own
+(`delete-post`, `submit-feedback-form`, `archive-thread`). Locale modules
+can pre-translate common intents (`delete-post` ↔ `borrar-post`) but
+cannot cover every application's vocabulary.
+
+For app-specific intents on a non-English page, the locale module should
+register the app's intent vocabulary as additional entries:
+
+```js
+// In your app's bootstrap, after loading the loka locale module:
+window.loka.register('es', {
+  affordances: {
+    intents: {
+      'enumerar-posts': 'list-posts',
+      'archivar-hilo':  'archive-thread',
+      // ...
+    },
+  },
+});
+```
+
+`register` merges into the existing es block, so this layers on top of
+the loka-provided base vocabulary. Without registration, app-specific
+intents on non-en pages stay localized in the reader output and are
+dropped from generated tool schemas (with a warning) — see [Tool schema
+contract](#tool-schema-contract) below.
 
 ## Agent reader pattern
 
@@ -348,8 +442,64 @@ function readAffordances(rootElt) {
 }
 ```
 
-Returning a JSON action graph an LLM can ingest as tool schema. A
-reference implementation will live at `tools/agent-reader.mjs` (TBD).
+Returning a JSON action graph an LLM can ingest as tool schema. The
+reference implementation lives at
+[tools/agent-reader.mjs](tools/agent-reader.mjs) and provides three
+exports: `readAffordances(root)`, `validate(actions)`, and
+`toAnthropicSchema(actions)`.
+
+## Validator rules (v0.2)
+
+The reference reader's `validate(actions)` returns issues with three
+severities. These rules ARE part of the spec:
+
+**Errors** (an agent should NOT execute the action without human
+intervention):
+
+- Mechanical method ∈ `{DELETE, PUT, POST, PATCH}` AND no `fx-intent` /
+  `fx-class` — destructive call with no safety metadata.
+- `fx-class="delete"` AND no `fx-confirm` — destructive class without
+  confirmation gating.
+- `fx-effect` contains `external` AND no `fx-confirm` — external side
+  effects should always require confirmation.
+- `fx-reversible="soft"` AND no `fx-undo` — broken contract.
+
+**Warnings** (the action is processable but agent reasoning is
+constrained):
+
+- No `fx-intent` AND no `fx-class` on a non-destructive method — agent
+  cannot reason about purpose.
+- `fx-reversible="no"` AND `fx-undo` is set — contradictory.
+- Any enum-shape value (`fx-class`, `fx-confirm`, `fx-reversible`,
+  `fx-authority`, `fx-effect` tokens) that is non-null and not in the
+  v0.2 canonical vocabulary AND not produced by vocab resolution —
+  likely a localized-untranslated value, a typo, or an application-
+  specific extension.
+
+**Info** (everything is fine; the message is a hint):
+
+- `fx-intent` set without `fx-class` — taxonomic grouping lost.
+- Non-GET method without `fx-effect` — agent must guess at server-state
+  mutation.
+- Mutation-class action (`create`/`update`/`delete`) without
+  `fx-postcondition` — agent cannot verify success beyond HTTP status.
+
+## Tool schema contract
+
+`toAnthropicSchema(actions)` returns `{tools, warnings}`:
+
+- Each `tool` has a canonical English `name` (the resolved `fx-intent`
+  value, or `<class>-<id>` fallback) plus a description built from the
+  affordance metadata.
+- Actions whose intent is **suspect-localized** (page lang ≠ en AND
+  intent did not resolve through vocab) are **dropped from the schema**
+  and listed in `warnings` with the reason.
+
+The reason for dropping: tool names must be stable across page
+languages. If an agent is told "call the `delete-post` tool" and the
+page has only `borrar-post` (no vocab entry), there's no way for the
+agent to know they're the same thing. Better to surface "register your
+app's intents in vocab" than to ship inconsistent tool names.
 
 ## What's deliberately deferred to v0.2+
 
@@ -401,20 +551,64 @@ When the vocabulary stabilizes:
 - The localization mapping (locale module shape) will be frozen with
   v1.0.
 
-## Open questions for v0.1 feedback
+## Resolved open questions (from v0.1)
 
-1. Is `fx-class` (taxonomy) duplicative with `fx-intent` (specific
-   name)? Could one suffice?
-2. `fx-effect` allows multiple values (`"server-state external"`).
-   Should `fx-class` too?
-3. Should `fx-confirm="human-approval"` be an attribute or a separate
-   global flag (page-level: "no agent may act on this page without
-   approval")?
-4. Is `fx-postcondition` better expressed as CSS selectors or as a
-   token vocabulary? Selectors are precise but brittle; tokens require
-   server/client agreement.
-5. Should affordance attributes use a separate namespace prefix
-   (e.g., `aff-intent` instead of `fx-intent`) to make clear they're
-   not part of fixi proper?
+**Q1 → resolved: NO, keep both.** Live-testing showed `fx-class`
+(taxonomy) and `fx-intent` (specific identifier) serve different
+consumers. The validator's most useful rule (`class=delete without
+confirm`) requires the taxonomy. Reducing to intent alone would lose
+that.
+
+**Q2 → resolved tentatively: NO multi-value `fx-class` for now.** Demo
+pages didn't produce a single example where multi-value `fx-class` was
+the right shape. If a future case (an action that's "both create and
+update") surfaces, we'll revisit; until then, prefer two affordances
+on two elements.
+
+**Q3 → deferred to v0.3.** Page-level *defaults* are in v0.2 (see
+[Page-level defaults](#page-level-defaults-v02)); page-level
+*requirements* — e.g., "no agent may act on this page without human
+approval" — are a different concern (governance, not affordance
+declaration) and need more design.
+
+**Q4 → resolved: BOTH, disambiguated by leading character.** See
+[Pre/postcondition value format](#prepostcondition-value-format-v02).
+
+**Q5 → resolved: keep `fx-` prefix.** No conflicts surfaced during live
+test. Colocation in `fx-*` attributes is conceptually clean ("all
+action metadata lives in fx-* attributes, libraries pick what they
+read"). A separate `aff-` namespace would require a parallel
+localization path and break the simple story.
+
+## Open questions for v0.2 feedback
+
+1. **Should the reader perform `fx-postcondition` verification itself**,
+   or always defer to the consumer? Today it's purely descriptive; a
+   future version could provide `verify(action)` that checks selectors
+   are in/out of DOM after a swap.
+2. **Is the "drop suspect-localized intents from the schema" policy too
+   strict?** An alternative: emit the localized name and a warning,
+   let the consumer decide. The cost: schemas become inconsistent
+   across page languages.
+3. **Should `fx-cost` land in v0.3?** It's listed in deferred. Agent
+   planning under resource constraints would benefit; the value space
+   needs work (buckets vs units).
+4. **Should there be a `fx-batch` for atomic multi-step actions?** Real
+   apps often need "do A and B together or neither." Currently
+   undefined.
+5. **Is there a place for `fx-rationale`** — a short prose explanation
+   the agent can surface to a human ("why am I asking to delete
+   this?")? Different from `fx-description` (what the action is) — this
+   is "why it's being offered."
 
 Feedback on any of these welcome.
+
+## Changelog
+
+- **v0.2 (2026-05-25):** postcondition format documented; page-level
+  defaults via meta tag; validator rules codified; tool schema
+  generation contract (canonical-only); app-specific intent
+  registration pattern; resolved v0.1 questions 1, 2, 4, 5; deferred
+  question 3.
+- **v0.1 (2026-05-25):** initial exploratory draft. 10 attributes in 4
+  buckets. Reference reader + bilingual demos.
