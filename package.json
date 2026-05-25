@@ -1,14 +1,28 @@
 {
   "name": "loka-js",
-  "version": "0.0.1",
-  "description": "Polyglot fixi-family: a 3-hook contract for per-element language selection without DOM mutation.",
+  "version": "1.0.0",
+  "description": "Write fixi-family HTML in your own language. 24 locales, no DOM mutation, per-element selection.",
   "license": "0BSD",
   "author": "Wm Talcott",
   "main": "fixi.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codetalcott/loka-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/codetalcott/loka-js/issues"
+  },
+  "homepage": "https://github.com/codetalcott/loka-js#readme",
   "files": [
     "fixi.js",
+    "moxi.js",
+    "paxi.js",
+    "ssexi.js",
+    "rexi.js",
     "orchestrator.js",
+    "lang-resolver.js",
     "locales/",
+    "dom-vocab/",
     "README.md",
     "LICENSE"
   ],
@@ -18,12 +32,15 @@
   },
   "keywords": [
     "fixi",
+    "fixiproject",
     "i18n",
     "internationalization",
+    "localization",
     "hypermedia",
     "html",
     "attributes",
-    "polyglot"
+    "polyglot",
+    "multilingual"
   ],
   "devDependencies": {
     "playwright": "^1.60.0"
