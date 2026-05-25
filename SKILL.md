@@ -9,7 +9,7 @@ description: Work on loka-js (the hook-contract localization pattern for the fix
 
 loka-js makes it possible for non-English-native authors to write fixiproject-family code in their own language without the libraries being aware of any language. Five libraries (fixi, moxi, ssexi, paxi, rexi); three are patched with tiny hook contracts; two need no patch and are localized from outside.
 
-This is **not** a general i18n system — it localizes *authoring vocabulary* (attribute names, modifiers, global function names, event names), not user-visible content. See the project memory on [audience](../../.claude/projects/-Users-williamtalcott-projects-loka-js/memory/project_loka_audience.md) for who this is for and why.
+This is **not** a general i18n system — it localizes *authoring vocabulary* (attribute names, modifiers, global function names, event names), not user-visible content. The audience is beginner web developers whose native language isn't English.
 
 The project follows the fixiproject convention: flat root, no build step, single-file sources, no bundler. Don't introduce dist/, package.json scripts beyond test+gen, or compilation.
 
@@ -147,7 +147,7 @@ We considered a data-driven `LIBRARIES` table (each entry has `name` + `collect`
 
 These will bite again if you don't watch for them.
 
-- **Duplicate-id after a fixi swap.** `document.querySelector("#x")` returns the first match in document order. If a fixi swap loads a fragment containing `<div id="list">` into `#fixi-out`, and another `#list` exists later in the page, subsequent `fx-objetivo="#list"` resolves to the wrong element. See [project_demo_duplicate_id_footgun](../../.claude/projects/-Users-williamtalcott-projects-loka-js/memory/project_demo_duplicate_id_footgun.md). Fix: unique IDs across the document, or scope your queries.
+- **Duplicate-id after a fixi swap.** `document.querySelector("#x")` returns the first match in document order. If a fixi swap loads a fragment containing `<div id="list">` into `#fixi-out`, and another `#list` exists later in the page, subsequent `fx-objetivo="#list"` resolves to the wrong element. Fix: unique IDs across the document, or scope your queries.
 
 - **paxi's `morph` strips attributes** (including `id`) from descendants that don't match the new tree's attribute set. If you preserve an element by id in the parent but the inner `<input>` has no id and the new fragment's input doesn't have it either, the original input's `id` is removed during attribute reconciliation. Don't rely on inner-element ids surviving a morph unless those ids exist on both sides.
 
@@ -185,8 +185,8 @@ What IS worth filing upstream (when it comes up): documentation issues that bene
 
 When evaluating design choices in this repo:
 
-- The user is a **beginner web developer whose native language isn't English** — not an experienced English-fluent dev who'll graduate to upstream docs anyway. See [project_loka_audience](../../.claude/projects/-Users-williamtalcott-projects-loka-js/memory/project_loka_audience.md).
-- **Don't import "no major framework does this"** as a default critique. See [feedback_avoid_majority_framework_default](../../.claude/projects/-Users-williamtalcott-projects-loka-js/memory/feedback_avoid_majority_framework_default.md). Majority frameworks chose a different audience.
+- The user is a **beginner web developer whose native language isn't English** — not an experienced English-fluent dev who'll graduate to upstream docs anyway.
+- **Don't import "no major framework does this"** as a default critique. Majority frameworks chose a different audience.
 - The reviewed-vs-best-effort split exists because bad translations hurt this audience more than experienced devs (who can shrug them off). When in doubt, mark `reviewed: false` and add a banner.
 
 ## Translation policy: open questions
