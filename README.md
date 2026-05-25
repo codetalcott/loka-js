@@ -12,7 +12,7 @@ Per-element language is the killer feature: a `<section lang="es">` and a `<sect
 
 **Who this is for:** web developers whose first language isn't English, especially beginners encountering hypermedia patterns for the first time.
 
-**Who this is NOT for:** English-fluent devs. Use [canonical fixiproject](https://fixiproject.org/) directly — the libraries are smaller, the docs are upstream, and the community knowledge is already there. loka-js trades a small amount of bytes and indirection for accessibility; if you can read English fixi attributes fluently, don't pay that cost. loka-js doesn't sit alongside the other fixiproject libraries as a peer — it's a parallel distribution for a different audience.
+**Who this is NOT for:** English-fluent devs. Use [canonical fixiproject](https://fixiproject.org/) directly — the libraries are smaller, the docs are upstream, and the community knowledge is already there. loka-js trades a small amount of bytes and indirection for accessibility. loka-js doesn't sit alongside the other fixiproject libraries as a peer — it's a parallel distribution for a different audience.
 
 ## Try it
 
@@ -130,5 +130,5 @@ If you're here for localization, skip these. They'll either crystallize into som
 
 ## Acknowledgments
 
-- Built on [`fixi.js`](https://github.com/bigskysoftware/fixi) and the broader [fixiproject family](https://fixiproject.org/) by Big Sky Software (Carson Gross).
+- Built on [`fixi.js`](https://github.com/bigskysoftware/fixi) and the broader [fixiproject family](https://fixiproject.org/) by Big Sky Software (Carson Gross and contributors).
 - Event-name vocabulary derived from [`@lokascript/semantic`](https://github.com/codetalcott/hyperfixi/tree/main/packages/semantic) language profiles.

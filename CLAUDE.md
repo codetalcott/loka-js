@@ -146,7 +146,7 @@ Key invariant the tests enforce: **attributes are never rewritten**. `fx-acción
 
 ## Patch discipline (we are a fork, not a PR queue)
 
-loka-js is an alternate distribution of the fixiproject family — we ship patched copies of fixi/moxi/paxi, we don't pursue upstream merges. fixiproject's minimalism is a deliberate position (every byte matters in 1.8–3.5 KB libraries; localized authoring vocabulary benefits ~5% of users), and asking Carson to absorb that cost on behalf of our audience (non-English-native beginners) is the wrong frame.
+loka-js is an alternate distribution of the fixiproject family — we ship patched copies of fixi/moxi/paxi, we don't pursue upstream merges. fixiproject's minimalism is a deliberate position (every byte matters in 1.8–3.5 KB libraries).
 
 The patches in [reference-patches/](./reference-patches/) (`fixi.patch`, `moxi.patch`, `paxi.patch`) are documentary artifacts — they show what our patched copies differ from upstream HEAD as of pinned commits. Keep changes:
 
