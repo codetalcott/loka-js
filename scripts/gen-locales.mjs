@@ -201,6 +201,18 @@ window.loka.register('en', { fixi: { attrs: {}, events: {} } });
     fields.push(`  moxi: {\n${parts.join('\n')}\n  },`);
   }
 
+  // affordances — agent-readable vocabulary, see AGENT_AFFORDANCES.md
+  const aff = spec.affordances ?? {};
+  const affTables = ['intents', 'classes', 'confirms', 'reversibilities', 'authorities', 'effects'];
+  const affParts = [];
+  for (const t of affTables) {
+    const tbl = stripIdentity(aff[t] ?? {});
+    if (Object.keys(tbl).length) affParts.push(`    ${t}: ${formatObject(tbl, 4)},`);
+  }
+  if (affParts.length) {
+    fields.push(`  affordances: {\n${affParts.join('\n')}\n  },`);
+  }
+
   if (spec.globalsOptIn) {
     fields.push(`  globalsOptIn: true,`);
   }

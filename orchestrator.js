@@ -237,5 +237,13 @@
 			}
 			aliasFlush()
 		},
+		// External readers (agent readers, dev overlays, auditors) need to
+		// resolve localized values to canonical English. These two methods
+		// expose the minimum surface for that — langOf returns the lang an
+		// element resolves to under the same rules fixi uses; affordances
+		// returns the affordance vocab block for a lang (intents/classes/...).
+		// See AGENT_AFFORDANCES.md.
+		langOf,
+		affordances: (lang)=>REG[normLang(lang || 'en')]?.affordances ?? {},
 	}
 })()

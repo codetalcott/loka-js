@@ -2,7 +2,15 @@ From 09959de8326f7397f83d6b68c0a23d5c028df518 Mon Sep 17 00:00:00 2001
 From: Wm Talcott <wtalcott@gmail.com>
 Subject: [PATCH] fixi: 3-hook contract for language-agnostic attribute resolution
 
-Replace 6 hardcoded "fx-*" attribute literals with 3 defaulted hooks
+REFERENCE PATCH — this is documentation of the diff between loka-js's
+patched fixi.js and upstream bigskysoftware/fixi at the based-on commit.
+loka-js ships the patched copy directly; this file is NOT a PR
+submission. fixiproject's minimalism is a deliberate position and the
+hook overhead is a tax that English-fluent users (fixi's main audience)
+shouldn't pay for a feature only non-English authors use. If a
+maintainer ever wants the hooks upstream, this patch is ready to apply.
+
+Replaces 6 hardcoded "fx-*" attribute literals with 3 defaulted hooks
 on window.fixi:
 
   - name(elt, key)  attribute-name resolver  (default: `fx-${key}`)
@@ -13,13 +21,13 @@ on window.fixi:
 Behavior is identical to upstream when window.fixi is unset (defaults
 via ??= produce the same literals). Net size: ~110 bytes minified.
 
-Enables language modules to plug in without DOM mutation, unlocks
-per-element language selection per <code>[lang]</code> ancestor, and
+Enables loka-js's language modules to plug in without DOM mutation,
+unlocks per-element language selection per [lang] ancestor, and
 eliminates the race condition that preprocessor-based approaches have
 with fixi's own MutationObserver.
 
 See https://github.com/codetalcott/loka-js for the language-module
-ecosystem this enables (24 locales, demo, Playwright test suite).
+ecosystem this is part of.
 ---
  fixi.js | 21 +++++++++++++--------
  1 file changed, 13 insertions(+), 8 deletions(-)

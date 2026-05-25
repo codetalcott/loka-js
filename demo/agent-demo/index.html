@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agent affordances demo — tiny CMS</title>
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/en.js"></script>
+<script src="../../paxi.js"></script>
+<script src="../../fixi.js"></script>
+
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 1.5rem; max-width: 50rem; }
+  section { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+  h2 { margin-top: 0; font-size: 1rem; color: #444; }
+  button, a.btn { display: inline-block; padding: .4rem .8rem; cursor: pointer; margin-right: .5rem; border: 1px solid #ccc; background: #fff; border-radius: 4px; text-decoration: none; color: inherit; }
+  small { color: #666; }
+  .danger { border-color: #d44; color: #a22; }
+</style>
+</head>
+<body>
+
+<h1>Agent demo — tiny CMS post management</h1>
+<p>Each action below carries v0.1 affordance attributes. Read with <code>node tools/agent-reader.mjs &lt;this-url&gt; --validate</code>.</p>
+
+<!-- 1. Simple read action -->
+<section>
+  <h2>Read action</h2>
+  <a href="/posts" class="btn"
+     fx-action="/posts"
+     fx-method="GET"
+     fx-target="#main"
+     fx-swap="innerHTML"
+     fx-intent="list-posts"
+     fx-class="read"
+     fx-effect="none"
+     fx-authority="anonymous">
+    View all posts
+  </a>
+</section>
+
+<!-- 2. Create -->
+<section>
+  <h2>Create action</h2>
+  <button
+     fx-action="/posts/new"
+     fx-method="GET"
+     fx-target="#main"
+     fx-intent="open-editor"
+     fx-class="open"
+     fx-effect="client-state"
+     fx-authority="authenticated"
+     fx-precondition="user-authenticated"
+     fx-postcondition="#post-editor">
+    New post
+  </button>
+</section>
+
+<!-- 3. Update -->
+<section>
+  <h2>Update action</h2>
+  <button
+     fx-action="/posts/42"
+     fx-method="PUT"
+     fx-target="#post-42"
+     fx-swap="morph"
+     fx-intent="edit-post"
+     fx-subject="post:42"
+     fx-class="update"
+     fx-effect="server-state"
+     fx-authority="owner"
+     fx-reversible="time-window"
+     fx-precondition="#post-42"
+     fx-postcondition="#post-42">
+    Save changes
+  </button>
+</section>
+
+<!-- 4. Soft-reversible delete (the canonical example) -->
+<section>
+  <h2>Soft-reversible delete</h2>
+  <button class="danger"
+     fx-action="/posts/123"
+     fx-method="DELETE"
+     fx-target="#feed"
+     fx-swap="morph"
+     fx-intent="delete-post"
+     fx-subject="post:123"
+     fx-class="delete"
+     fx-effect="server-state"
+     fx-confirm="human-approval"
+     fx-authority="owner"
+     fx-reversible="soft"
+     fx-undo="/posts/123/restore"
+     fx-precondition="#post-123"
+     fx-postcondition="!#post-123">
+    Delete post (recoverable)
+  </button>
+</section>
+
+<!-- 5. Hard / permanent delete -->
+<section>
+  <h2>Permanent delete</h2>
+  <button class="danger"
+     fx-action="/posts/123/permanent"
+     fx-method="DELETE"
+     fx-target="#feed"
+     fx-swap="morph"
+     fx-intent="purge-post"
+     fx-subject="post:123"
+     fx-class="delete"
+     fx-effect="server-state"
+     fx-confirm="reauth"
+     fx-authority="admin"
+     fx-reversible="no"
+     fx-precondition="post-soft-deleted"
+     fx-postcondition="post-purged-from-backups">
+    Purge permanently
+  </button>
+</section>
+
+<!-- 6. External side effect -->
+<section>
+  <h2>External effect (sends email + webhook)</h2>
+  <button
+     fx-action="/posts/123/publish"
+     fx-method="POST"
+     fx-intent="publish-post"
+     fx-subject="post:123"
+     fx-class="update"
+     fx-effect="server-state external"
+     fx-confirm="soft"
+     fx-authority="owner"
+     fx-postcondition="post-published-toast">
+    Publish (notifies subscribers)
+  </button>
+</section>
+
+<!-- 7. Idempotent toggle -->
+<section>
+  <h2>Idempotent toggle</h2>
+  <button
+     fx-action="/posts/123/archive"
+     fx-method="POST"
+     fx-intent="toggle-archive"
+     fx-subject="post:123"
+     fx-class="toggle"
+     fx-effect="server-state"
+     fx-authority="owner"
+     fx-reversible="soft"
+     fx-undo="/posts/123/archive">
+    Toggle archive
+  </button>
+</section>
+
+<!-- 8. Deliberately under-tagged — should trigger validation warnings -->
+<section>
+  <h2>Under-tagged (deliberate — should produce validation warnings)</h2>
+  <button
+     fx-action="/posts/999/delete"
+     fx-method="DELETE"
+     fx-target="#feed">
+    Delete without metadata
+  </button>
+  <small>No fx-class, no fx-confirm — agents should flag this as risky.</small>
+</section>
+
+</body>
+</html>

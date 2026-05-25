@@ -2,7 +2,14 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Wm Talcott <wtalcott@gmail.com>
 Subject: [PATCH] paxi: swap-strategy hook for localized morph aliases
 
-Replace the hardcoded "morph" string-equality test with a defaulted
+REFERENCE PATCH — this is documentation of the diff between loka-js's
+patched paxi.js and bigskysoftware/paxi@c9b194e. loka-js ships the
+patched copy directly; this file is NOT a PR submission. fixiproject
+is deliberately minimalist; we are an alternate distribution serving a
+different audience. If a maintainer ever wants the hook upstream, this
+patch is ready to apply.
+
+Replaces the hardcoded "morph" string-equality test with a defaulted
 predicate on window.paxi:
 
   - isSwap(s) -> boolean   (default: s === "morph")
@@ -11,11 +18,9 @@ Behavior is identical to upstream when window.paxi is unset (the ??=
 default reproduces the original literal comparison). Net size: ~30
 bytes minified.
 
-Enables language modules to register localized swap-strategy names
-(e.g., "morfar" in Spanish) that resolve to the canonical morph
+Enables loka-js to register localized swap-strategy names (e.g.,
+"morfar" in Spanish) that resolve to the canonical morph
 implementation, without paxi needing to know the language vocabulary.
-
-Based on bigskysoftware/paxi@c9b194e.
 
 See https://github.com/codetalcott/loka-js for the language-module
 ecosystem this is part of.

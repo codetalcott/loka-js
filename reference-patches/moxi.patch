@@ -3,8 +3,16 @@ From: Wm Talcott <wtalcott@gmail.com>
 Subject: [PATCH] moxi: 5-hook contract for language-agnostic attribute/modifier
  resolution
 
-Replace hardcoded "live", "on-", "mx-ignore" literals plus the modifier
-parsing path with 5 defaulted hooks on window.moxi:
+REFERENCE PATCH — this is documentation of the diff between loka-js's
+patched moxi.js and bigskysoftware/moxi@6760e60. loka-js ships the
+patched copy directly; this file is NOT a PR submission. fixiproject
+is deliberately minimalist and a 5-hook addition to a 1.8 KB library
+is a tax we wouldn't ask an upstream maintainer to absorb on behalf of
+our audience. If a maintainer ever wants the hooks upstream, this
+patch is ready to apply.
+
+Replaces hardcoded "live", "on-", "mx-ignore" literals plus the
+modifier parsing path with 5 defaulted hooks on window.moxi:
 
   - name(elt, key)   resolves "live" / "on-" / "mx-ignore" per element
                      (default: identity)
@@ -21,11 +29,10 @@ parsing path with 5 defaulted hooks on window.moxi:
 Behavior is identical to upstream when window.moxi is unset (defaults
 via ??= reproduce the original literals). Net size: ~150 bytes minified.
 
-Enables localized moxi authoring (e.g., `<button al-clic.prevenir="...">`
-in Spanish) without DOM mutation; per-element-lang via `lang` ancestor
-resolution; safe to ship alongside upstream-named modules.
-
-Based on bigskysoftware/moxi@6760e60.
+Enables loka-js's localized moxi authoring (e.g., `<button
+al-clic.prevenir="...">` in Spanish) without DOM mutation;
+per-element-lang via `lang` ancestor resolution; safe to ship alongside
+upstream-named modules.
 
 See https://github.com/codetalcott/loka-js for the language-module
 ecosystem this is part of.

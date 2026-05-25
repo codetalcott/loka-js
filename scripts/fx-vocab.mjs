@@ -61,6 +61,15 @@
  *     modifiers?: Record<string, string>,  // dotted modifiers: 'prevenir': 'prevent'
  *     globals?: Record<string, string>,
  *   },
+ *   affordances?: {                        // see AGENT_AFFORDANCES.md
+ *     reviewed?: boolean,
+ *     intents?: Record<string, string>,    // 'borrar-post': 'delete-post'
+ *     classes?: Record<string, string>,    // 'borrar': 'delete'
+ *     confirms?: Record<string, string>,
+ *     reversibilities?: Record<string, string>,
+ *     authorities?: Record<string, string>,
+ *     effects?: Record<string, string>,
+ *   },
  *   props?: Record<string, string>,
  * }} LocaleSpec
  */
@@ -139,6 +148,60 @@ export const LOCALES = {
         consulta: 'q',
         esperar: 'wait',
         transicion: 'transition',
+      },
+    },
+    // Agent-affordance vocabulary (see AGENT_AFFORDANCES.md, v0.1).
+    // Translation policy notes:
+    //   - intents: free-form per application; we provide a few common ones
+    //     as examples ('borrar-post' -> 'delete-post'). Real apps will add more.
+    //   - classes: the v0.1 enum (read/create/update/delete/...).
+    //   - confirms / reversibilities / authorities: small enums; translate all.
+    affordances: {
+      reviewed: false,
+      intents: {
+        'borrar-post': 'delete-post',
+        'crear-post': 'create-post',
+        'editar-post': 'edit-post',
+        'enviar-comentario': 'submit-comment',
+        'abrir-editor': 'open-editor',
+        'cerrar-editor': 'close-editor',
+        'navegar-inicio': 'navigate-home',
+        'buscar': 'search',
+      },
+      classes: {
+        leer: 'read',
+        crear: 'create',
+        actualizar: 'update',
+        borrar: 'delete',
+        navegar: 'navigate',
+        buscar: 'search',
+        alternar: 'toggle',
+        abrir: 'open',
+        cerrar: 'close',
+      },
+      confirms: {
+        ninguno: 'none',
+        suave: 'soft',
+        'aprobación-humana': 'human-approval',
+        reautenticar: 'reauth',
+      },
+      reversibilities: {
+        no: 'no',
+        suave: 'soft',
+        duro: 'hard',
+        'ventana-temporal': 'time-window',
+      },
+      authorities: {
+        anónimo: 'anonymous',
+        autenticado: 'authenticated',
+        dueño: 'owner',
+        admin: 'admin',
+      },
+      effects: {
+        ninguno: 'none',
+        'estado-cliente': 'client-state',
+        'estado-servidor': 'server-state',
+        externo: 'external',
       },
     },
     props: {

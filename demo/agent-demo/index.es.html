@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Demo de affordances para agentes — CMS pequeño</title>
+
+<script src="../../orchestrator.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../paxi.js"></script>
+<script src="../../fixi.js"></script>
+
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 1.5rem; max-width: 50rem; }
+  section { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+  h2 { margin-top: 0; font-size: 1rem; color: #444; }
+  button, a.btn { display: inline-block; padding: .4rem .8rem; cursor: pointer; margin-right: .5rem; border: 1px solid #ccc; background: #fff; border-radius: 4px; text-decoration: none; color: inherit; }
+  small { color: #666; }
+  .danger { border-color: #d44; color: #a22; }
+</style>
+</head>
+<body>
+
+<h1>Demo de agentes — gestión de posts (versión en español)</h1>
+<p>Mismos botones que <code>index.html</code> pero con atributos y valores en español. El reader debe resolver los valores al inglés canónico vía la tabla de afordances del locale es.</p>
+
+<!-- 1. Lectura simple -->
+<section>
+  <h2>Acción de lectura</h2>
+  <a href="/posts" class="btn"
+     fx-acción="/posts"
+     fx-método="GET"
+     fx-objetivo="#main"
+     fx-intercambio="innerHTML"
+     fx-intent="enumerar-posts"
+     fx-class="leer"
+     fx-effect="ninguno"
+     fx-authority="anónimo">
+    Ver todos los posts
+  </a>
+</section>
+
+<!-- 2. Crear -->
+<section>
+  <h2>Acción de creación</h2>
+  <button
+     fx-acción="/posts/new"
+     fx-método="GET"
+     fx-objetivo="#main"
+     fx-intent="abrir-editor"
+     fx-class="abrir"
+     fx-effect="estado-cliente"
+     fx-authority="autenticado"
+     fx-precondition="user-authenticated"
+     fx-postcondition="#post-editor">
+    Nuevo post
+  </button>
+</section>
+
+<!-- 3. Actualizar -->
+<section>
+  <h2>Acción de actualización</h2>
+  <button
+     fx-acción="/posts/42"
+     fx-método="PUT"
+     fx-objetivo="#post-42"
+     fx-intercambio="morfar"
+     fx-intent="editar-post"
+     fx-subject="post:42"
+     fx-class="actualizar"
+     fx-effect="estado-servidor"
+     fx-authority="dueño"
+     fx-reversible="ventana-temporal"
+     fx-precondition="#post-42"
+     fx-postcondition="#post-42">
+    Guardar cambios
+  </button>
+</section>
+
+<!-- 4. Borrado recuperable (caso canónico) -->
+<section>
+  <h2>Borrado recuperable</h2>
+  <button class="danger"
+     fx-acción="/posts/123"
+     fx-método="DELETE"
+     fx-objetivo="#feed"
+     fx-intercambio="morfar"
+     fx-intent="borrar-post"
+     fx-subject="post:123"
+     fx-class="borrar"
+     fx-effect="estado-servidor"
+     fx-confirm="aprobación-humana"
+     fx-authority="dueño"
+     fx-reversible="suave"
+     fx-undo="/posts/123/restaurar"
+     fx-precondition="#post-123"
+     fx-postcondition="!#post-123">
+    Borrar post (recuperable)
+  </button>
+</section>
+
+<!-- 5. Borrado permanente -->
+<section>
+  <h2>Borrado permanente</h2>
+  <button class="danger"
+     fx-acción="/posts/123/permanent"
+     fx-método="DELETE"
+     fx-objetivo="#feed"
+     fx-intercambio="morfar"
+     fx-intent="purge-post"
+     fx-subject="post:123"
+     fx-class="borrar"
+     fx-effect="estado-servidor"
+     fx-confirm="reautenticar"
+     fx-authority="admin"
+     fx-reversible="no"
+     fx-precondition="post-soft-deleted"
+     fx-postcondition="post-purged-from-backups">
+    Purgar permanentemente
+  </button>
+</section>
+
+<!-- 6. Efecto externo -->
+<section>
+  <h2>Efecto externo (envía email + webhook)</h2>
+  <button
+     fx-acción="/posts/123/publish"
+     fx-método="POST"
+     fx-intent="publicar-post"
+     fx-subject="post:123"
+     fx-class="actualizar"
+     fx-effect="estado-servidor externo"
+     fx-confirm="suave"
+     fx-authority="dueño"
+     fx-postcondition="post-published-toast">
+    Publicar (notifica a suscriptores)
+  </button>
+</section>
+
+<!-- 7. Alternar (idempotente) -->
+<section>
+  <h2>Alternar archivo (idempotente)</h2>
+  <button
+     fx-acción="/posts/123/archive"
+     fx-método="POST"
+     fx-intent="alternar-archivo"
+     fx-subject="post:123"
+     fx-class="alternar"
+     fx-effect="estado-servidor"
+     fx-authority="dueño"
+     fx-reversible="suave"
+     fx-undo="/posts/123/archive">
+    Alternar archivo
+  </button>
+</section>
+
+<!-- 8. Sub-etiquetado (debe generar avisos del validador) -->
+<section>
+  <h2>Sub-etiquetado (debe generar avisos)</h2>
+  <button
+     fx-acción="/posts/999/delete"
+     fx-método="DELETE"
+     fx-objetivo="#feed">
+    Borrar sin metadatos
+  </button>
+  <small>Sin fx-class, sin fx-confirm — los agentes deben marcarlo como riesgoso.</small>
+</section>
+
+</body>
+</html>
