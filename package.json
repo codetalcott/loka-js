@@ -28,7 +28,8 @@
   ],
   "scripts": {
     "gen": "node scripts/gen-locales.mjs",
-    "test": "node test/loka-js.spec.mjs"
+    "test": "node test/loka-js.spec.mjs",
+    "test:vocab": "node test/vocab-ordering.mjs"
   },
   "keywords": [
     "fixi",
