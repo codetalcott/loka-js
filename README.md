@@ -79,6 +79,17 @@ window.fixi.ignoreSel = "[fx-ignore]"                         // ignore selector
 // rexi  (no patch) — orchestrator aliases globals (obtener = get, etc.)
 ```
 
+**The orchestrator is required for localization.** Each patched library's
+DOM-discovery default (`fixi.sel` → `[fx-${key}]`, `moxi.xpath` → `@live`/`on-`,
+`paxi.isSwap` → `s==="morph"`) is English-only by design and does *not* derive
+from the per-element `name` hook — those discovery hooks get a key/string, not
+an element, so they can't consult a per-element resolver. `orchestrator.js`
+replaces them with combined hooks that union every registered locale's names.
+If you load a raw patched library and set only a localized `name` hook *without*
+the orchestrator, the scanner keeps matching the English tokens and silently
+misses your localized elements. Keeping the raw defaults English-only is what
+makes them bit-identical to upstream when no locale is loaded.
+
 Patch sizes (so the diff against upstream stays small and easy to re-port when upstream changes): fixi ~110 bytes, paxi ~30 bytes, moxi ~150 bytes. We don't pursue upstream merges; see [reference-patches/README.md](reference-patches/README.md) for the alternate-distribution framing.
 
 ## Repo layout
@@ -101,6 +112,16 @@ reference-patches/     Diff artifacts (fixi/moxi/paxi vs upstream) for fork hygi
 ```
 
 Reviewed locales (native-speaker reviewed for fixi attrs): `es`, `ja`, `ar`. Others are best-effort and carry a warning banner; see [scripts/fx-vocab.mjs](scripts/fx-vocab.mjs).
+
+## Consuming the vocabulary data
+
+The runtime only needs **parse maps** (`localized → canonical`) — that's what the resolver hooks consume, and what each locale file registers (`{ 'fx-acción': 'fx-action' }`, `{ clic: 'click', 'hacer clic': 'click' }`). If you're building tooling *on top of* loka — docs, autocomplete, agent skills that teach the localized vocabulary — two conventions of that data are guaranteed and safe to rely on:
+
+1. **An omitted canonical token means identity, not "unsupported."** The generator drops identity mappings (`stripIdentity`), so a canonical absent from a locale's map is intentionally identical to the canonical form — the author writes the canonical token. French omits `fx-action` because *action* is already French; `en` is empty entirely. Never read a missing key as a gap in coverage.
+
+2. **The primary localized form is listed first.** Within each canonical group, the preferred synonym precedes its alternatives (Spanish `click` → `clic` before `hacer clic`). So if you need the inverse — `canonical → primary-localized`, i.e. *what should a developer write?* — invert the parse map and take the first-wins entry per canonical. This ordering is enforced by [`test/vocab-ordering.mjs`](test/vocab-ordering.mjs), so it won't drift silently. (loka publishes parse maps only; it does not emit a separate forward map — the inverse is derivable via these two rules.)
+
+Both conventions are restated in every generated file's header and in [scripts/fx-vocab.mjs](scripts/fx-vocab.mjs).
 
 ## The pattern this represents
 

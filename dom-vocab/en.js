@@ -7,5 +7,9 @@
 // (fixi fx-trigger value translation) and any other consumer that needs
 // to translate event or DOM-property names (e.g., psatina-modular's
 // p:on:<event> and p:set:<prop> directives).
+//
+// Maps are localized→canonical; an omitted canonical means identity (use the
+// canonical token); the primary localized synonym is listed first per
+// canonical (first-wins inversion = preferred form). See README.
 export const events = {};
 export const props = {};

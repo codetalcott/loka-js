@@ -48,8 +48,16 @@ function parseArgs() {
 /**
  * Extract event-name translations from a profile file.
  * Returns a map of localized-form -> canonical English name.
+ *
+ * Ordering invariant (relied on by downstream consumers — see README
+ * "Consuming the vocabulary data"): within each canonical group the
+ * PRIMARY localized form is inserted before its `alternatives`. Callers
+ * that invert the map and take the first-wins entry per canonical therefore
+ * recover the preferred form. `orderValues` preserves this within-group
+ * order, and test/vocab-ordering.mjs guards it against regressions.
+ * Exported so that test can assert the invariant directly.
  */
-function extractEventValues(profileSource) {
+export function extractEventValues(profileSource) {
   const values = {};
   for (const kw of EVENT_KEYWORDS) {
     const blockRe = new RegExp(`\\b${kw}:\\s*\\{([\\s\\S]*?)\\}`, 'g');
@@ -130,6 +138,10 @@ function renderDomVocabFile(code, spec, events) {
 // (fixi fx-trigger value translation) and any other consumer that needs
 // to translate event or DOM-property names (e.g., psatina-modular's
 // p:on:<event> and p:set:<prop> directives).
+//
+// Maps are localized→canonical; an omitted canonical means identity (use the
+// canonical token); the primary localized synonym is listed first per
+// canonical (first-wins inversion = preferred form). See README.
 export const events = ${eventsBlock};
 export const props = ${propsBlock};
 `;
@@ -144,11 +156,32 @@ function renderLocaleFile(code, spec, fixiEvents) {
 //   loka-js/scripts/fx-vocab.mjs (LOCALES.${code}) and regenerate.
 `;
 
+  // A non-English locale with no localized fixi attribute names is an
+  // intentional stub (no reviewed translations available yet), not a
+  // generation bug — flag it so it isn't mistaken for one.
+  const attrsEmpty =
+    code !== 'en' && Object.keys(stripIdentity(spec.fixi?.attrs ?? {})).length === 0;
+  const stubBanner = attrsEmpty
+    ? `// ⓘ fixi attrs intentionally empty: no reviewed ${spec.name} attribute-name
+//   translations yet, so ${spec.name} authors use the canonical fx-* names.
+//   Deliberate stub, not a generation bug; event vocabulary is still localized.
+`
+    : '';
+
+  // Conventions every consumer of this data relies on (see README,
+  // "Consuming the vocabulary data"):
+  const conventions = `// Conventions: maps are localized→canonical (parse direction). A canonical
+//   token absent from a map is intentionally identical to the canonical form
+//   (identity mappings are omitted — write the canonical token). Within each
+//   canonical group the primary localized form is listed first, so first-wins
+//   inversion yields the preferred form to teach/author.
+`;
+
   const header = `// AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/${spec.profile}.ts (events)
 //         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
 // Regenerate: cd loka-js && npm run gen
-${unreviewedBanner}`;
+${conventions}${unreviewedBanner}${stubBanner}`;
 
   if (code === 'en') {
     return `${header}// English no-op — registered for completeness; English is canonical.
@@ -303,4 +336,10 @@ function main() {
   }
 }
 
-main();
+// Only run when invoked directly (`node scripts/gen-locales.mjs`), so the
+// module can be imported by tests (which need extractEventValues) without
+// triggering a generation pass.
+const invokedDirectly =
+  process.argv[1] &&
+  fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+if (invokedDirectly) main();

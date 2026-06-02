@@ -12,6 +12,24 @@
 // each library's vocab tracks library-specific review status — a locale
 // can have reviewed fixi vocab but unreviewed paxi vocab.
 //
+// Two conventions the generator and every downstream consumer rely on
+// (also documented in each generated file's header and in the README,
+// "Consuming the vocabulary data"):
+//
+//   1. Identity mappings are OMITTED. If a canonical token (e.g. 'fx-action'
+//      for French, where "action" is already French) is absent from a
+//      locale's map, it is intentionally identical to the canonical form —
+//      authors write the canonical token. `en` is empty for this reason.
+//      The generator's stripIdentity() drops any k===v pair, so never rely
+//      on a missing key meaning "unsupported"; it means "identity".
+//
+//   2. Primary-first ordering. Within each canonical group, list the PRIMARY
+//      localized form before its alternatives (e.g. Spanish click → 'clic'
+//      before 'hacer clic'). Profile-derived events already arrive in this
+//      order; keep hand-authored `events`/attr entries primary-first too.
+//      Consumers that invert a parse map and take first-wins recover the
+//      preferred form. test/vocab-ordering.mjs guards this invariant.
+//
 // Fields:
 //   profile        basename of the semantic profile file (without .ts)
 //   name           display name for the language
@@ -440,7 +458,7 @@ export const LOCALES = {
   },
 
   he: {
-    profile: 'hebrew',
+    profile: 'he',
     name: 'Hebrew',
     reviewed: false,
     fixi: {
@@ -579,6 +597,11 @@ export const LOCALES = {
     profile: 'quechua',
     name: 'Quechua',
     reviewed: false,
+    // fixi attrs intentionally empty: no reviewed Quechua attribute-name
+    // translations are available yet, so Quechua authors use the canonical
+    // fx-* names. Event vocabulary IS localized (from the semantic profile).
+    // Deliberate stub, not an oversight — the generator emits a banner noting
+    // this so an empty attrs block isn't mistaken for a generation bug.
     fixi: { attrs: {} },
   },
 };

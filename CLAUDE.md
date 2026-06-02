@@ -74,6 +74,8 @@ window.paxi.isSwap    = (s) => s === "morph"          // recognize localized mor
 
 Per-element hooks receive the element so resolution can walk up to the nearest `[lang]`. Document-level hooks (`fixi.sel`, `moxi.xpath`, `paxi.isSwap`, `moxi.ignoreSel`) read the registry union of all locales.
 
+**Localization requires the orchestrator — the raw libs are English-only standalone.** The `sel`/`xpath`/`isSwap` *defaults* hardcode the English tokens and do **not** derive from the `name` hook (they get a key/string, not an element, so they can't drive a document-level scan from a per-element resolver). This is deliberate: it's what keeps the raw libs bit-identical to upstream when no locale is loaded (`test/preservation.mjs`). The consequence — setting a localized `name` on a raw lib *without* the orchestrator's combined scan hooks makes the scanner miss every localized element — is documented in the `orchestrator.js` header and [reference-patches/README.md](./reference-patches/README.md). Don't "fix" a raw default to derive from `name`; the combined-union hook the orchestrator installs is the correct answer for the per-element model.
+
 ### Load order (matters)
 
 ```html
@@ -125,6 +127,15 @@ window.loka.register('es', {
 ```
 
 Reviewed locales (native-speaker reviewed for fixi attrs): `es`, `ja`, `ar`. Others have a warning banner and are best-effort.
+
+### Data conventions (relied on by external consumers)
+
+loka publishes **parse maps only** (`localized → canonical`). Two conventions of that data are guaranteed and documented in each generated file's header, `scripts/fx-vocab.mjs`, and the README's "Consuming the vocabulary data":
+
+- **Identity mappings are omitted.** A canonical token absent from a locale's map is intentionally identical to the canonical form (e.g. French omits `fx-action`; `en` is empty). `stripIdentity` drops any `k===v` pair. A missing key means "identity," never "unsupported."
+- **Primary-first ordering.** Within each canonical group the preferred synonym is listed before alternatives, so inverting a parse map and taking first-wins yields the form to teach/author. Enforced by [test/vocab-ordering.mjs](./test/vocab-ordering.mjs). We do **not** emit a separate forward (`canonical → localized`) map — the inverse is derivable from these two rules, and a forward map would add browser payload the runtime never reads (the orchestrator inverts attrs itself).
+
+An empty `fixi.attrs` for a non-English locale (currently only `qu`) is an intentional stub, flagged by a generator banner.
 
 ## Test phases
 
