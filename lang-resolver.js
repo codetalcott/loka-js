@@ -2,7 +2,7 @@
 //
 // This is an ES module so it can be imported from other libraries that
 // adopt the registry-based localization pattern (e.g., psatina-modular).
-// The orchestrator.js bundled with loka-js inlines an equivalent function
+// The loka.js bundled with loka-js inlines an equivalent function
 // (it's a non-module script for fixi-family load-order parity) — keep the
 // two in sync; they're only ~10 lines each.
 //

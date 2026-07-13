@@ -20,7 +20,7 @@ Per-element language is the killer feature: a `<section lang="es">` and a `<sect
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="./orchestrator.js"></script>
+  <script src="./loka.js"></script>
   <script src="./locales/es.js"></script>
   <script src="./fixi.js"></script>
 </head>
@@ -83,7 +83,7 @@ window.fixi.ignoreSel = "[fx-ignore]"                         // ignore selector
 DOM-discovery default (`fixi.sel` → `[fx-${key}]`, `moxi.xpath` → `@live`/`on-`,
 `paxi.isSwap` → `s==="morph"`) is English-only by design and does *not* derive
 from the per-element `name` hook — those discovery hooks get a key/string, not
-an element, so they can't consult a per-element resolver. `orchestrator.js`
+an element, so they can't consult a per-element resolver. `loka.js`
 replaces them with combined hooks that union every registered locale's names.
 If you load a raw patched library and set only a localized `name` hook *without*
 the orchestrator, the scanner keeps matching the English tokens and silently
@@ -100,7 +100,7 @@ moxi.js                Patched moxi
 paxi.js                Patched paxi
 ssexi.js               Verbatim upstream ssexi (localized by orchestrator)
 rexi.js                Verbatim upstream rexi (localized by orchestrator)
-orchestrator.js        Installs hooks on all five libraries; defines window.loka.register
+loka.js        Installs hooks on all five libraries; defines window.loka.register
 lang-resolver.js       Per-element langOf helper (ES module for other libraries)
 locales/*.js           24 generated locale data files
 dom-vocab/*.js         24 ES modules of shared { events, props } for non-fixi consumers

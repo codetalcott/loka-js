@@ -19,7 +19,7 @@
     "paxi.js",
     "ssexi.js",
     "rexi.js",
-    "orchestrator.js",
+    "loka.js",
     "lang-resolver.js",
     "locales/",
     "dom-vocab/",
