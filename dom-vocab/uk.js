@@ -19,6 +19,7 @@ export const events = {
   'зміна': 'change',
   'відправці': 'submit',
   'відправка': 'submit',
+  'надсилання': 'submit',
   'введенні': 'input',
   'введення': 'input',
   'сфокусувати': 'focus',

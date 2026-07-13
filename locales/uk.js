@@ -28,6 +28,7 @@ window.loka.register('uk', {
       'зміна': 'change',
       'відправці': 'submit',
       'відправка': 'submit',
+      'надсилання': 'submit',
       'введенні': 'input',
       'введення': 'input',
       'сфокусувати': 'focus',

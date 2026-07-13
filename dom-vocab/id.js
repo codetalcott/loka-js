@@ -17,6 +17,7 @@ export const events = {
   berubah: 'change',
   ajukan: 'submit',
   masuk: 'input',
+  masukan: 'input',
   fokus: 'focus',
   fokuskan: 'focus',
   inisialisasi: 'init',
