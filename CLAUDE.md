@@ -19,7 +19,7 @@ Single-file sources at the repo root, no bundler, no compile step.
 - [loka.js](./loka.js) — installs hooks on all five libraries; defines `window.loka.register` and `window.loka.alias`
 - [locales/](./locales/) — 24 generated locale data files (each calls `window.loka.register`)
 - [scripts/](./scripts/) — locale generator + per-library vocab table
-- [demo/](./demo/) — multi-language demos including per-element-lang and `joint-all` (all 5 libs on one Spanish page)
+- [demo/](./demo/) — multi-language demos including per-element-lang, `joint-all` (all 5 libs on one Spanish page), and `eventos` (the expanded event vocabulary)
 - [tutorial/](./tutorial/) — Spanish per-library tutorial pages mirroring fixiproject.org examples
 - [test/](./test/) — Playwright acceptance suite (9 phases) + behavior-preservation harness
 - [reference-patches/](./reference-patches/) — diff artifacts (`fixi.patch`, `moxi.patch`, `paxi.patch`) showing what our patched copies differ from upstream; kept as documentation of the fork, not PR submissions
@@ -126,7 +126,18 @@ window.loka.register('es', {
 });
 ```
 
-Reviewed locales (native-speaker reviewed for fixi attrs): `es`, `ja`, `ar`. Others have a warning banner and are best-effort.
+Reviewed locales (native-speaker reviewed for fixi attrs): `es`, `ja`, `ar`. Others have a warning banner and are best-effort. Note the flag covers **fixi attribute names only** — event vocabulary comes from the semantic profile, which carries its own review status upstream.
+
+### The event allowlist is a contract
+
+A profile's keyword map is one flat namespace mixing DOM events with hyperscript grammar and commands, so `EVENT_KEYWORDS` in [scripts/gen-locales.mjs](./scripts/gen-locales.mjs) decides what loka publishes. It is 16 canonicals, and the file states the three-part inclusion test plus why each excluded candidate is out. Two things to respect when changing it:
+
+- **Append, never reorder.** The array doubles as the canonical group sort order, so reordering churns all 48 generated files.
+- **`orderValues` throws** on a canonical outside the list. Don't route around it by adding a `fixi.events` override in `fx-vocab.mjs` — that field is for vocabulary genuinely *absent* from a profile (ja/ar/ms/tl/sw have no `click`/`change`/`submit`/`input`). An override that shadows a profile entry creates two disagreeing vocabularies; that's how `pulsacion` shipped for a year while semantic parsed `tecla abajo`.
+
+`hover` is the standing trap: 18 profiles define it, it is not a DOM event name, and publishing it would ship a listener that never fires.
+
+Multi-word localized events (`tecla arriba`) work in fixi's `fx-trigger` **value** but not as a moxi `al-*` attribute **name** — HTML attribute names can't contain spaces.
 
 ### Data conventions (relied on by external consumers)
 
@@ -139,7 +150,7 @@ An empty `fixi.attrs` for a non-English locale (currently only `qu`) is an inten
 
 ## Test phases
 
-The acceptance suite ([test/loka-js.spec.mjs](./test/loka-js.spec.mjs)) has nine phases:
+The acceptance suite ([test/loka-js.spec.mjs](./test/loka-js.spec.mjs)) has ten phases:
 
 - **A** — M2 button demo across Latin/CJK/RTL, dynamic injection (fixi)
 - **B** — M2.5 search demo per locale (`en/es/ja/ar`); this demo predates v1 so its moxi handlers use English `on-*` while fixi attrs are localized
@@ -150,6 +161,7 @@ The acceptance suite ([test/loka-js.spec.mjs](./test/loka-js.spec.mjs)) has nine
 - **G** — paxi: `fx-intercambio="morfar"` triggers morph; `window.morfar === window.morph`
 - **H** — rexi: verb aliases (`obtener=get`, `publicar=post`, ...) on globalThis
 - **I** — joint: all five libraries loaded together on one Spanish page, no conflicts
+- **J** — expanded event vocabulary: `fx-disparador="tecla arriba"` binds `keyup` and fires a real swap; `al-desplazar` binds `scroll`. Guards that the allowlist data actually reaches `addEventListener`, which [test/vocab-ordering.mjs](./test/vocab-ordering.mjs) can't show
 
 The [behavior-preservation harness](./test/preservation.mjs) loads each patched library (fixi, paxi, moxi) WITHOUT the orchestrator and verifies the `??=` defaults match upstream.
 

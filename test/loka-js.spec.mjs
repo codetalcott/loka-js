@@ -33,6 +33,11 @@
 // Phase E: moxi — localized attributes (vivo/al-) + modifiers (.prevenir) +
 //          globals (consulta/esperar/transicion) all working end-to-end.
 //
+// Phase J: expanded event vocabulary — the events the EVENT_KEYWORDS allowlist
+//   used to drop. Multi-word `tecla arriba` as an fx-disparador VALUE (keyup,
+//   the live-search idiom) and single-token `al-desplazar` as a moxi attribute
+//   NAME (scroll, the one addition all 24 profiles define).
+//
 // Phase I: joint — all five fixiproject libraries loaded on one Spanish page;
 //          each contributes its localized behavior without conflicts.
 
@@ -47,6 +52,7 @@ const REXI_DEMO = `${BASE}/demo/rexi/index.html`;
 const SSEXI_DEMO = `${BASE}/demo/ssexi/index.html`;
 const MOXI_DEMO = `${BASE}/demo/moxi/index.html`;
 const JOINT_DEMO = `${BASE}/demo/joint-all/index.html`;
+const EVENTOS_DEMO = `${BASE}/demo/eventos/index.html`;
 
 const browser = await chromium.launch();
 const failures = [];
@@ -317,6 +323,69 @@ async function phaseG() {
     [() => aValue === 'alpha',                `${tag} morph preserved input value across reorder (got "${aValue}")`],
     [() => btnAttr === 'morfar',              `${tag} attribute name unchanged after swap (got "${btnAttr}")`],
     [() => errors.length === 0,               `${tag} ${errors.length} runtime errors: ${errors.join('; ')}`],
+  ];
+  let pass = 0;
+  for (const [t, msg] of checks) { if (t()) pass++; else failures.push(msg); }
+  log(`  ${pass}/${checks.length} checks passed`);
+  await ctx.close();
+}
+
+// ---------------------------------------------------------------------------
+// Phase J — expanded event vocabulary: keyup + scroll actually bind
+//
+// The vocab-ordering test proves the DATA is right; this proves the data
+// reaches addEventListener. Both events were silently dropped by the old
+// 7-entry allowlist, so an author writing them got a dead listener.
+// ---------------------------------------------------------------------------
+async function phaseJ() {
+  log('\n=== Phase J: expanded event vocabulary (keyup, scroll) ===');
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
+  page.on('console', m => { if (m.type() === 'error') errors.push(`console.error: ${m.text()}`); });
+
+  await page.goto(EVENTOS_DEMO, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle');
+
+  // Hook resolution, and the event fixi actually bound (frozen at init time).
+  const resolved = await page.evaluate(() => ({
+    fixiKeyup: window.fixi.event(document.querySelector('#busqueda'), 'tecla arriba'),
+    moxiScroll: window.moxi.event(document.querySelector('#caja'), 'desplazar'),
+    boundEvt: document.querySelector('#busqueda').__fixi?.evt,
+  }));
+
+  // keyup → a real fixi request/swap, driven by typing (not a synthetic event).
+  const before = (await page.textContent('#resultados')).trim();
+  await page.click('#busqueda');
+  await page.keyboard.type('bus');
+  await page.waitForTimeout(600);
+  const after = (await page.textContent('#resultados')).trim();
+
+  // scroll → moxi handler. Two distinct scrollTop values = two scroll events.
+  await page.evaluate(() => { document.querySelector('#caja').scrollTop = 30; });
+  await page.waitForTimeout(150);
+  await page.evaluate(() => { document.querySelector('#caja').scrollTop = 60; });
+  await page.waitForTimeout(250);
+  const cuenta = Number(await page.textContent('#cuenta'));
+
+  // The invariant the whole project rests on: attributes are never rewritten.
+  const verbatim = await page.evaluate(() => ({
+    trigger: document.querySelector('#busqueda').getAttribute('fx-disparador'),
+    moxiAttr: document.querySelector('#caja').hasAttribute('al-desplazar'),
+  }));
+
+  const tag = 'J:';
+  const checks = [
+    [() => resolved.fixiKeyup === 'keyup',   `${tag} fixi.event(elt,"tecla arriba") === "keyup" (got "${resolved.fixiKeyup}")`],
+    [() => resolved.moxiScroll === 'scroll', `${tag} moxi.event(elt,"desplazar") === "scroll" (got "${resolved.moxiScroll}")`],
+    [() => resolved.boundEvt === 'keyup',    `${tag} fixi bound the keyup listener (got "${resolved.boundEvt}")`],
+    [() => before !== after && after.includes('Resultado'),
+      `${tag} typing fired a keyup-triggered swap (before "${before.slice(0,20)}", after "${after.slice(0,20)}")`],
+    [() => cuenta >= 2,                      `${tag} al-desplazar handler ran on scroll (count ${cuenta}, want >= 2)`],
+    [() => verbatim.trigger === 'tecla arriba', `${tag} fx-disparador stays verbatim in the DOM (got "${verbatim.trigger}")`],
+    [() => verbatim.moxiAttr,                `${tag} al-desplazar stays verbatim in the DOM`],
+    [() => errors.length === 0,              `${tag} ${errors.length} runtime errors: ${errors.join('; ')}`],
   ];
   let pass = 0;
   for (const [t, msg] of checks) { if (t()) pass++; else failures.push(msg); }
@@ -629,6 +698,7 @@ await phaseF();
 await phaseG();
 await phaseH();
 await phaseI();
+await phaseJ();
 await browser.close();
 
 if (failures.length) {
@@ -636,4 +706,4 @@ if (failures.length) {
   failures.forEach(f => log(' • ' + f));
   process.exit(1);
 }
-log('\n--- PASS ---  M2 + M2.5 × 4 locales + per-element-lang + faithfulness + moxi + ssexi + paxi + rexi + joint');
+log('\n--- PASS ---  M2 + M2.5 × 4 locales + per-element-lang + faithfulness + moxi + ssexi + paxi + rexi + joint + event vocabulary');

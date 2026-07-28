@@ -123,6 +123,20 @@ The runtime only needs **parse maps** (`localized → canonical`) — that's wha
 
 Both conventions are restated in every generated file's header and in [scripts/fx-vocab.mjs](scripts/fx-vocab.mjs).
 
+### Which events are localized
+
+A `@lokascript/semantic` profile is one flat keyword namespace: DOM events sit beside hyperscript grammar (`if`, `repeat`, `end`) and commands (`put`, `fetch`, `morph`). loka can't consume it wholesale, so it publishes a fixed allowlist of **hypermedia trigger events**, defined and justified in [`scripts/gen-locales.mjs`](scripts/gen-locales.mjs):
+
+`click` · `change` · `submit` · `input` · `focus` · `blur` · `init` · `keydown` · `keyup` · `mousedown` · `mouseup` · `mouseover` · `mouseout` · `scroll` · `resize` · `load`
+
+A canonical is included when it names a real DOM event, an author plausibly binds it on a page element, and the localized token reads as "this happened" rather than "do this". `init` is the one deliberate exception — it's fixi's synthetic lifecycle trigger, not a browser event.
+
+Notably excluded: **`hover`**, which 18 profiles define but which is not a DOM event name — publishing it would ship `addEventListener('hover')`, a listener that never fires. Also `select`/`reset`/`close`/`toggle`/`copy`, which are real events but appear in the profiles as *commands* whose localized primaries are imperatives. If you need one of these, open an issue; the allowlist is the one place scope is decided, and the generator throws if a locale tries to publish outside it.
+
+Coverage varies by locale — the profiles are the upstream source, and only `scroll` is translated in all 24. A canonical with no translation in your locale falls under rule 1 above: write the canonical English token.
+
+**One constraint worth knowing:** several localized event names are multi-word (`tecla arriba`, `ratón encima`). Those work in fixi's `fx-trigger` **value** (`fx-disparador="tecla arriba"`), but not as a moxi attribute **name** — `al-tecla arriba` isn't valid HTML, the parser reads it as two attributes. In moxi, use the single-token events (`al-clic`, `al-desplazar`, `al-carga`, `al-redimensionar`). See [demo/eventos/](demo/eventos/).
+
 ## The pattern this represents
 
 loka-js is one instance of a broader pattern: **expose a library's directive/attribute registry; let language modules register vocabulary instead of mutating the DOM ahead of the library.** Spanish `fx-acción` is what the author writes, what devtools shows, and what fixi reads.

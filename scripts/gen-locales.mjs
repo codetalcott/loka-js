@@ -33,7 +33,57 @@ const PROFILES_DIR = path.resolve(
   '../hyperfixi/packages/semantic/src/generators/profiles'
 );
 
-const EVENT_KEYWORDS = ['click', 'change', 'submit', 'input', 'focus', 'blur', 'init'];
+// Hypermedia trigger events — the canonical names loka publishes localized
+// forms for. This list is a contract, not a convenience: a semantic profile's
+// `keywords` map is one flat namespace mixing DOM events with hyperscript
+// grammar (`if`, `repeat`, `tell`, `and`, `end`) and commands (`put`, `fetch`,
+// `morph`), so the map cannot be consumed wholesale. Something has to choose,
+// and this is where the choosing is written down.
+//
+// A canonical belongs here when all three hold:
+//   1. It names a real DOM event. (The listener has to fire.)
+//   2. An author plausibly binds it on a page element to drive a request or a
+//      moxi handler.
+//   3. The localized token reads unambiguously as "this happened" in trigger
+//      position, not as "do this".
+//
+// Order matters twice: it is also the canonical group sort order in
+// `orderValues`. APPEND new entries — reordering churns every generated file.
+// Exported so test/vocab-ordering.mjs can assert the published data stays
+// inside this contract.
+export const EVENT_KEYWORDS = [
+  // Form and interaction — the 95% case
+  'click', 'change', 'submit', 'input', 'focus', 'blur',
+  // fixi's synthetic lifecycle trigger (fixi.js `send(elt, "init")`), not a
+  // browser event. The one deliberate exception to rule 1.
+  'init',
+  // Keyboard — `keyup` is the live-search idiom (cf. hx-trigger="keyup")
+  'keydown', 'keyup',
+  // Pointer
+  'mousedown', 'mouseup', 'mouseover', 'mouseout',
+  // Window and resource
+  'scroll', 'resize', 'load',
+];
+
+// Deliberately NOT published, so a future profile bump has a rule to follow
+// rather than a guess:
+//
+// - `hover` (18 profiles). Not a DOM event name. Publishing `sobrevolar →
+//   hover` would ship `addEventListener('hover')` — a listener that never
+//   fires. Omitting it is no worse than today (both are dead) and avoids
+//   shipping a binding that looks supported and isn't. Whether semantic should
+//   normalize `hover` to `mouseover` is an upstream question, not ours.
+//
+// - `select`, `reset`, `close`, `toggle`, `copy` (24 profiles each). Real DOM
+//   events, but in the profiles these are hyperscript COMMANDS: the localized
+//   primaries are imperatives (`cerrar` = "close it", not "on close"), and each
+//   fires only on a narrow element type (<dialog>, <details>, <form>,
+//   clipboard). Fails rule 3 — a beginner writing fx-disparador="cerrar" on a
+//   button would get a listener that never fires. Revisit if semantic ever
+//   separates command vocabulary from event vocabulary.
+//
+// - `keypress`, `mouseenter`, `mouseleave`, `dblclick`, `contextmenu`, `paste`,
+//   `drag`, `drop`. No profile defines them. Nothing to publish.
 
 function parseArgs() {
   const args = { dryRun: false, locale: null, help: false };
@@ -92,17 +142,32 @@ export function extractEventValues(profileSource) {
   return values;
 }
 
-/** Stable key order: group by canonical name following EVENT_KEYWORDS. */
-function orderValues(values) {
+/**
+ * Stable key order: group by canonical name following EVENT_KEYWORDS.
+ *
+ * A canonical outside EVENT_KEYWORDS is a build error, not a leftover to sweep
+ * up. This used to append unknown canonicals in raw insertion order, which
+ * silently broke the primary-first guarantee the generated header asserts —
+ * and let `fx-vocab.mjs` publish a hand-authored event (`pulsacion: 'keydown'`)
+ * that shadowed the profile's own `keydown` translation for a year without
+ * anything noticing. Failing loudly keeps the allowlist the single place where
+ * scope is decided.
+ */
+function orderValues(values, code) {
   const ordered = {};
   for (const canonical of EVENT_KEYWORDS) {
     for (const [key, val] of Object.entries(values)) {
       if (val === canonical) ordered[key] = val;
     }
   }
-  // Defensive: append any leftovers
-  for (const [key, val] of Object.entries(values)) {
-    if (!(key in ordered)) ordered[key] = val;
+  const unknown = Object.entries(values).filter(([key]) => !(key in ordered));
+  if (unknown.length) {
+    const list = unknown.map(([k, v]) => `${k} -> ${v}`).join(', ');
+    throw new Error(
+      `[${code}] event canonical outside EVENT_KEYWORDS: ${list}\n` +
+        `  Add the canonical to EVENT_KEYWORDS in scripts/gen-locales.mjs (and say\n` +
+        `  why it passes the three-part test), or drop the entry from fx-vocab.mjs.`
+    );
   }
   return ordered;
 }
@@ -142,18 +207,32 @@ function renderDomVocabFile(code, spec, events) {
 // Maps are localized→canonical; an omitted canonical means identity (use the
 // canonical token); the primary localized synonym is listed first per
 // canonical (first-wins inversion = preferred form). See README.
+//
+// Provenance: event names come from the '${spec.profile}' semantic profile,
+// except entries overridden in fx-vocab.mjs, which are loka-local.${
+    spec.reviewed
+      ? ''
+      : `\n// ⚠ fixi attribute names for this locale are not native-speaker reviewed.`
+  }
+// Scope: only canonicals on the EVENT_KEYWORDS allowlist in gen-locales.mjs are
+// published — see that file for what is in, what is out, and why.
 export const events = ${eventsBlock};
 export const props = ${propsBlock};
 `;
 }
 
 function renderLocaleFile(code, spec, fixiEvents) {
+  // State provenance rather than assert review. The previous wording claimed
+  // "Event-name vocabulary IS reviewed (from @lokascript/semantic profile)",
+  // which is false for the locales whose event tables are hand-authored here
+  // (ms, tl, sw) — their profiles define no click/change/submit/input.
   const unreviewedBanner = spec.reviewed
     ? ''
     : `// ⚠ Unreviewed: fixi attribute names for this locale have not been
-//   native-speaker reviewed. Event-name vocabulary IS reviewed (from
-//   @lokascript/semantic profile). To suggest corrections, edit
-//   loka-js/scripts/fx-vocab.mjs (LOCALES.${code}) and regenerate.
+//   native-speaker reviewed. Event names come from the @lokascript/semantic
+//   '${spec.profile}' profile (reviewed by that project), except any entry
+//   overridden in loka-js/scripts/fx-vocab.mjs, which is loka-local. To
+//   suggest corrections, edit fx-vocab.mjs (LOCALES.${code}) and regenerate.
 `;
 
   // A non-English locale with no localized fixi attribute names is an
@@ -174,7 +253,9 @@ function renderLocaleFile(code, spec, fixiEvents) {
 //   token absent from a map is intentionally identical to the canonical form
 //   (identity mappings are omitted — write the canonical token). Within each
 //   canonical group the primary localized form is listed first, so first-wins
-//   inversion yields the preferred form to teach/author.
+//   inversion yields the preferred form to teach/author. Only canonicals on the
+//   EVENT_KEYWORDS allowlist in gen-locales.mjs are published — see that file
+//   for what is in, what is out, and why.
 `;
 
   const header = `// AUTO-GENERATED — do not edit by hand.
@@ -300,7 +381,7 @@ function main() {
 
     const profileValues = profileSource ? extractEventValues(profileSource) : {};
     const merged = { ...profileValues, ...(spec.fixi?.events ?? {}) };
-    const events = orderValues(merged);
+    const events = orderValues(merged, code);
 
     const output = renderLocaleFile(code, spec, events);
     const outPath = path.join(LOCALES_DIR, `${code}.js`);
