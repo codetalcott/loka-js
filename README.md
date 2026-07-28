@@ -20,7 +20,7 @@ Per-element language is the killer feature: a `<section lang="es">` and a `<sect
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <script src="./orchestrator.js"></script>
+  <script src="./loka.js"></script>
   <script src="./locales/es.js"></script>
   <script src="./fixi.js"></script>
 </head>
@@ -89,7 +89,7 @@ moxi.js                Patched moxi
 paxi.js                Patched paxi
 ssexi.js               Verbatim upstream ssexi (localized by orchestrator)
 rexi.js                Verbatim upstream rexi (localized by orchestrator)
-orchestrator.js        Installs hooks on all five libraries; defines window.loka.register
+loka.js                Installs hooks on all five libraries; defines window.loka.register
 lang-resolver.js       Per-element langOf helper (ES module for other libraries)
 locales/*.js           24 generated locale data files
 dom-vocab/*.js         24 ES modules of shared { events, props } for non-fixi consumers

@@ -34,7 +34,7 @@ If a new library's translation surface requires parsing, the answer is no. Docum
 ## Load order (matters and is fragile)
 
 ```html
-<script src="./orchestrator.js"></script>   <!-- pre-installs hooks on every lib namespace -->
+<script src="./loka.js"></script>   <!-- pre-installs hooks on every lib namespace -->
 <script src="./locales/{code}.js"></script>  <!-- one or more; calls window.loka.register -->
 <script src="./moxi.js"></script>            <!-- moxi before fixi (fixiproject convention) -->
 <script src="./ssexi.js"></script>           <!-- any order before fixi -->
@@ -49,7 +49,7 @@ If a new library's translation surface requires parsing, the answer is no. Docum
 
 ## Per-element language resolution
 
-[orchestrator.js](orchestrator.js) `langOf(elt)` checks in order:
+[loka.js](loka.js) `langOf(elt)` checks in order:
 1. `data-loka-lang` on element or ancestor (explicit override)
 2. `lang` on element or ancestor (HTML standard — `<html lang>`, `<section lang>`)
 3. Falls back to `"en"`
@@ -109,7 +109,7 @@ If patching:
 2. Design the minimal hook contract — usually 1–5 hooks, defaulted via `??=` to preserve upstream behavior.
 3. Write the patched library file at repo root, matching upstream code style (single-IIFE, short var names, no extra whitespace).
 4. Build the patch artifact at `reference-patches/<lib>.patch` in `git format-patch` shape — this is documentation of the fork's diff, not a PR submission. Placeholder SHA `0000…` is fine for the repo artifact; only regenerate via real `git format-patch` from a clone if you're hand-delivering the patch to a maintainer who specifically asked for it.
-5. Extend the [orchestrator.js](orchestrator.js) `register()` flow to collect per-locale vocab for this library and update the relevant hooks. See [the four orchestrator touch-points](#orchestrator-the-four-places-to-touch) below.
+5. Extend the [loka.js](loka.js) `register()` flow to collect per-locale vocab for this library and update the relevant hooks. See [the four orchestrator touch-points](#orchestrator-the-four-places-to-touch) below.
 6. Extend the LocaleSpec typedef + a per-library section in [scripts/gen-locales.mjs](scripts/gen-locales.mjs) `renderLocaleFile`.
 7. Add a test phase to [test/loka-js.spec.mjs](test/loka-js.spec.mjs) and a behavior-preservation case to [test/preservation.mjs](test/preservation.mjs).
 8. Write a demo under `demo/<lib>/` and a tutorial page at `tutorial/es/<lib>.html`.

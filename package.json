@@ -1,6 +1,6 @@
 {
   "name": "loka-js",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Write fixi-family HTML in your own language. 24 locales, no DOM mutation, per-element selection.",
   "license": "0BSD",
   "author": "Wm Talcott",
@@ -19,7 +19,7 @@
     "paxi.js",
     "ssexi.js",
     "rexi.js",
-    "orchestrator.js",
+    "loka.js",
     "lang-resolver.js",
     "locales/",
     "dom-vocab/",
