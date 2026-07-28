@@ -16,7 +16,7 @@ Single-file sources at the repo root, no bundler, no compile step.
 
 - [fixi.js](./fixi.js), [moxi.js](./moxi.js), [paxi.js](./paxi.js) — patched libraries (each a single file)
 - [ssexi.js](./ssexi.js), [rexi.js](./rexi.js) — verbatim upstream copies (no patches; localized from outside)
-- [orchestrator.js](./orchestrator.js) — installs hooks on all five libraries; defines `window.loka.register` and `window.loka.alias`
+- [loka.js](./loka.js) — installs hooks on all five libraries; defines `window.loka.register` and `window.loka.alias`
 - [locales/](./locales/) — 24 generated locale data files (each calls `window.loka.register`)
 - [scripts/](./scripts/) — locale generator + per-library vocab table
 - [demo/](./demo/) — multi-language demos including per-element-lang and `joint-all` (all 5 libs on one Spanish page)
@@ -79,7 +79,7 @@ Per-element hooks receive the element so resolution can walk up to the nearest `
 ### Load order (matters)
 
 ```html
-<script src="./orchestrator.js"></script>   <!-- defines window.loka, pre-installs hooks on every library namespace -->
+<script src="./loka.js"></script>   <!-- defines window.loka, pre-installs hooks on every library namespace -->
 <script src="./locales/es.js"></script>     <!-- one or more; each calls window.loka.register -->
 <script src="./moxi.js"></script>           <!-- moxi must precede fixi (fixiproject convention) -->
 <script src="./ssexi.js"></script>          <!-- any order before fixi -->
@@ -88,11 +88,11 @@ Per-element hooks receive the element so resolution can walk up to the nearest `
 <script src="./fixi.js"></script>           <!-- last among fixi-family -->
 ```
 
-`orchestrator.js` must run **before** any patched library. If a patched lib loads first, its `??=` defaults take effect and the orchestrator's hooks are silently ignored.
+`loka.js` must run **before** any patched library. If a patched lib loads first, its `??=` defaults take effect and the orchestrator's hooks are silently ignored.
 
 ### Per-element language resolution
 
-[orchestrator.js](./orchestrator.js) `langOf(elt)` checks in order:
+[loka.js](./loka.js) `langOf(elt)` checks in order:
 
 1. `data-loka-lang` on element or ancestor (explicit override)
 2. `lang` on element or ancestor (HTML standard — e.g. `<html lang>` or `<section lang>`)

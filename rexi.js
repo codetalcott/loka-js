@@ -1,6 +1,6 @@
 // Verbatim copy of bigskysoftware/rexi@8e9e5376 — NOT patched.
 // rexi is a pure-JS fetch wrapper with no DOM attributes, so localization
-// happens entirely via the global-alias registry in orchestrator.js (locale
+// happens entirely via the global-alias registry in loka.js (locale
 // modules with `globalsOptIn: true` alias rexi verb names like `obtener=get`).
 // Saved locally so demos and tests work offline and pin a known version.
 (()=>{

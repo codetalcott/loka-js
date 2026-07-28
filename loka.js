@@ -3,7 +3,7 @@
 // (rexi, moxi globals), from per-locale data registered by locale modules.
 //
 // Load order (synchronous <script> tags in <head>):
-//   1. orchestrator.js  (this file — defines window.loka and pre-installs hooks)
+//   1. loka.js  (this file — defines window.loka and pre-installs hooks)
 //   2. locales/xx.js    (one or more — each calls window.loka.register)
 //   3. moxi.js          (only if you're using moxi; before fixi per fixiproject
 //                        convention — moxi must register its fx:init / fx:process
@@ -51,8 +51,8 @@
 	// the default implementations into local variables at its own load time.
 	if (document.__fixi_mo) {
 		console.warn(
-			'[loka-js] orchestrator.js loaded after fixi.js — hooks will not take effect. ' +
-			'Move <script src="orchestrator.js"></script> above <script src="fixi.js"></script> in your <head>.'
+			'[loka-js] loka.js loaded after fixi.js — hooks will not take effect. ' +
+			'Move <script src="loka.js"></script> above <script src="fixi.js"></script> in your <head>.'
 		)
 	}
 

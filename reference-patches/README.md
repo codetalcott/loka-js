@@ -55,6 +55,6 @@ document-level.
 ## What's NOT in this directory
 
 ssexi and rexi don't need patching. ssexi is localized via listener-side
-event re-fire from `orchestrator.js`; rexi via `loka.alias()` global
+event re-fire from `loka.js`; rexi via `loka.alias()` global
 aliasing. The pattern's principle: patch only when no external mechanism
 can reach the surface.
