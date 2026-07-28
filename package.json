@@ -28,6 +28,7 @@
   ],
   "scripts": {
     "gen": "node scripts/gen-locales.mjs",
+    "brief": "node scripts/research-brief.mjs",
     "test": "node test/loka-js.spec.mjs",
     "test:vocab": "node test/vocab-ordering.mjs"
   },

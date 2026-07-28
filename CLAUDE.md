@@ -143,6 +143,26 @@ Multi-word localized events (`tecla arriba`) work in fixi's `fx-trigger` **value
 
 `lookupEvt` in [loka.js](./loka.js) tries an exact match, then falls back to a normalized index built at `register()` time (`toLowerCase`, runs of space/hyphen/underscore → one space). Two reasons, both silent failures before: German ships capitalized event nouns (`Klick`) while HTML lowercases attribute names, which made German moxi handlers *unwritable*; and multi-word names ship in one spelling while authors write another. Verified collision-free across all 24 locales — re-check with a scan if a locale ever adds entries differing only by case or separator. The index uses a null prototype, so `fx-trigger="constructor"` no longer resolves to `Object.prototype.constructor`.
 
+### Terminology research briefs
+
+Most of the published vocabulary has never been read by a native speaker — it comes from `@lokascript/semantic` profiles, which are themselves best-effort for most languages. [scripts/research-brief.mjs](./scripts/research-brief.mjs) emits a self-contained brief per locale so that review can happen in a session with no checkout:
+
+```bash
+npm run brief                        # index: which locales have suspect terms
+npm run brief -- --locale=de         # markdown brief
+npm run brief -- --locale=de --json  # {topic, context} for a research tool
+```
+
+The brief carries what a reviewer can't infer: that the term is an identifier a developer types (not prose), the single-token-vs-multi-word constraint (multi-word works in an `fx-trigger` value but not in an `on-` attribute name), that case and separators fold at lookup so only word choice is in question, and that whether to translate event names at all is settled and out of scope. It also lists canonicals with **no** term anywhere for that locale, since proposing one is as valuable as correcting one.
+
+`SETTLED` in that file records terms already researched, so briefs don't spend effort re-deriving them. Add to it when a review concludes.
+
+The heuristics flag fused compounds, underscores and camelCase — every term of that shape checked so far turned out to be malformed. They deliberately do **not** flag capitalization: German capitalizes nouns, so `Klick` is correct, and lookup folds case anyway.
+
+**@lokascript/semantic has two event vocabularies, and the generator only reads one.** `gen-locales.mjs` scrapes the profiles' `keywords` maps (`generators/profiles/*.ts`), which mix DOM events with grammar and commands — hence the allowlist. But `patterns/event-handler.ts` exports `eventNameTranslations`, a separate **event-only** table covering 14 languages, plus a test-locked `eventLocalizationDenylist` of pairs that fail round-trip upstream. It holds **66 (locale, event) pairs loka does not publish** — German `taste runter`/`maus über`/`laden`, Japanese キーダウン, Korean 마우스다운, and 8 events each for `ja`/`ko`.
+
+The brief reads it so it doesn't ask reviewers to invent terms that already exist, and marks them as candidates rather than shipped vocabulary — upstream documents that table as *aspirational* (forms proposed, not verified in use), and the denylist correlates with a term being invented. Whether to publish any of them is an open decision, not a mechanical merge.
+
 ### Data conventions (relied on by external consumers)
 
 loka publishes **parse maps only** (`localized → canonical`). Two conventions of that data are guaranteed and documented in each generated file's header, `scripts/fx-vocab.mjs`, and the README's "Consuming the vocabulary data":
