@@ -58,6 +58,7 @@
 
 	let REG = {}                                 // { code: { fixi: { attrs, events } } }
 	let nameByKey = {}                           // { code: { action: 'fx-acción', ... } }
+	let eventIdx = {}                            // { code: { 'hacer clic': 'click', ... } } normalized
 
 	// langOf + normLang: inlined for non-module script-tag load. The ES-module
 	// version lives in lang-resolver.js and is imported by other libraries
@@ -71,6 +72,46 @@
 		let la = elt.closest?.('[lang]')
 		if (la) return normLang(la.getAttribute('lang'))
 		return 'en'
+	}
+
+	// ── Event-name lookup ─────────────────────────────────────────────────
+	// Author-tolerant on purpose. Two ways the naive `events[val]` lookup
+	// failed silently, both ending in addEventListener() on a name no browser
+	// ever fires — no error, no warning:
+	//
+	//  1. Case. German event vocabulary is capitalized because German
+	//     capitalizes nouns (Klick, Änderung, Absenden, Eingabe). A developer
+	//     writing fx-auslöser="klick" got nothing. Worse for moxi: the HTML
+	//     parser lowercases attribute NAMES, so al-Klick reaches moxi as
+	//     "klick" — a German moxi click handler was not merely fragile, it
+	//     was unwritable.
+	//  2. Separators. Multi-word names ship in one spelling ('hacer clic',
+	//     'faire-défiler', 'alisin_tuon'); authors reasonably write another.
+	//
+	// So fold case and collapse runs of space/hyphen/underscore to one space.
+	// Verified collision-free across all 24 locales: no two entries in any
+	// locale normalize to the same key with different canonicals.
+	let normEvt = (s)=>s.trim().toLowerCase().replace(/[\s_-]+/g, ' ')
+
+	let buildEventIdx = (events)=>{
+		// Null prototype: a plain object resolves fx-trigger="constructor" to
+		// Object.prototype.constructor and hands a Function to addEventListener.
+		let out = Object.create(null)
+		for (let [loc, can] of Object.entries(events || {})) {
+			let k = normEvt(loc)
+			if (!(k in out)) out[k] = can    // first-wins keeps primary-first
+		}
+		return out
+	}
+
+	let lookupEvt = (elt, val)=>{
+		if (typeof val !== 'string') return val
+		let lang = langOf(elt)
+		let ev = REG[lang]?.fixi?.events
+		// Exact match first, so everything that resolves today keeps resolving
+		// identically; normalization only ever rescues what used to fall through.
+		if (ev && Object.hasOwn(ev, val)) return ev[val]
+		return eventIdx[lang]?.[normEvt(val)] || val
 	}
 
 	let invertAttrs = (attrs)=>{
@@ -99,10 +140,7 @@
 		let lang = langOf(elt)
 		return nameByKey[lang]?.[key] || `fx-${key}`
 	}
-	fx.event = (elt, val)=>{
-		let lang = langOf(elt)
-		return REG[lang]?.fixi?.events?.[val] || val
-	}
+	fx.event = lookupEvt
 	fx.sel = (key)=>buildSelector(key)
 	fx.ignoreSel = buildSelector('ignore')
 
@@ -128,11 +166,10 @@
 		return moxiNameByKey[lang]?.[key] || key
 	}
 	// moxi's event-name vocab IS the same DOM-event vocab as fixi's trigger
-	// translation — share REG[lang].fixi.events to avoid duplication.
-	mxh.event = (elt, val)=>{
-		let lang = langOf(elt)
-		return REG[lang]?.fixi?.events?.[val] || val
-	}
+	// translation — share the lookup to avoid duplication. moxi needs the
+	// case folding even more than fixi: it reads the event from an attribute
+	// NAME, which the HTML parser has already lowercased.
+	mxh.event = lookupEvt
 	mxh.modifier = (m)=>MX_MODIFIERS[m] || m
 	mxh.ignoreSel = '[mx-ignore]'
 	mxh.xpath = ()=>{
@@ -237,6 +274,7 @@
 			let c = normLang(code)
 			REG[c] = data
 			nameByKey[c] = invertAttrs(data?.fixi?.attrs)
+			eventIdx[c] = buildEventIdx(data?.fixi?.events)
 			// fx.sel is a function that reads REG at call time — no rebind needed.
 			// fx.ignoreSel is a string captured by fixi at load time, so refresh
 			// here in case a locale added a localized fx-ignore.
