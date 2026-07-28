@@ -83,7 +83,7 @@ window.fixi.ignoreSel = "[fx-ignore]"                         // ignore selector
 DOM-discovery default (`fixi.sel` → `[fx-${key}]`, `moxi.xpath` → `@live`/`on-`,
 `paxi.isSwap` → `s==="morph"`) is English-only by design and does *not* derive
 from the per-element `name` hook — those discovery hooks get a key/string, not
-an element, so they can't consult a per-element resolver. `orchestrator.js`
+an element, so they can't consult a per-element resolver. `loka.js`
 replaces them with combined hooks that union every registered locale's names.
 If you load a raw patched library and set only a localized `name` hook *without*
 the orchestrator, the scanner keeps matching the English tokens and silently
