@@ -375,6 +375,32 @@ async function phaseJ() {
     moxiAttr: document.querySelector('#caja').hasAttribute('al-desplazar'),
   }));
 
+  // Author-tolerant lookup. German vocabulary is capitalized (nouns), but HTML
+  // lowercases attribute NAMES and developers type lowercase VALUES — both used
+  // to fall through to a silent addEventListener() that never fires.
+  const tolerant = await page.evaluate(() => {
+    const de = document.querySelector('#de-btn');
+    const es = document.querySelector('#busqueda');
+    return {
+      shipped: window.fixi.event(de, 'Klick'),      // as generated
+      lower: window.fixi.event(de, 'klick'),        // as typed
+      shouty: window.fixi.event(de, 'KLICK'),
+      padded: window.fixi.event(de, '  klick  '),
+      hyphen: window.fixi.event(es, 'hacer-clic'),  // ships as 'hacer clic'
+      exact: window.fixi.event(es, 'hacer clic'),   // must not regress
+      unknown: window.fixi.event(es, 'zzz'),        // passthrough
+      proto: typeof window.fixi.event(es, 'constructor'), // must not leak a Function
+      deBound: de.__fixi?.evt,
+    };
+  });
+  const deBefore = (await page.textContent('#de-out')).trim();
+  await page.click('#de-btn');
+  await page.waitForTimeout(400);
+  const deAfter = (await page.textContent('#de-out')).trim();
+  await page.click('#de-moxi');
+  await page.waitForTimeout(200);
+  const deMoxi = (await page.textContent('#de-moxi-out')).trim();
+
   const tag = 'J:';
   const checks = [
     [() => resolved.fixiKeyup === 'keyup',   `${tag} fixi.event(elt,"tecla arriba") === "keyup" (got "${resolved.fixiKeyup}")`],
@@ -385,6 +411,19 @@ async function phaseJ() {
     [() => cuenta >= 2,                      `${tag} al-desplazar handler ran on scroll (count ${cuenta}, want >= 2)`],
     [() => verbatim.trigger === 'tecla arriba', `${tag} fx-disparador stays verbatim in the DOM (got "${verbatim.trigger}")`],
     [() => verbatim.moxiAttr,                `${tag} al-desplazar stays verbatim in the DOM`],
+    [() => tolerant.shipped === 'click',     `${tag} de "Klick" (as generated) → click (got "${tolerant.shipped}")`],
+    [() => tolerant.lower === 'click',       `${tag} de "klick" (as typed) → click (got "${tolerant.lower}")`],
+    [() => tolerant.shouty === 'click',      `${tag} de "KLICK" → click (got "${tolerant.shouty}")`],
+    [() => tolerant.padded === 'click',      `${tag} de "  klick  " → click (got "${tolerant.padded}")`],
+    [() => tolerant.hyphen === 'click',      `${tag} es "hacer-clic" → click via separator folding (got "${tolerant.hyphen}")`],
+    [() => tolerant.exact === 'click',       `${tag} es "hacer clic" (exact) still → click (got "${tolerant.exact}")`],
+    [() => tolerant.unknown === 'zzz',       `${tag} unknown value passes through unchanged (got "${tolerant.unknown}")`],
+    [() => tolerant.proto === 'string',      `${tag} "constructor" does not leak Object.prototype (got ${tolerant.proto})`],
+    [() => tolerant.deBound === 'click',     `${tag} fixi bound click from lowercase fx-auslöser (got "${tolerant.deBound}")`],
+    [() => deBefore !== deAfter && deAfter.includes('Resultado'),
+      `${tag} de lowercase trigger drove a real swap (before "${deBefore.slice(0,15)}", after "${deAfter.slice(0,15)}")`],
+    [() => deMoxi.includes('ausgelöst') && !deMoxi.includes('nicht'),
+      `${tag} de moxi on-klick fired — impossible before, HTML lowercases the attr name (got "${deMoxi}")`],
     [() => errors.length === 0,              `${tag} ${errors.length} runtime errors: ${errors.join('; ')}`],
   ];
   let pass = 0;

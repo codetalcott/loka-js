@@ -139,6 +139,10 @@ A profile's keyword map is one flat namespace mixing DOM events with hyperscript
 
 Multi-word localized events (`tecla arriba`) work in fixi's `fx-trigger` **value** but not as a moxi `al-*` attribute **name** — HTML attribute names can't contain spaces.
 
+### Event lookup folds case and separators
+
+`lookupEvt` in [loka.js](./loka.js) tries an exact match, then falls back to a normalized index built at `register()` time (`toLowerCase`, runs of space/hyphen/underscore → one space). Two reasons, both silent failures before: German ships capitalized event nouns (`Klick`) while HTML lowercases attribute names, which made German moxi handlers *unwritable*; and multi-word names ship in one spelling while authors write another. Verified collision-free across all 24 locales — re-check with a scan if a locale ever adds entries differing only by case or separator. The index uses a null prototype, so `fx-trigger="constructor"` no longer resolves to `Object.prototype.constructor`.
+
 ### Data conventions (relied on by external consumers)
 
 loka publishes **parse maps only** (`localized → canonical`). Two conventions of that data are guaranteed and documented in each generated file's header, `scripts/fx-vocab.mjs`, and the README's "Consuming the vocabulary data":
