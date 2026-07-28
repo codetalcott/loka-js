@@ -13,10 +13,13 @@
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { extractEventValues } from '../scripts/gen-locales.mjs';
+import { EVENT_KEYWORDS, extractEventValues } from '../scripts/gen-locales.mjs';
+import { LOCALES } from '../scripts/fx-vocab.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCALES_DIR = path.resolve(__dirname, '..', 'locales');
+const DOM_VOCAB_DIR = path.resolve(__dirname, '..', 'dom-vocab');
+const ALL_CODES = Object.keys(LOCALES);
 
 let failures = 0;
 const ok = (cond, msg) => {
@@ -79,6 +82,87 @@ console.log('\nGenerated locale files — primary-first inversion:');
 
   const fr = await loadLocale('fr');
   ok(preferred(fr.fixi.events, 'click') === 'clic', "fr click → 'clic'");
+}
+
+console.log('\nExpanded event scope — the vocabulary the allowlist used to drop:');
+{
+  const es = await loadLocale('es');
+  // keydown is the resolution of a two-sources-of-truth bug: loka hand-authored
+  // `pulsacion` believing the profile lacked keydown; it didn't — EVENT_KEYWORDS
+  // was filtering it out. The profile form must win and `pulsacion` must be gone.
+  ok(preferred(es.fixi.events, 'keydown') === 'tecla abajo', "es keydown → 'tecla abajo' (profile, not the retired 'pulsacion')");
+  ok(!('pulsacion' in es.fixi.events), "es no longer ships the hand-authored 'pulsacion'");
+  ok(preferred(es.fixi.events, 'keyup') === 'tecla arriba', "es keyup → 'tecla arriba' (the live-search idiom)");
+  // Asserts the upstream V3 Batch 2 split landed — the fused 'ratónabajo' is
+  // still accepted as an alternative but must not be the form we teach.
+  ok(preferred(es.fixi.events, 'mousedown') === 'ratón abajo', "es mousedown → 'ratón abajo' (not the fused 'ratónabajo')");
+  ok(es.fixi.events['ratónabajo'] === 'mousedown', "es still parses the fused 'ratónabajo' (back-compat)");
+  ok(preferred(es.fixi.events, 'scroll') === 'desplazar', "es scroll → 'desplazar' (primary, not the alt 'desplazamiento')");
+  ok(preferred(es.fixi.events, 'resize') === 'redimensionar', "es resize → 'redimensionar'");
+  ok(preferred(es.fixi.events, 'load') === 'carga', "es load → 'carga' (primary, not the alt 'cargar')");
+
+  // scroll is the one addition every profile defines — the only new canonical
+  // with universal coverage, so it doubles as a whole-corpus smoke test.
+  const missing = [];
+  for (const code of ALL_CODES) {
+    if (code === 'en') continue;
+    const d = await loadLocale(code);
+    if (!preferred(d.fixi.events, 'scroll')) missing.push(code);
+  }
+  ok(missing.length === 0, `every non-en locale localizes scroll${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
+}
+
+console.log('\nHand-authored event tables — primary-first is maintained by hand here:');
+{
+  // These locales' profiles define no click/change/submit/input, so those four
+  // come from fx-vocab.mjs where ordering is a human responsibility rather than
+  // a generator guarantee. Previously untested, and the most fragile.
+  const expected = {
+    ja: { click: 'クリック', change: '変更', submit: '送信', input: '入力' },
+    ar: { click: 'نقر', change: 'تغيير', submit: 'إرسال', input: 'إدخال' },
+    ms: { click: 'klik', change: 'ubah', submit: 'hantar' },
+    tl: { click: 'i-click', change: 'baguhin', submit: 'ipasa' },
+    sw: { click: 'bofya', change: 'badilisha', submit: 'wasilisha' },
+  };
+  for (const [code, pairs] of Object.entries(expected)) {
+    const d = await loadLocale(code);
+    for (const [canonical, form] of Object.entries(pairs)) {
+      ok(preferred(d.fixi.events, canonical) === form, `${code} ${canonical} → '${form}'`);
+    }
+  }
+}
+
+console.log('\nPublished scope matches the EVENT_KEYWORDS contract:');
+{
+  const allowed = new Set(EVENT_KEYWORDS);
+  const strays = [];
+  for (const code of ALL_CODES) {
+    const d = await loadLocale(code);
+    for (const canonical of Object.values(d.fixi.events)) {
+      if (!allowed.has(canonical)) strays.push(`${code}:${canonical}`);
+    }
+  }
+  // The generator throws on this, but assert from the data side too: a stray
+  // canonical is what let `pulsacion` sit in the unordered leftovers bucket.
+  ok(strays.length === 0, `no published canonical outside EVENT_KEYWORDS${strays.length ? ` (found: ${strays.join(', ')})` : ''}`);
+  // `hover` is the specific trap: 18 profiles define it, it is not a DOM event,
+  // and publishing it would ship a listener that never fires.
+  ok(!allowed.has('hover'), "'hover' stays excluded (not a DOM event name)");
+}
+
+console.log('\ndom-vocab/ mirrors locales/ (same contract, both shipped):');
+{
+  const mismatched = [];
+  for (const code of ALL_CODES) {
+    const locale = await loadLocale(code);
+    const { events } = await import(pathToFileURL(path.join(DOM_VOCAB_DIR, `${code}.js`)).href);
+    // Compare entries AND order — dom-vocab carries the same primary-first
+    // guarantee in its header and is the file external consumers import.
+    if (JSON.stringify(Object.entries(events)) !== JSON.stringify(Object.entries(locale.fixi.events))) {
+      mismatched.push(code);
+    }
+  }
+  ok(mismatched.length === 0, `dom-vocab events match locales events, in order${mismatched.length ? ` (differ: ${mismatched.join(', ')})` : ''}`);
 }
 
 console.log('\nGenerated locale files — identity omission:');

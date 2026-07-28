@@ -6,7 +6,9 @@
 //   token absent from a map is intentionally identical to the canonical form
 //   (identity mappings are omitted — write the canonical token). Within each
 //   canonical group the primary localized form is listed first, so first-wins
-//   inversion yields the preferred form to teach/author.
+//   inversion yields the preferred form to teach/author. Only canonicals on the
+//   EVENT_KEYWORDS allowlist in gen-locales.mjs are published — see that file
+//   for what is in, what is out, and why.
 window.loka.register('es', {
   fixi: {
     attrs: {
@@ -32,7 +34,23 @@ window.loka.register('es', {
       desenfoque: 'blur',
       iniciar: 'init',
       inicializar: 'init',
-      pulsacion: 'keydown',
+      'tecla abajo': 'keydown',
+      'tecla arriba': 'keyup',
+      'ratón abajo': 'mousedown',
+      'raton abajo': 'mousedown',
+      'ratónabajo': 'mousedown',
+      'ratón arriba': 'mouseup',
+      'raton arriba': 'mouseup',
+      'ratónarriba': 'mouseup',
+      'ratón encima': 'mouseover',
+      'raton encima': 'mouseover',
+      'ratón fuera': 'mouseout',
+      'raton fuera': 'mouseout',
+      desplazar: 'scroll',
+      desplazamiento: 'scroll',
+      redimensionar: 'resize',
+      carga: 'load',
+      cargar: 'load',
     },
   },
   paxi: {

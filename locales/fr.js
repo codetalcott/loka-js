@@ -6,11 +6,14 @@
 //   token absent from a map is intentionally identical to the canonical form
 //   (identity mappings are omitted — write the canonical token). Within each
 //   canonical group the primary localized form is listed first, so first-wins
-//   inversion yields the preferred form to teach/author.
+//   inversion yields the preferred form to teach/author. Only canonicals on the
+//   EVENT_KEYWORDS allowlist in gen-locales.mjs are published — see that file
+//   for what is in, what is out, and why.
 // ⚠ Unreviewed: fixi attribute names for this locale have not been
-//   native-speaker reviewed. Event-name vocabulary IS reviewed (from
-//   @lokascript/semantic profile). To suggest corrections, edit
-//   loka-js/scripts/fx-vocab.mjs (LOCALES.fr) and regenerate.
+//   native-speaker reviewed. Event names come from the @lokascript/semantic
+//   'french' profile (reviewed by that project), except any entry
+//   overridden in loka-js/scripts/fx-vocab.mjs, which is loka-local. To
+//   suggest corrections, edit fx-vocab.mjs (LOCALES.fr) and regenerate.
 window.loka.register('fr', {
   fixi: {
     attrs: {
@@ -33,6 +36,11 @@ window.loka.register('fr', {
       concentrer: 'focus',
       'défocaliser': 'blur',
       initialiser: 'init',
+      'défiler': 'scroll',
+      'faire-défiler': 'scroll',
+      redimensionner: 'resize',
+      charger: 'load',
+      chargement: 'load',
     },
   },
 });

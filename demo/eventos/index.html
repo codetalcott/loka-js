@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>loka-js — vocabulario de eventos</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+  section { border: 1px solid #ddd; padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 6px; }
+  h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+  .target { margin-top: .75rem; padding: .5rem; background: #f6f8fa; border-radius: 4px; min-height: 1.5em; }
+  pre { font-size: .75rem; background: #f0f0f0; padding: .25rem .5rem; border-radius: 3px; margin: .25rem 0; white-space: pre-wrap; }
+  code { background: #eef; padding: 1px 4px; border-radius: 3px; }
+  input { font-size: 1rem; padding: .35rem .5rem; width: 20rem; }
+  .desplazable { height: 6rem; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; padding: .5rem; }
+  .desplazable p { margin: 0 0 2rem; }
+  .nota { font-size: .8rem; color: #555; }
+</style>
+
+<!-- Orden de carga: loka + locales ANTES de las bibliotecas parcheadas. -->
+<script src="../../loka.js"></script>
+<script src="../../locales/es.js"></script>
+<script src="../../moxi.js"></script>
+<script src="../../fixi.js"></script>
+</head>
+<body>
+
+<h1>Vocabulario de eventos en español</h1>
+<p>Los nombres de evento localizados se resuelven en el momento de procesar, igual que
+los nombres de atributo. Nada se reescribe en el DOM — abre las herramientas de
+desarrollo y verás <code>fx-disparador="tecla arriba"</code> tal cual.</p>
+
+<section>
+  <h2><code>tecla arriba</code> → <code>keyup</code></h2>
+  <input
+    type="search"
+    id="busqueda"
+    placeholder="Escribe para buscar…"
+    fx-acción="./resultados.html"
+    fx-disparador="tecla arriba"
+    fx-objetivo="#resultados"
+    fx-intercambio="innerHTML">
+  <div id="resultados" class="target">— sin resultados —</div>
+  <pre>fixi.event(elt, "tecla arriba") devuelve "keyup"
+addEventListener("keyup", …) — el idioma se resuelve desde &lt;html lang="es"&gt;</pre>
+</section>
+
+<section>
+  <h2><code>desplazar</code> → <code>scroll</code> (moxi)</h2>
+  <div class="desplazable" id="caja" al-desplazar="consulta('#cuenta').textContent = (+consulta('#cuenta').textContent || 0) + 1">
+    <p>Desplaza esta caja.</p>
+    <p>Sigue desplazando…</p>
+    <p>Un poco más.</p>
+  </div>
+  <div class="target">eventos de desplazamiento: <span id="cuenta">0</span></div>
+  <pre>moxi.event(elt, "desplazar") devuelve "scroll"
+`scroll` es el único evento nuevo que los 24 perfiles traducen.</pre>
+</section>
+
+<section>
+  <h2 class="nota">Por qué <code>tecla arriba</code> no funciona en moxi</h2>
+  <p class="nota">
+    Los nombres de evento de varias palabras funcionan en el <strong>valor</strong> de
+    <code>fx-disparador</code>, pero no como <strong>nombre</strong> de atributo:
+    <code>al-tecla arriba</code> no es HTML válido — el analizador lo lee como dos
+    atributos. En moxi usa los eventos de una sola palabra
+    (<code>al-clic</code>, <code>al-desplazar</code>, <code>al-carga</code>,
+    <code>al-redimensionar</code>).
+  </p>
+</section>
+
+</body>
+</html>

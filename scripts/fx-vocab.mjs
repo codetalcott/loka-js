@@ -39,10 +39,18 @@
 //                  default to avoid namespace pollution for locales that only
 //                  want localized attributes.
 //   fixi.attrs     localized HTML attribute name -> canonical English name
-//   fixi.events    event-name translations not present in the semantic profile
-//                  (some profiles only define focus/blur/init; this fills gaps,
-//                  and lets non-fixi consumers like psatina-modular extend the
-//                  DOM event vocabulary, e.g., `pulsacion: 'keydown'`)
+//   fixi.events    event-name translations genuinely ABSENT from the semantic
+//                  profile — ja/ar/ms/tl/sw profiles define no click/change/
+//                  submit/input, so those four are supplied here. Not for
+//                  overriding vocabulary the profile already has: the profile
+//                  is the source of truth, and a hand-authored entry that
+//                  shadows it creates two disagreeing vocabularies. (This field
+//                  once carried `pulsacion: 'keydown'` on the belief that the
+//                  Spanish profile lacked keydown; it did not — the entry was
+//                  being filtered out by EVENT_KEYWORDS, and loka shipped
+//                  `pulsacion` while semantic parsed `tecla abajo`. Retired.)
+//                  Canonicals must be on the EVENT_KEYWORDS allowlist in
+//                  gen-locales.mjs; the generator throws otherwise.
 //   paxi.swaps     localized fx-swap value -> canonical (e.g., `morfar: 'morph'`)
 //   paxi.globals   localized JS global -> canonical (e.g., `morfar: 'morph'`)
 //   paxi.reviewed  true if paxi vocab has been native-speaker reviewed
@@ -111,9 +119,9 @@ export const LOCALES = {
         'fx-objetivo': 'fx-target',
         'fx-intercambio': 'fx-swap',
       },
-      events: {
-        pulsacion: 'keydown',
-      },
+      // No `events` override: the Spanish profile is the sole source. It
+      // defines every canonical on the allowlist, keydown included
+      // (`tecla abajo`).
     },
     paxi: {
       reviewed: true,
