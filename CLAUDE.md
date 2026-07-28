@@ -139,6 +139,10 @@ A profile's keyword map is one flat namespace mixing DOM events with hyperscript
 
 Multi-word localized events (`tecla arriba`) work in fixi's `fx-trigger` **value** but not as a moxi `al-*` attribute **name** — HTML attribute names can't contain spaces.
 
+### Event lookup folds case and separators
+
+`lookupEvt` in [loka.js](./loka.js) tries an exact match, then falls back to a normalized index built at `register()` time (`toLowerCase`, runs of space/hyphen/underscore → one space). Two reasons, both silent failures before: German ships capitalized event nouns (`Klick`) while HTML lowercases attribute names, which made German moxi handlers *unwritable*; and multi-word names ship in one spelling while authors write another. Verified collision-free across all 24 locales — re-check with a scan if a locale ever adds entries differing only by case or separator. The index uses a null prototype, so `fx-trigger="constructor"` no longer resolves to `Object.prototype.constructor`.
+
 ### Terminology research briefs
 
 Most of the published vocabulary has never been read by a native speaker — it comes from `@lokascript/semantic` profiles, which are themselves best-effort for most languages. [scripts/research-brief.mjs](./scripts/research-brief.mjs) emits a self-contained brief per locale so that review can happen in a session with no checkout:
@@ -149,7 +153,7 @@ npm run brief -- --locale=de         # markdown brief
 npm run brief -- --locale=de --json  # {topic, context} for a research tool
 ```
 
-The brief carries what a reviewer can't infer: that the term is an identifier a developer types (not prose), the single-token-vs-multi-word constraint (multi-word works in an `fx-trigger` value but not in an `on-` attribute name), that case and separators fold at lookup so only word choice is in question, and that whether to translate event names at all is settled and out of scope. It also lists canonicals with **no** term for that locale — German has none for 7 of 16 — since proposing one is as valuable as correcting one.
+The brief carries what a reviewer can't infer: that the term is an identifier a developer types (not prose), the single-token-vs-multi-word constraint (multi-word works in an `fx-trigger` value but not in an `on-` attribute name), that case and separators fold at lookup so only word choice is in question, and that whether to translate event names at all is settled and out of scope. It also lists canonicals with **no** term anywhere for that locale, since proposing one is as valuable as correcting one.
 
 `SETTLED` in that file records terms already researched, so briefs don't spend effort re-deriving them. Add to it when a review concludes.
 

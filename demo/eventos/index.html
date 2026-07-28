@@ -19,6 +19,7 @@
 <!-- Orden de carga: loka + locales ANTES de las bibliotecas parcheadas. -->
 <script src="../../loka.js"></script>
 <script src="../../locales/es.js"></script>
+<script src="../../locales/de.js"></script>
 <script src="../../moxi.js"></script>
 <script src="../../fixi.js"></script>
 </head>
@@ -54,6 +55,27 @@ addEventListener("keyup", …) — el idioma se resuelve desde &lt;html lang="es
   <div class="target">eventos de desplazamiento: <span id="cuenta">0</span></div>
   <pre>moxi.event(elt, "desplazar") devuelve "scroll"
 `scroll` es el único evento nuevo que los 24 perfiles traducen.</pre>
+</section>
+
+<section lang="de">
+  <h2>Groß-/Kleinschreibung und Trennzeichen</h2>
+  <p class="nota">
+    Deutsche Ereignisnamen sind großgeschrieben (<code>Klick</code>), weil
+    Substantive großgeschrieben werden. HTML schreibt Attributnamen aber klein,
+    und Entwickler tippen <code>klick</code>. Beide Schreibweisen funktionieren:
+    die Suche ignoriert Groß-/Kleinschreibung und Trennzeichen.
+  </p>
+  <button
+    id="de-btn"
+    fx-aktion="./resultados.html"
+    fx-auslöser="klick"
+    fx-ziel="#de-out"
+    fx-tausch="innerHTML">Laden</button>
+  <button id="de-moxi" on-klick="document.querySelector('#de-moxi-out').textContent = 'moxi: ausgelöst'">moxi</button>
+  <div id="de-out" class="target">— leer —</div>
+  <div id="de-moxi-out" class="target">moxi: nicht ausgelöst</div>
+  <pre>fx-auslöser="klick"  →  Klick → click  (Kleinschreibung akzeptiert)
+on-klick             →  moxi liest den vom Parser kleingeschriebenen Namen</pre>
 </section>
 
 <section>
