@@ -22,6 +22,23 @@
 //     so that on-fx:init and on-fx:process handlers are registered before
 //     fixi.js dispatches those events on page load").
 //
+// Localization REQUIRES this orchestrator (the patched libraries alone do not
+// localize). Each patched library's DOM-discovery default is English-only by
+// design and does NOT derive from the per-element `name` hook:
+//   * fixi  — sel(key) defaults to `[fx-${key}]`              (fixi.js)
+//   * moxi  — xpath() defaults to `@live or @*[starts-with(name(),'on-')]`
+//   * paxi  — isSwap(s) defaults to `s === "morph"`
+// These discovery hooks receive a key/string, not an element, so they cannot
+// call name(elt, key); a per-element resolver can't drive a document-level
+// scan. The orchestrator replaces them with COMBINED hooks that union every
+// registered locale's localized names (buildSelector / xpath union /
+// MORPH_NAMES below). Consequence: if you set only a localized `name` hook on
+// a raw library WITHOUT loading this orchestrator, the scanner keeps looking
+// for the English tokens and silently misses every localized element. The raw
+// libraries are deliberately English-only standalone — that is what keeps them
+// bit-identical to upstream (see test/preservation.mjs); localization is this
+// orchestrator's job, not theirs.
+//
 // Language resolution per element:
 //   data-loka-lang   (explicit override on the element or any ancestor)
 //   lang             (HTML standard ancestor, e.g. <html lang> or <section lang>)
