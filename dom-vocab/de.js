@@ -30,6 +30,9 @@ export const events = {
   entfokussieren: 'blur',
   initialisieren: 'init',
   scrollen: 'scroll',
+  'Größenänderung': 'resize',
+  'größenänderung': 'resize',
+  'Größe ändern': 'resize',
   'größeändern': 'resize',
 };
 export const props = {};

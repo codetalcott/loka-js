@@ -34,6 +34,8 @@ export const events = {
   inicjuj: 'init',
   'przewiń': 'scroll',
   przewin: 'scroll',
+  'zmiana rozmiaru': 'resize',
+  'zmień rozmiar': 'resize',
   'zmieńrozmiar': 'resize',
 };
 export const props = {};
