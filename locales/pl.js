@@ -29,6 +29,7 @@ window.loka.register('pl', {
       'wysłaniu': 'submit',
       wyslaniu: 'submit',
       wprowadzeniu: 'input',
+      'wejście': 'input',
       skup: 'focus',
       skupienie: 'focus',
       rozmyj: 'blur',

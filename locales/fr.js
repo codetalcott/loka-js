@@ -24,6 +24,7 @@ window.loka.register('fr', {
       clique: 'click',
       changement: 'change',
       modifier: 'change',
+      changer: 'change',
       soumission: 'submit',
       soumettre: 'submit',
       saisie: 'input',
