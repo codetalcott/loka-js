@@ -112,6 +112,25 @@ console.log('\nExpanded event scope — the vocabulary the allowlist used to dro
   ok(missing.length === 0, `every non-en locale localizes scroll${missing.length ? ` (missing: ${missing.join(', ')})` : ''}`);
 }
 
+console.log('\nCorrected terms — the form we teach, with old spellings still parsing:');
+{
+  // Three terms were malformed when the allowlist first exposed them. Each was
+  // fixed upstream with the old spelling demoted to a parse alternative, so the
+  // assertion is two-sided: the corrected form must win, and the old form must
+  // still resolve.
+  const corrections = [
+    ['de', 'resize',    'Größenänderung',    'größeändern',  'malformed compound: German needs the linking -n-'],
+    ['pl', 'resize',    'zmiana rozmiaru',   'zmieńrozmiar', 'fused two-word phrase'],
+    ['pt', 'mousedown', 'mouse pressionado', 'mouse baixo',  'spatial calque; pt-BR says pressionado'],
+    ['pt', 'mouseup',   'mouse solto',       'mouse cima',   'spatial calque; pt-BR says solto'],
+  ];
+  for (const [code, canonical, want, old, why] of corrections) {
+    const d = await loadLocale(code);
+    ok(preferred(d.fixi.events, canonical) === want, `${code} ${canonical} → '${want}' (${why})`);
+    ok(d.fixi.events[old] === canonical, `${code} still parses the old '${old}' (back-compat)`);
+  }
+}
+
 console.log('\nHand-authored event tables — primary-first is maintained by hand here:');
 {
   // These locales' profiles define no click/change/submit/input, so those four

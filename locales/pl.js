@@ -40,6 +40,8 @@ window.loka.register('pl', {
       inicjuj: 'init',
       'przewiń': 'scroll',
       przewin: 'scroll',
+      'zmiana rozmiaru': 'resize',
+      'zmień rozmiar': 'resize',
       'zmieńrozmiar': 'resize',
     },
   },
