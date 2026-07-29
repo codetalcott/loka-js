@@ -338,6 +338,46 @@ ${fields.join('\n')}
 }
 
 /**
+ * Canonicals where `fx-vocab.mjs` supplies an event term the profile ALSO
+ * publishes — the forbidden overlap, made mechanical.
+ *
+ * `fixi.events` exists for vocabulary genuinely absent from a profile (ja/ar/ms/
+ * tl/sw define no click/change/submit/input). Using it to override a term the
+ * profile already has creates two disagreeing vocabularies, and the loka-side
+ * one wins silently: that is how `pulsacion` shipped for a year while semantic
+ * parsed `tecla abajo`. The rule was prose in CLAUDE.md and nothing enforced it.
+ *
+ * It also pins down what "absent from a profile" means, which the coinage track
+ * depends on: absent = publishes no NON-IDENTITY form. A profile entry like
+ * Swahili's `blur: { primary: 'blur' }` is an identity placeholder that
+ * `stripIdentity` drops, so it publishes nothing and a Swahili blur term
+ * supplied here is filling a gap rather than shadowing a decision.
+ *
+ * Warn rather than throw for now: the fix for a genuine overlap is to edit the
+ * profile, and during the upstream freeze that is not available. See
+ * RESEARCH_PIPELINE.md.
+ * TODO(freeze-lift): escalate to a thrown error, matching orderValues.
+ */
+function shadowedCanonicals(code, spec, profileValues) {
+  const local = spec.fixi?.events ?? {};
+  const localCanonicals = new Set(Object.values(local));
+  const clashes = [];
+  for (const canonical of localCanonicals) {
+    // Identity entries publish nothing, so they are not a shadowed decision.
+    const profileForms = Object.entries(profileValues)
+      .filter(([form, can]) => can === canonical && form !== can)
+      .map(([form]) => form);
+    if (profileForms.length) {
+      const localForms = Object.entries(local)
+        .filter(([, can]) => can === canonical)
+        .map(([form]) => form);
+      clashes.push({ canonical, profileForms, localForms });
+    }
+  }
+  return clashes;
+}
+
+/**
  * Render one locale's two output files in memory, without touching disk.
  *
  * Extracted so the drift guard (test/gen-drift.mjs) can compare a fresh render
@@ -366,6 +406,7 @@ export function renderLocale(code) {
   return {
     code,
     skipped: false,
+    shadowed: shadowedCanonicals(code, spec, profileValues),
     eventCount: Object.keys(events).length,
     attrCount: Object.keys(spec.fixi?.attrs ?? {}).length,
     propCount: Object.keys(spec.props ?? {}).length,
@@ -412,6 +453,18 @@ function main() {
       console.error(`  [SKIP] ${code}: profile not found at ${result.profilePath}`);
       skipCount++;
       continue;
+    }
+
+    for (const c of result.shadowed ?? []) {
+      console.error(
+        `  [SHADOW] ${code}: fx-vocab.mjs supplies ${c.localForms.map(f => `'${f}'`).join(', ')} ` +
+          `for '${c.canonical}', but the '${LOCALES[code].profile}' profile already publishes ` +
+          `${c.profileForms.map(f => `'${f}'`).join(', ')}.\n` +
+          `             The profile is the source of truth for event names. A local override ` +
+          `shadows it silently — that is how 'pulsacion' shipped for a year while semantic\n` +
+          `             parsed 'tecla abajo'. Either drop the fx-vocab entry, or make the ` +
+          `correction in the profile and regenerate.`
+      );
     }
 
     if (args.dryRun) {
