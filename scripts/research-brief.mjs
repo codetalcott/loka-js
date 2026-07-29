@@ -178,10 +178,16 @@ const VARIANT_QUESTION = {
  * for only four locales, so for twenty of them nothing here has been read by a
  * native speaker.
  */
+// Every attribute row the brief renders, translated or not. Module-scoped
+// because the required-verdict count in the task section must equal the number
+// of rows actually presented — a brief that demands 21 verdicts and shows 20
+// terms teaches the reviewer that the count is decorative.
+const CANONICAL_ATTRS = ['fx-action', 'fx-method', 'fx-trigger', 'fx-target', 'fx-swap'];
+
 function attrSection(code, spec) {
   const lines = [];
   const attrs = spec.fixi?.attrs ?? {};
-  const canonicalAttrs = ['fx-action', 'fx-method', 'fx-trigger', 'fx-target', 'fx-swap'];
+  const canonicalAttrs = CANONICAL_ATTRS;
 
   // localized → canonical, inverted for display, primary-first per README.
   const byCanonical = {};
@@ -625,6 +631,18 @@ async function buildBrief(code, mode = 'review') {
   const missing = rows.filter(r => !r.primary && !r.upstreamOnly);
 
   const attrCount = new Set(Object.values(spec.fixi?.attrs ?? {})).size;
+
+  // Deliberately an evidence question, not a demand for a structured verdict
+  // table. Two French runs settled this: the open framing returned usable
+  // sourced evidence about real usage, while a "return a verdict on each of N
+  // terms" framing returned a well-formed table whose rows were invented
+  // (`CSS`, `API`, `Daemon` — and a row assessing the word "verdict" itself,
+  // lifted from the instruction). Deep Research is retrieval-first: it treats
+  // this text as a topic to search from, not a work list to iterate over, so a
+  // countable output constraint gets satisfied by fabrication.
+  //
+  // Structure is imposed afterwards instead, by scripts/distill.mjs, whose row
+  // set is generated from our own data and therefore cannot be invented.
   const topic =
     `Terminology review: what do ${spec.name}-speaking web developers actually call the ` +
     `DOM browser events (click, keyup, scroll, resize, mousedown, …) and the core ` +
@@ -640,6 +658,41 @@ async function buildBrief(code, mode = 'review') {
 
   const lines = [];
   lines.push(`# Terminology review — ${label} [${code}]`);
+  lines.push('');
+
+  // Scope constraints, stated early because both trial runs drifted off the
+  // listed terms. Deliberately NOT a countable output contract — see the note
+  // on `topic` above for why a row count made things worse.
+  lines.push('## What we are asking');
+  lines.push('');
+  lines.push(
+    `For each term in the tables below: is it what a ${spec.name}-speaking developer would ` +
+    `actually write? Say **keep**, or **change** and name the replacement, or that you found ` +
+    `**no evidence** of real usage — with a sentence of reasoning and your sources.`
+  );
+  lines.push('');
+  lines.push('"No evidence found" for a term we already ship is a useful result, not a failure to');
+  lines.push('complete the task — it tells us the term was invented. Please do not upgrade it to a');
+  lines.push('confirmation to be agreeable, and if you end up confirming everything, say so');
+  lines.push('explicitly and show what you searched that could have contradicted it.');
+  lines.push('');
+  lines.push('### Two things that would make this report unusable');
+  lines.push('');
+  lines.push(
+    `**Assessing terms we did not ask about.** The tables below are the entire subject. ` +
+    `A general account of how ${spec.name}-speaking developers talk about the web, or a ` +
+    `glossary of terms like API, cache or CSS, answers a different question — however ` +
+    `interesting. If a listed term yields nothing, say so and move on; do not substitute ` +
+    `a term that did yield something.`
+  );
+  lines.push('');
+  lines.push(
+    '**Re-arguing whether to translate at all.** That is a settled product decision — yes, we ' +
+    'translate. We already know MDN and comparable references keep the English identifiers, ' +
+    'and that some developers prefer them; that is not evidence against translating, it is the ' +
+    'reason a term may have **no evidence found**. A report that spends its length on this ' +
+    'question has answered a different one.'
+  );
   lines.push('');
   lines.push('## What these words are for');
   lines.push('');
@@ -670,7 +723,7 @@ async function buildBrief(code, mode = 'review') {
   lines.push('are otherwise matched exactly: German ß does **not** fold to ss, so if a term');
   lines.push('has a widely-used alternative spelling, name it and we will register both.');
   lines.push('');
-  lines.push('## What we need from the research');
+  lines.push('## What counts as evidence');
   lines.push('');
   lines.push(`Evidence of **real ${spec.name} usage**, preferably informal: tutorials, blog`);
   lines.push('posts, university or bootcamp course material, YouTube captions, forum threads,');
@@ -682,12 +735,8 @@ async function buildBrief(code, mode = 'review') {
   lines.push('The second matters more here — the audience is beginners learning hypermedia in');
   lines.push('their own language.');
   lines.push('');
-  lines.push('Please cite sources per term, and say explicitly where you found nothing —');
-  lines.push('"no usage found" is a useful answer and much better than a plausible guess.');
-  lines.push('');
-  lines.push('**Not in scope:** whether event names should be translated at all. We know major');
-  lines.push('references (MDN and similar) keep the English identifiers; that is a settled');
-  lines.push('product decision, not the question.');
+  lines.push('Cite sources per term. Prefer a direct link to the page you read; if you can only');
+  lines.push('offer a redirect, name the site as well, so the citation survives the link.');
   lines.push('');
   lines.push(...crossLocaleFindings(spec));
   // After the shared rules, because the coinage criteria build on them: a coined
@@ -802,18 +851,51 @@ async function buildBrief(code, mode = 'review') {
     lines.push('');
   }
 
-  lines.push('## Answer format');
+  // Scope questions only. An earlier version asked "does your table have N
+  // rows?" and got N rows of invented terms.
+  lines.push('## Before you finish');
   lines.push('');
-  lines.push('Per term: **keep** / **change to X** / **no evidence found**, one or two sentences');
-  lines.push('of reasoning, and the sources.');
-  lines.push('');
-  lines.push('Answering "no evidence found" for a term we already ship is a useful result, not a');
-  lines.push('failure to complete the task — it tells us the term was invented. Please do not');
-  lines.push('upgrade it to a confirmation to be agreeable, and if you end up confirming');
-  lines.push('everything, say so explicitly and show what you searched that could have');
-  lines.push('contradicted it.');
+  lines.push('- Is every term you assessed one we listed above? Terms we did not ask about do');
+  lines.push('  not belong in the answer.');
+  lines.push('- For the listed terms you could find nothing on, did you say so explicitly,');
+  lines.push('  rather than leaving them out?');
+  lines.push(`- Did you avoid arguing whether ${spec.name} developers should use English`);
+  lines.push('  identifiers at all? That question is closed.');
 
-  return { code, topic, context: lines.join('\n'), priorityCount: priority.length };
+  // The authoritative term inventory, returned alongside the prose so the
+  // distillation step can build its row set from our own data rather than from
+  // whatever the report happened to discuss. This is the single source of truth
+  // for "which terms did we ask about" — scripts/distill.mjs consumes it, and
+  // duplicating the derivation there would let the two drift.
+  const attrsByCanonical = {};
+  for (const [loc, can] of Object.entries(spec.fixi?.attrs ?? {})) {
+    (attrsByCanonical[can] ??= []).push(loc);
+  }
+  const inventory = [
+    ...CANONICAL_ATTRS.map(can => ({
+      kind: 'attrs',
+      canonical: can,
+      shipped: attrsByCanonical[can]?.[0] ?? null,
+      alts: attrsByCanonical[can]?.slice(1) ?? [],
+    })),
+    ...rows
+      .filter(r => r.primary)
+      .map(r => ({ kind: 'events', canonical: r.canonical, shipped: r.primary, alts: r.alts })),
+    ...candidates.map(r => ({
+      kind: 'candidates',
+      canonical: r.canonical,
+      upstream: r.upstreamOnly,
+    })),
+    ...missing.map(r => ({ kind: 'gaps', canonical: r.canonical, shipped: null })),
+  ];
+
+  return {
+    code,
+    topic,
+    context: lines.join('\n'),
+    priorityCount: priority.length,
+    inventory,
+  };
 }
 
 async function main() {
