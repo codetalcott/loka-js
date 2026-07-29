@@ -17,10 +17,14 @@
 window.loka.register('ko', {
   fixi: {
     attrs: {
+      'fx-주소': 'fx-action',
       'fx-액션': 'fx-action',
+      'fx-메서드': 'fx-method',
       'fx-메소드': 'fx-method',
       'fx-트리거': 'fx-trigger',
       'fx-타겟': 'fx-target',
+      'fx-타깃': 'fx-target',
+      'fx-교체': 'fx-swap',
       'fx-스왑': 'fx-swap',
     },
     events: {
@@ -29,8 +33,15 @@ window.loka.register('ko', {
       '제출': 'submit',
       '입력': 'input',
       '포커스': 'focus',
+      '포커스아웃': 'blur',
       '블러': 'blur',
       '초기화': 'init',
+      '키다운': 'keydown',
+      '키업': 'keyup',
+      '마우스다운': 'mousedown',
+      '마우스업': 'mouseup',
+      '마우스오버': 'mouseover',
+      '마우스아웃': 'mouseout',
       '스크롤': 'scroll',
     },
   },

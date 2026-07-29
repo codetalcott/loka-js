@@ -391,6 +391,15 @@ async function phaseJ() {
       unknown: window.fixi.event(es, 'zzz'),        // passthrough
       proto: typeof window.fixi.event(es, 'constructor'), // must not leak a Function
       deBound: de.__fixi?.evt,
+      // Attribute-name aliases resolve per element, not per locale. de ships
+      // fx-ersetzung as primary with fx-tausch demoted; #de-btn carries the
+      // demoted spelling. Resolving to the primary regardless would make fixi
+      // read an absent attribute and fall back to its outerHTML default, which
+      // DELETES the swap target rather than filling it. The German demo covers
+      // this incidentally — these two name it, so rewriting the demo to the
+      // primary spelling can't silently drop the coverage.
+      aliasOnElt: window.fixi.name(de, 'swap'),                // has fx-tausch
+      primaryWhenAbsent: window.fixi.name(document.querySelector('#de-moxi'), 'swap'),
     };
   });
   const deBefore = (await page.textContent('#de-out')).trim();
@@ -420,6 +429,10 @@ async function phaseJ() {
     [() => tolerant.unknown === 'zzz',       `${tag} unknown value passes through unchanged (got "${tolerant.unknown}")`],
     [() => tolerant.proto === 'string',      `${tag} "constructor" does not leak Object.prototype (got ${tolerant.proto})`],
     [() => tolerant.deBound === 'click',     `${tag} fixi bound click from lowercase fx-auslöser (got "${tolerant.deBound}")`],
+    [() => tolerant.aliasOnElt === 'fx-tausch',
+      `${tag} demoted attr spelling on the element still resolves (got "${tolerant.aliasOnElt}")`],
+    [() => tolerant.primaryWhenAbsent === 'fx-ersetzung',
+      `${tag} element without the attribute resolves to the primary (got "${tolerant.primaryWhenAbsent}")`],
     [() => deBefore !== deAfter && deAfter.includes('Resultado'),
       `${tag} de lowercase trigger drove a real swap (before "${deBefore.slice(0,15)}", after "${deAfter.slice(0,15)}")`],
     [() => deMoxi.includes('ausgelöst') && !deMoxi.includes('nicht'),

@@ -28,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { EVENT_KEYWORDS } from './gen-locales.mjs';
 import { LOCALES } from './fx-vocab.mjs';
+import { SETTLED, describe as describeSettled } from './settled-terms.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCALES_DIR = path.resolve(__dirname, '..', 'locales');
@@ -46,26 +47,230 @@ const EVENT_TABLE = path.resolve(
   '../../hyperfixi/packages/semantic/src/patterns/event-handler.ts'
 );
 
-// Terms already researched, so a brief doesn't spend effort re-deriving them.
-// Keyed `${code}:${canonical}`.
-// Phrased as the concluded form rather than the transition, so the note stays
-// unambiguous even if it is read against a checkout predating the regeneration.
-const SETTLED = {
-  'es:mousedown': "concluded: 'ratón abajo' — the fused 'ratónabajo' was malformed",
-  'es:mouseup': "concluded: 'ratón arriba' — the fused 'ratónarriba' was malformed",
-  'pt:mousedown': "concluded: 'mouse pressionado' — 'mouse baixo' calqued the English down/up",
-  'pt:mouseup': "concluded: 'mouse solto' — 'mouse cima' calqued the English down/up",
-  'de:resize': "concluded: 'Größenänderung' — 'größeändern' was a malformed compound",
-  'pl:resize': "concluded: 'zmiana rozmiaru' — 'zmieńrozmiar' fused a two-word phrase",
+// Terms already researched live in scripts/settled-terms.mjs, shared with
+// test/vocab-ordering.mjs so a concluded decision is asserted against the
+// generated data rather than only advertised here.
+
+// What each fx-* attribute DOES. An attribute name is a term of art, not a
+// dictionary word: `fx-swap` is not "exchange", it is the name of a DOM
+// replacement strategy. Without the gloss a reviewer translates the English
+// word instead of naming the concept, which is how you get a technically
+// correct term no developer would recognise.
+const ATTR_GLOSS = {
+  'fx-action': 'the URL to request. Concept: the endpoint this element talks to.',
+  'fx-method': 'the HTTP verb (GET/POST/…). Concept: the kind of request.',
+  'fx-trigger': 'which DOM event fires the request. Concept: the cause, "when this happens".',
+  'fx-target': 'which element receives the response. Concept: the destination in the page.',
+  'fx-swap': 'how the response is placed (innerHTML/outerHTML/beforeend/…). Concept: the replacement strategy.',
+  'mx-ignore': 'marks a subtree moxi should not process.',
+  'fx-ignore': 'marks a subtree fixi should not process.',
+  live: 'moxi: marks an element as reactively bound.',
+  'on-': 'moxi: the prefix that turns an event name into a handler attribute (`on-click`).',
 };
 
+// Suspicions a human noticed that no heuristic catches.
+//
+// The automated checks in suspicions() find fused forms by comparing against the
+// English shape ("keydown is two words, so a spaceless term is suspect"), which
+// only works where English is itself two words. A term like `unavez` — a fused
+// Spanish 'una vez' for a canonical English `once` — reads as an ordinary word
+// to every regex we have. It took a human noticing.
+//
+// Unlike SETTLED these are OPEN questions, so they belong in the brief's
+// priority section, not its "confirm only" list. Keyed `${code}:${localizedForm}`.
+const NOTED = {
+  'es:unavez': {
+    canonical: 'once',
+    why: "reads as a fusion of 'una vez'; Spanish writes that as two words. Same defect class as the corrected 'ratónabajo' and 'größeändern'.",
+    // Without this the obvious answer is unusable, and we'd get it back as a
+    // recommendation we then have to reject.
+    constraint:
+      'This one is a moxi **modifier**, written dotted onto the attribute name ' +
+      '(`al-clic.unavez`), so it is parsed out of the name — a space is impossible ' +
+      'here. `una vez` cannot be the answer. A hyphen is legal (`una-vez`), as is any ' +
+      'single-token alternative. Which reads better to a Spanish developer?',
+  },
+};
+
+// Languages with more than one written standard that a developer might plausibly
+// be writing for. Asked about explicitly, because the answer we expect is "no
+// split needed" and a reviewer will not volunteer that unprompted.
+const VARIANT_QUESTION = {
+  pt: ['Brazil (pt-BR)', 'Portugal (pt-PT)'],
+  es: ['Spain (es-ES)', 'Latin America (es-419)'],
+  zh: ['Simplified / mainland (zh-Hans)', 'Traditional / Taiwan & Hong Kong (zh-Hant)'],
+};
+
+/**
+ * The attribute-name section.
+ *
+ * Separate from the events section because the constraints genuinely differ: an
+ * attribute NAME can never contain a space (an event name can, in an
+ * `fx-trigger` value), and these five tokens are the most visible thing an
+ * author types — they appear in every example, every tutorial, every page.
+ *
+ * They are also the surface the `reviewed` flag actually tracks, and it is true
+ * for only four locales, so for twenty of them nothing here has been read by a
+ * native speaker.
+ */
+function attrSection(code, spec) {
+  const lines = [];
+  const attrs = spec.fixi?.attrs ?? {};
+  const canonicalAttrs = ['fx-action', 'fx-method', 'fx-trigger', 'fx-target', 'fx-swap'];
+
+  // localized → canonical, inverted for display, primary-first per README.
+  const byCanonical = {};
+  for (const [loc, can] of Object.entries(attrs)) (byCanonical[can] ??= []).push(loc);
+
+  lines.push('## Attribute names to assess');
+  lines.push('');
+  lines.push(
+    `These are the attribute names themselves — the tokens an author types on every ` +
+    `element. They carry a constraint the event names do not: **an HTML attribute name ` +
+    `cannot contain a space**, so every term here must be a single token. Hyphens are ` +
+    `fine (\`fx-…\` is already hyphenated); spaces are not.`
+  );
+  lines.push('');
+  lines.push(
+    'Each names a concept from hypermedia/AJAX, not an everyday word. Please answer for ' +
+    'the concept as described, not for the English word: what would a developer writing ' +
+    `a ${spec.name} tutorial about this call it?`
+  );
+  lines.push('');
+  // An empty attrs table for a non-English locale is an unfilled stub, not a
+  // set of identity decisions. Saying "deliberately unchanged" there would claim
+  // a judgment nobody made, and invite the reviewer to confirm it.
+  const isStub = code !== 'en' && Object.keys(attrs).length === 0;
+
+  if (isStub) {
+    lines.push(
+      `**Nothing is translated yet.** loka ships no ${spec.name} attribute names at all — ` +
+      'this is an unfilled stub, not a decision that English reads fine here. Every row ' +
+      'below is an open question, and proposing a first term is the whole task.'
+    );
+    lines.push('');
+  }
+
+  lines.push('| attribute | what it does | term we ship | also accepted |');
+  lines.push('|---|---|---|---|');
+  for (const can of canonicalAttrs) {
+    const forms = byCanonical[can] ?? [];
+    // Identity omission is a documented convention, not a coverage gap — say so
+    // inline, or a reviewer reads the blank as "unsupported" and proposes a term
+    // for something we deliberately left in English.
+    const untranslated = isStub ? '*nothing yet*' : `\`${can}\` — *deliberately unchanged*`;
+    const ship = forms.length ? `\`${forms[0]}\`` : untranslated;
+    const alts = forms.length > 1 ? forms.slice(1).map(f => `\`${f}\``).join(', ') : '—';
+    lines.push(`| \`${can}\` | ${ATTR_GLOSS[can]} | ${ship} | ${alts} |`);
+  }
+  lines.push('');
+  if (!isStub && canonicalAttrs.some(can => !byCanonical[can])) {
+    lines.push(
+      '*deliberately unchanged* means we judged the English token to be what a ' +
+      `${spec.name} developer would already write, so we publish no translation. That is a ` +
+      'real answer, not a gap — but if it is wrong, say so.'
+    );
+    lines.push('');
+  }
+
+  // Other libraries in the family. Only Spanish has these today; rendering them
+  // conditionally keeps the other briefs from carrying an empty section.
+  const extras = [
+    ['moxi attributes', spec.moxi?.attrs],
+    ['moxi modifiers (written `.prevenir`-style after an event)', spec.moxi?.modifiers],
+    ['paxi swap strategies (values of `fx-swap`)', spec.paxi?.swaps],
+    ['rexi global verbs', spec.rexi?.globals],
+    ['ssexi server-sent event names', spec.ssexi?.events],
+  ].filter(([, table]) => table && Object.keys(table).length);
+
+  if (extras.length) {
+    lines.push('### Other fixi-family tokens');
+    lines.push('');
+    lines.push(
+      `${spec.name} is the only locale that localizes the rest of the family, so these ` +
+      'have had even less scrutiny than the fx-* names above. Same question for each.'
+    );
+    lines.push('');
+    for (const [label, table] of extras) {
+      lines.push(`**${label}**`);
+      lines.push('');
+      for (const [loc, can] of Object.entries(table)) {
+        const gloss = ATTR_GLOSS[can] ? ` — ${ATTR_GLOSS[can]}` : '';
+        const flag = NOTED[`${code}:${loc}`] ? ' ⚠ **see below**' : '';
+        lines.push(`- \`${can}\` → \`${loc}\`${gloss}${flag}`);
+      }
+      lines.push('');
+    }
+
+    lines.push(
+      'These have had the least scrutiny of anything loka publishes, and the fused-compound ' +
+      'defect that turned up repeatedly in the event names has not been checked for here at ' +
+      'all — the automated check compares against the English word shape, which catches ' +
+      'nothing when the English is a single word. Please read each one as "is this how the ' +
+      'phrase is actually written?", not just "is this the right word?".'
+    );
+    lines.push('');
+  }
+
+  // Human-noticed suspicions for this locale, in their own section so they are
+  // not buried in a list of thirty tokens.
+  const noted = Object.entries(NOTED)
+    .filter(([key]) => key.startsWith(`${code}:`))
+    .map(([key, rec]) => [key.slice(code.length + 1), rec]);
+
+  if (noted.length) {
+    lines.push('### Specific terms we already suspect');
+    lines.push('');
+    lines.push(
+      'Noticed by inspection rather than by the automated checks, so these are open ' +
+      'questions with no prior conclusion — please treat them as the highest-value items ' +
+      'in this brief:'
+    );
+    lines.push('');
+    for (const [form, rec] of noted) {
+      lines.push(`- **\`${form}\`** (for \`${rec.canonical}\`) — ${rec.why}`);
+      if (rec.constraint) lines.push(`  - ${rec.constraint}`);
+    }
+    lines.push('');
+  }
+
+  const variants = VARIANT_QUESTION[code];
+  if (variants) {
+    lines.push('### Regional variation');
+    lines.push('');
+    lines.push(
+      `${spec.name} has more than one written standard. loka publishes one vocabulary per ` +
+      `language today, so if ${variants.join(' and ')} genuinely diverge we would need to ` +
+      'know before deciding whether to split.'
+    );
+    lines.push('');
+    lines.push(
+      'Please answer narrowly: **which specific terms, if any, would a developer in ' +
+      `${variants[0].replace(/\s*\(.*\)/, '')} and one in ` +
+      `${variants[1].replace(/\s*\(.*\)/, '')} write differently?** Not pronounce ` +
+      'differently, not prefer stylistically — write as a different token.'
+    );
+    lines.push('');
+    lines.push(
+      'If the same tokens are used throughout, say so explicitly. That is the outcome we ' +
+      'expect and it saves us shipping a split that would fragment the vocabulary for no ' +
+      'gain. A split is expensive: it doubles the terms a learner might encounter and ' +
+      'requires runtime work loka has not done.'
+    );
+    lines.push('');
+  }
+
+  return lines;
+}
+
 function parseArgs() {
-  const args = { locale: null, json: false, all: false, help: false };
+  const args = { locale: null, json: false, all: false, help: false, out: null };
   for (const a of process.argv.slice(2)) {
     if (a === '--json') args.json = true;
     else if (a === '--all') args.all = true;
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a.startsWith('--locale=')) args.locale = a.slice('--locale='.length);
+    else if (a.startsWith('--out=')) args.out = a.slice('--out='.length);
   }
   return args;
 }
@@ -217,12 +422,19 @@ async function buildBrief(code) {
   const candidates = rows.filter(r => !r.primary && r.upstreamOnly);
   const missing = rows.filter(r => !r.primary && !r.upstreamOnly);
 
+  const attrCount = new Set(Object.values(spec.fixi?.attrs ?? {})).size;
   const topic =
     `Terminology review: what do ${spec.name}-speaking web developers actually call the ` +
-    `DOM browser events (click, keyup, scroll, resize, mousedown, …) when writing or ` +
-    `teaching in ${spec.name}? Assess the ${rows.filter(r => r.primary).length} candidate ` +
-    `${spec.name} terms listed in the context and say, for each, whether it is what a ` +
-    `native developer would write — and if not, what they would.`;
+    `DOM browser events (click, keyup, scroll, resize, mousedown, …) and the core ` +
+    `hypermedia attribute concepts (request URL, HTTP method, triggering event, target ` +
+    `element, swap strategy) when writing or teaching in ${spec.name}? Assess the ` +
+    `${attrCount} attribute terms and ${rows.filter(r => r.primary).length} event terms ` +
+    `listed in the context and say, for each, whether it is what a native developer would ` +
+    `write — and if not, what they would.` +
+    (VARIANT_QUESTION[code]
+      ? ` Also determine whether ${VARIANT_QUESTION[code].join(' and ')} diverge on any ` +
+        `specific term, or use the same vocabulary throughout.`
+      : '');
 
   const lines = [];
   lines.push(`# Terminology review — ${label} [${code}]`);
@@ -236,16 +448,25 @@ async function buildBrief(code) {
     `not prose — it must be short, recognisable, and unambiguous out of context.`
   );
   lines.push('');
-  lines.push('Two placement constraints shape what is usable:');
+  lines.push('Where these terms may appear:');
   lines.push('');
-  lines.push('1. As an attribute **value** (`fx-trigger="…"`), multi-word terms are fine.');
-  lines.push('2. As part of an attribute **name** (`on-…`), they are not — HTML attribute');
-  lines.push('   names cannot contain spaces. A single-token term therefore works in both');
-  lines.push('   places and a multi-word term only in the first. Single-token is preferable');
-  lines.push('   where the language allows one naturally; do not invent a compound to get it.');
+  lines.push('1. As an attribute **value** (`fx-trigger="…"`), written however you like —');
+  lines.push('   `"tecla pressionada"` is fine.');
+  lines.push('2. As part of an attribute **name** (`on-…`), written with a hyphen or');
+  lines.push('   underscore instead of the space — `on-tecla-pressionada`. HTML attribute');
+  lines.push('   names cannot contain literal spaces, but lookup collapses runs of');
+  lines.push('   space/hyphen/underscore to one space before matching, so the hyphenated');
+  lines.push('   spelling resolves to the same term. (Verified against the runtime, not');
+  lines.push('   assumed.)');
   lines.push('');
-  lines.push('Case and separators (space/hyphen/underscore) are folded at lookup, so those');
-  lines.push('are not correctness questions — only the choice of word is.');
+  lines.push('**So do not distort a term to make it one word.** A two-word term that is what');
+  lines.push('people actually say beats a fused compound invented to avoid the space — every');
+  lines.push('fused form we have checked so far turned out to be malformed. Prefer a single');
+  lines.push('token only when the language genuinely offers one.');
+  lines.push('');
+  lines.push('Case is folded too, so capitalization is never the question. Note that letters');
+  lines.push('are otherwise matched exactly: German ß does **not** fold to ss, so if a term');
+  lines.push('has a widely-used alternative spelling, name it and we will register both.');
   lines.push('');
   lines.push('## What we need from the research');
   lines.push('');
@@ -279,7 +500,9 @@ async function buildBrief(code) {
     lines.push('');
   }
 
-  lines.push('## Terms to assess');
+  lines.push(...attrSection(code, spec));
+
+  lines.push('## Event names to assess');
   lines.push('');
   lines.push('| DOM event | term we ship | also accepted | source |');
   lines.push('|---|---|---|---|');
@@ -295,7 +518,20 @@ async function buildBrief(code) {
   if (settled.length) {
     lines.push('Already researched and corrected — confirm only, do not re-derive:');
     lines.push('');
-    for (const r of settled) lines.push(`- \`${r.canonical}\`: ${r.settled}`);
+    for (const r of settled) {
+      lines.push(`- \`${r.canonical}\`: ${describeSettled(r.settled)}`);
+      // A prior decision made without sources is worth a second look; one made
+      // with them is worth checking against them. Say which this is.
+      if (!r.settled.sources.length) {
+        lines.push(
+          `  - decided ${r.settled.date} on structural grounds, with no cited ` +
+          `source. If your reading disagrees, say so — this is not settled by evidence.`
+        );
+      }
+      if (r.settled.variantNote) {
+        lines.push(`  - regional caveat on record: ${r.settled.variantNote}`);
+      }
+    }
     lines.push('');
   }
 
@@ -354,6 +590,7 @@ async function main() {
   --locale=<code>  brief for one locale
   --all            every locale
   --json           emit {topic, context} instead of markdown
+  --out=<dir>      write <dir>/<code>.md (or .json) instead of stdout
   --help           this message`);
     return;
   }
@@ -386,6 +623,19 @@ async function main() {
   const briefs = [];
   for (const c of codes) briefs.push(await buildBrief(c));
 
+  // --out writes one file per locale, so a brief can be handed to a research
+  // agent or a reviewer without a checkout. Stdout stays the default.
+  if (args.out) {
+    fs.mkdirSync(args.out, { recursive: true });
+    for (const b of briefs) {
+      const ext = args.json ? 'json' : 'md';
+      const file = path.join(args.out, `${b.code}.${ext}`);
+      fs.writeFileSync(file, args.json ? JSON.stringify(b, null, 2) + '\n' : b.context + '\n');
+      console.log(`wrote ${path.relative(process.cwd(), file)}`);
+    }
+    return;
+  }
+
   if (args.json) {
     console.log(JSON.stringify(args.all ? briefs : briefs[0], null, 2));
   } else {
@@ -393,4 +643,11 @@ async function main() {
   }
 }
 
-main();
+// Only run when invoked directly, so scripts/queue-research.mjs can import
+// buildBrief rather than shelling out and re-parsing stdout.
+const invokedDirectly =
+  process.argv[1] &&
+  fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+if (invokedDirectly) await main();
+
+export { buildBrief };

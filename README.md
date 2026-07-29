@@ -137,7 +137,9 @@ Coverage varies by locale — the profiles are the upstream source, and only `sc
 
 **Event lookup is author-tolerant.** Case and separators are folded, so `Klick`, `klick` and `KLICK` all resolve, as do `hacer clic`, `hacer-clic` and `hacer_clic`. This matters most in German, whose event vocabulary is capitalized because German capitalizes nouns: HTML lowercases attribute *names*, so a `on-Klick` handler reaches moxi as `klick` and was previously unresolvable. Exact matches are tried first, so nothing that resolved before changes.
 
-**One constraint worth knowing:** several localized event names are multi-word (`tecla arriba`, `ratón encima`). Those work in fixi's `fx-trigger` **value** (`fx-disparador="tecla arriba"`), but not as a moxi attribute **name** — `al-tecla arriba` isn't valid HTML, the parser reads it as two attributes. In moxi, use the single-token events (`al-clic`, `al-desplazar`, `al-carga`, `al-redimensionar`). See [demo/eventos/](demo/eventos/).
+**Multi-word event names work in both positions — hyphenate them in attribute names.** Many localized events are multi-word (`tecla soltada`, `ratón encima`, `taste losgelassen`). In fixi's `fx-trigger` **value** write them with spaces (`fx-disparador="tecla soltada"`); as part of a moxi attribute **name** write them hyphenated (`al-tecla-soltada`), since an HTML attribute name can't contain a space. Both resolve, because lookup collapses runs of spaces, hyphens and underscores before matching.
+
+**Accents are not folded.** `al-pérdida-de-foco` resolves; `al-perdida-de-foco` resolves only because the unaccented twin is registered too. Locale data registers both spellings wherever a term carries an accent — if you add one, add its plain-ASCII form as well. See [demo/eventos/](demo/eventos/).
 
 ## The pattern this represents
 

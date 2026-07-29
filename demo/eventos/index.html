@@ -43,6 +43,28 @@ desarrollo y verás <code>fx-disparador="tecla arriba"</code> tal cual.</p>
   <div id="resultados" class="target">— sin resultados —</div>
   <pre>fixi.event(elt, "tecla arriba") devuelve "keyup"
 addEventListener("keyup", …) — el idioma se resuelve desde &lt;html lang="es"&gt;</pre>
+  <p class="nota">
+    Este ejemplo usa <code>tecla arriba</code> a propósito: desde el 2026-07-28 el
+    término que enseñamos es <code>tecla soltada</code> (<code>arriba</code>
+    traducía la posición, no el hecho de soltar la tecla). La forma antigua sigue
+    resolviendo — así se comprueba que degradar un término no rompe páginas ya
+    escritas.
+  </p>
+</section>
+
+<section>
+  <h2><code>tecla soltada</code> → <code>keyup</code> (el término actual)</h2>
+  <input
+    type="search"
+    id="busqueda2"
+    placeholder="Escribe aquí…"
+    fx-acción="./resultados.html"
+    fx-disparador="tecla soltada"
+    fx-objetivo="#resultados2"
+    fx-intercambio="innerHTML">
+  <div id="resultados2" class="target">— sin resultados —</div>
+  <pre>fixi.event(elt, "tecla soltada") devuelve "keyup"
+Un evento nombra algo que ocurrió, por eso es participio y no infinitivo.</pre>
 </section>
 
 <section>
@@ -79,14 +101,19 @@ on-klick             →  moxi liest den vom Parser kleingeschriebenen Namen</pr
 </section>
 
 <section>
-  <h2 class="nota">Por qué <code>tecla arriba</code> no funciona en moxi</h2>
+  <h2 class="nota">Eventos de varias palabras en moxi: usa guiones</h2>
   <p class="nota">
-    Los nombres de evento de varias palabras funcionan en el <strong>valor</strong> de
-    <code>fx-disparador</code>, pero no como <strong>nombre</strong> de atributo:
-    <code>al-tecla arriba</code> no es HTML válido — el analizador lo lee como dos
-    atributos. En moxi usa los eventos de una sola palabra
-    (<code>al-clic</code>, <code>al-desplazar</code>, <code>al-carga</code>,
-    <code>al-redimensionar</code>).
+    Un nombre de atributo HTML no puede contener espacios, así que
+    <code>al-tecla soltada</code> no es válido — el analizador lo lee como dos
+    atributos. Escríbelo con guiones: <code>al-tecla-soltada</code> funciona,
+    porque la búsqueda reduce espacios, guiones y guiones bajos a un solo
+    espacio antes de comparar. No hace falta limitarse a eventos de una palabra.
+  </p>
+  <p class="nota">
+    Lo que <strong>no</strong> se pliega son los acentos. <code>al-pérdida-de-foco</code>
+    resuelve; <code>al-perdida-de-foco</code> resuelve sólo porque registramos
+    también la forma sin tilde. Si propones un término nuevo con tilde o ñ, pide
+    que se registre su gemelo en ASCII.
   </p>
 </section>
 

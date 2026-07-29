@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 *.log
+
+# terminology-research working files (briefs are regenerable; findings are drafts)
+research/

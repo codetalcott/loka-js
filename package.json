@@ -29,7 +29,10 @@
   "scripts": {
     "gen": "node scripts/gen-locales.mjs",
     "brief": "node scripts/research-brief.mjs",
-    "test": "node test/loka-js.spec.mjs",
+    "queue-research": "node scripts/queue-research.mjs",
+    "verify-prompt": "node scripts/verify-prompt.mjs",
+    "test": "node test/gen-drift.mjs && node test/vocab-ordering.mjs && node test/loka-js.spec.mjs",
+    "test:drift": "node test/gen-drift.mjs",
     "test:vocab": "node test/vocab-ordering.mjs"
   },
   "keywords": [

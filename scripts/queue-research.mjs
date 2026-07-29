@@ -1,0 +1,254 @@
+#!/usr/bin/env node
+// Turn a terminology brief into a gemini-deep-research topic payload.
+//
+// Usage:
+//   node scripts/queue-research.mjs --locale=pt          # print the payload
+//   node scripts/queue-research.mjs --locale=pt --json   # {topic, context, priority}
+//   node scripts/queue-research.mjs --wave               # the priority-locale wave
+//
+// Why a script and not a hand-written prompt
+// ------------------------------------------
+// The harvest side of that pipeline parses the context string with literal
+// anchors — `PROJECT:` and `AIMS (decide these):` must appear exactly, or the
+// report lands in "aimless mode" and is filed as a searchable copy with no
+// synthesis at all. Hand-composing that per locale is 23 chances to typo an
+// anchor and not find out for 6-30 hours.
+//
+// This does NOT queue anything. It prints a payload for a caller (an agent
+// session, or a human) to pass to the `add_research_topic` MCP tool. Queuing
+// from here would need the MCP client, and the round trip is long enough that
+// eyeballing the payload first is worth the extra step.
+
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { buildBrief } from './research-brief.mjs';
+import { LOCALES } from './fx-vocab.mjs';
+import { settledFor } from './settled-terms.mjs';
+
+// Ordered by developer-audience size against how much of the vocabulary has
+// never been read by a native speaker. Not a ranking of languages — a ranking of
+// where a wrong term costs the most learners.
+//
+// `es` is here despite being the one locale whose attribute names have had a
+// native-speaker pass: it is also the only locale that localizes the rest of the
+// fixi family (moxi modifiers, paxi swaps, rexi verbs, ssexi events), and none of
+// that has been reviewed by anyone. It carries roughly three times the tokens of
+// any other locale, so it is simultaneously the best-checked and the least-checked.
+const WAVE = ['ja', 'pt', 'de', 'zh', 'ko', 'es'];
+
+const PROJECT = 'loka-js';
+
+function parseArgs() {
+  const args = { locale: null, wave: false, json: false, help: false };
+  for (const a of process.argv.slice(2)) {
+    if (a === '--json') args.json = true;
+    else if (a === '--wave') args.wave = true;
+    else if (a === '--help' || a === '-h') args.help = true;
+    else if (a.startsWith('--locale=')) args.locale = a.slice('--locale='.length);
+  }
+  return args;
+}
+
+/**
+ * The aims. Written as decisions rather than questions, because the harvest
+ * restates them verbatim in the note's TL;DR and answers a "should we…?" with a
+ * summary instead of a verdict.
+ *
+ * Only aims the brief actually supports are included — an aim about regional
+ * variants in a locale with one written standard invites an invented finding.
+ */
+function aimsFor(code, spec, brief) {
+  const aims = [
+    `For each attribute name and event name in the brief, decide: keep the term we ship, ` +
+      `change it to a specific alternative, or record that no ${spec.name} usage was found.`,
+    `Decide which of the terms we ship are calques or invented compounds rather than forms ` +
+      `${spec.name}-speaking developers actually write, and what should replace each.`,
+  ];
+
+  if (brief.context.includes('## Candidates — terms that exist upstream')) {
+    aims.push(
+      `Decide whether the candidate terms that exist upstream but are unpublished should be ` +
+        `published as-is, published in a corrected form, or left out.`
+    );
+  }
+  if (brief.context.includes('## Gaps — no term anywhere')) {
+    aims.push(
+      `For the canonicals with no term at all, decide whether a natural ${spec.name} term ` +
+        `exists to propose, or whether authors should keep writing the English token.`
+    );
+  }
+  if (brief.context.includes('### Specific terms we already suspect')) {
+    aims.push(
+      `For each term in "Specific terms we already suspect", decide whether the suspicion is ` +
+        `correct and what the replacement should be — respecting the placement constraint ` +
+        `stated with each one, since the natural phrasing may be illegal in that position.`
+    );
+  }
+  if (brief.context.includes('### Other fixi-family tokens')) {
+    aims.push(
+      `Decide which of the non-fx-* tokens (moxi modifiers, paxi swap strategies, rexi verbs, ` +
+        `ssexi event names) are wrong — these have never been reviewed and were checked by no ` +
+        `automated heuristic.`
+    );
+  }
+  if (brief.context.includes('### Regional variation')) {
+    aims.push(
+      `Decide whether ${spec.name} warrants separate regional vocabularies, and if so, ` +
+        `exactly which terms differ — a per-term list, not a general impression.`
+    );
+  }
+  return aims;
+}
+
+/**
+ * Project state the researcher needs and cannot infer from the brief: what loka
+ * is, who reads the output, and which questions are already closed. Without the
+ * closed ones a report spends its length re-arguing whether to translate event
+ * names at all.
+ */
+function additionalContext(code, spec) {
+  const settled = settledFor(code);
+  const lines = [
+    `loka-js lets developers write fixi-family hypermedia HTML in their own language: an ` +
+      `author writes \`fx-gatilho="clique"\` and the library resolves it at attribute-read ` +
+      `time, with no DOM rewriting. The audience is deliberately beginner developers in ` +
+      `non-English locales, not experienced developers who already read English APIs — so ` +
+      `the test for a term is whether a learner would recognise it, not whether it is the ` +
+      `most precise translation.`,
+    ``,
+    `Current state for ${spec.name}: the vocabulary comes from the @lokascript/semantic ` +
+      `'${spec.profile}' profile, which is best-effort and machine-assisted for most ` +
+      `languages. ${spec.reviewed ? 'Attribute names have had a native-speaker pass; event names have not.' : 'Neither the attribute names nor the event names have ever been read by a native speaker.'}`,
+    ``,
+    `Decisions already made, which the research should be consistent with rather than ` +
+      `revisit:`,
+    `- Whether to translate these identifiers at all is settled — yes. That major ` +
+      `references keep the English identifiers is known and is not the question.`,
+    `- Case and separators are folded at lookup, so capitalization and hyphen-vs-space are ` +
+      `not correctness questions. Only the choice of word is.`,
+    `- Attribute NAMES cannot contain spaces (an HTML constraint). Event names used as ` +
+      `attribute VALUES can.`,
+    `- Old spellings are always retained as parse alternatives, so a correction never ` +
+      `breaks an existing page. Recommending a change carries no compatibility cost.`,
+  ];
+
+  if (settled.length) {
+    lines.push(
+      `- Already concluded for this locale (confirm if you disagree, but do not spend the ` +
+        `report re-deriving): ` +
+        settled.map(([canonical, rec]) => `${canonical} → '${rec.concluded}'`).join(', ') +
+        `.`
+    );
+  }
+
+  return lines.join('\n');
+}
+
+/** The full payload for `add_research_topic`. */
+export async function buildPayload(code) {
+  const spec = LOCALES[code];
+  const brief = await buildBrief(code);
+  const aims = aimsFor(code, spec, brief);
+
+  // The anchors below are load-bearing: the harvest parser keys on the literal
+  // strings `PROJECT:` and `AIMS (decide these):`. Do not reformat.
+  const context = [
+    `PROJECT: ${PROJECT}`,
+    ``,
+    `AIMS (decide these):`,
+    ...aims.map((a, i) => `${i + 1}. ${a}`),
+    ``,
+    `TOPIC: ${brief.topic}`,
+    ``,
+    `ADDITIONAL CONTEXT:`,
+    additionalContext(code, spec),
+    ``,
+    `---`,
+    ``,
+    brief.context,
+  ].join('\n');
+
+  return { code, topic: brief.topic, context, priority: 0 };
+}
+
+/** Fail loudly here rather than 6-30 hours later in an unparseable report. */
+function assertAnchors(payload) {
+  const problems = [];
+  if (!payload.context.startsWith(`PROJECT: ${PROJECT}\n`)) {
+    problems.push('context must begin with the `PROJECT: <name>` anchor');
+  }
+  if (!payload.context.includes('\nAIMS (decide these):\n')) {
+    problems.push('context must contain the literal `AIMS (decide these):` anchor');
+  }
+  // Anchored to the marker, not merely present somewhere: the brief body has its
+  // own numbered lists, and a loose match would pass a payload whose AIMS block
+  // is empty.
+  if (!/\nAIMS \(decide these\):\n1\. \S/.test(payload.context)) {
+    problems.push('a numbered aim must follow the AIMS anchor immediately');
+  }
+  if (!payload.topic || payload.topic.length < 40) {
+    problems.push('topic is missing or too short to be a research prompt');
+  }
+  return problems;
+}
+
+async function main() {
+  const args = parseArgs();
+  if (args.help) {
+    console.log(`Compose gemini-deep-research payloads from terminology briefs.
+
+  --locale=<code>  one locale
+  --wave           the priority wave (${WAVE.join(', ')})
+  --json           emit JSON instead of a readable payload
+  --help           this message
+
+Prints only. To queue, pass {topic, context, priority} to the
+add_research_topic tool on the gemini-deep-research MCP server.`);
+    return;
+  }
+
+  if (!args.locale && !args.wave) {
+    console.error('Specify --locale=<code> or --wave. See --help.');
+    process.exit(1);
+  }
+  if (args.locale && !LOCALES[args.locale]) {
+    console.error(`Unknown locale: ${args.locale}`);
+    console.error(`Known: ${Object.keys(LOCALES).join(', ')}`);
+    process.exit(1);
+  }
+
+  const codes = args.wave ? WAVE : [args.locale];
+  const payloads = [];
+  for (const c of codes) payloads.push(await buildPayload(c));
+
+  let bad = 0;
+  for (const p of payloads) {
+    const problems = assertAnchors(p);
+    if (problems.length) {
+      bad++;
+      console.error(`✗ ${p.code}: ${problems.join('; ')}`);
+    }
+  }
+  if (bad) {
+    console.error(`\n${bad} payload(s) malformed — not safe to queue.`);
+    process.exit(1);
+  }
+
+  if (args.json) {
+    console.log(JSON.stringify(args.wave ? payloads : payloads[0], null, 2));
+    return;
+  }
+
+  for (const p of payloads) {
+    console.log(`${'='.repeat(72)}\n${p.code}  (${p.context.length} chars)\n${'='.repeat(72)}\n`);
+    console.log(p.context);
+    console.log('');
+  }
+  console.error(`✓ ${payloads.length} payload(s), anchors verified.`);
+}
+
+const invokedDirectly =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (invokedDirectly) await main();
