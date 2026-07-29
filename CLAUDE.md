@@ -22,7 +22,8 @@ Single-file sources at the repo root, no bundler, no compile step.
 - [demo/](./demo/) — multi-language demos including per-element-lang, `joint-all` (all 5 libs on one Spanish page), and `eventos` (the expanded event vocabulary)
 - [tutorial/](./tutorial/) — Spanish per-library tutorial pages mirroring fixiproject.org examples
 - [test/](./test/) — Playwright acceptance suite (10 phases) + behavior-preservation harness + two pure-Node data checks (vocab conventions, generation drift)
-- `research/` — gitignored working directory for briefs, payloads, and draft findings
+- [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md) — how terminology gets researched, decided, applied and tested
+- `research/` — working directory. Briefs, payloads and verify prompts are gitignored (they regenerate); `research/findings/` is **committed**, being the hand-distilled residue of external research runs
 - [reference-patches/](./reference-patches/) — diff artifacts (`fixi.patch`, `moxi.patch`, `paxi.patch`) showing what our patched copies differ from upstream; kept as documentation of the fork, not PR submissions
 
 Do not introduce a build step, dist directory, or package bundling. Edits to patched library files should keep their patch surface small — not because the patches are headed upstream, but because small surface area minimizes drift when we re-port against upstream changes.
@@ -149,20 +150,18 @@ Multi-word localized events work in **both** positions: spaced in an `fx-trigger
 
 `lookupEvt` in [loka.js](./loka.js) tries an exact match, then falls back to a normalized index built at `register()` time (`toLowerCase`, runs of space/hyphen/underscore → one space). Two reasons, both silent failures before: German ships capitalized event nouns (`Klick`) while HTML lowercases attribute names, which made German moxi handlers *unwritable*; and multi-word names ship in one spelling while authors write another. Verified collision-free across all 24 locales — re-check with a scan if a locale ever adds entries differing only by case or separator. The index uses a null prototype, so `fx-trigger="constructor"` no longer resolves to `Object.prototype.constructor`.
 
-### Terminology research briefs
+### Terminology research
 
-Most of the published vocabulary has never been read by a native speaker — it comes from `@lokascript/semantic` profiles, which are themselves best-effort for most languages. [scripts/research-brief.mjs](./scripts/research-brief.mjs) emits a self-contained brief per locale so that review can happen in a session with no checkout:
+Most of the published vocabulary has never been read by a native speaker — it comes from `@lokascript/semantic` profiles, which are themselves best-effort for most languages. **[RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md) documents the whole process**: the brief → payload → distill → verify → apply lifecycle, the findings JSON schema, which of the three vocabulary homes a given correction belongs in, the settled-record fields, the upstream-freeze protocol, the coinage track, and the wave list.
 
 ```bash
-npm run brief                        # index: which locales have suspect terms
-npm run brief -- --locale=de         # markdown brief
-npm run brief -- --locale=de --json  # {code, topic, context, priorityCount}
-npm run brief -- --locale=de --out=research/briefs   # write to disk
+npm run brief                        # index: suspect terms, pending decisions, coinage mode
+npm run brief -- --locale=de         # markdown brief for one locale
+npm run queue-research -- --wave     # payloads for the current wave (prints only)
+node scripts/settled-terms.mjs       # decisions concluded but not yet shipping
 ```
 
-The brief carries what a reviewer can't infer: that the term is an identifier a developer types (not prose), the single-token-vs-multi-word constraint (multi-word works in an `fx-trigger` value but not in an `on-` attribute name), that case and separators fold at lookup so only word choice is in question, and that whether to translate event names at all is settled and out of scope. It also lists canonicals with **no** term anywhere for that locale, since proposing one is as valuable as correcting one.
-
-It briefs **both** surfaces. Attribute names get their own section, because the constraint is stricter (an attribute name can never contain a space, while an event name may, in an `fx-trigger` value) and because each one names a concept rather than a word — `fx-swap` is a DOM replacement strategy, not "exchange". Without that gloss a reviewer translates the English word and returns a term no developer would recognise. The section also distinguishes two blanks that look identical in the data: an omitted attr is a deliberate identity decision (French `fx-action`), but an *entirely* empty table is an unfilled stub (`qu`) — telling a reviewer we "judged English reads fine" for a stub claims a judgment nobody made.
+Two things about the brief worth knowing while editing it. It briefs **both** surfaces, and attribute names get their own section because each names a *concept* rather than a word — `fx-swap` is a DOM replacement strategy, not "exchange". Without that gloss a reviewer translates the English word and returns a term no developer would recognise. That section also distinguishes two blanks that look identical in the data: an omitted attr is a deliberate identity decision (French `fx-action`), while an *entirely* empty table is an unfilled stub (`qu`) — telling a reviewer we "judged English reads fine" for a stub claims a judgment nobody made.
 
 Locales with more than one written standard (`pt`, `es`, `zh`) get a regional-variation question, phrased to ask which *specific terms* diverge as different tokens — not which pronunciations or styles differ. The expected answer is "no split needed", and it says so, because a reviewer won't volunteer that unprompted and a split is expensive: it doubles what a learner might encounter and needs runtime work loka hasn't done (`normLang` in [loka.js](./loka.js) strips the subtag, so `lang="pt-BR"` resolves as `pt` today).
 
@@ -186,6 +185,10 @@ They were previously two hand-kept copies of the same facts and had already drif
 
 The term itself does **not** live there. Event names live upstream in the semantic profile; attribute names live in [scripts/fx-vocab.mjs](./scripts/fx-vocab.mjs). Change it there, `npm run gen`, then add the record. `sources: []` means the decision was made on structural grounds with no citation — the brief says so out loud, so a reviewer knows it is open to challenge.
 
+Records are keyed `code:canonical` for **both** surfaces — `es:mousedown` for an event, `de:fx-swap` for an attribute. The attribute half arrived late: those decisions used to live as prose in `fx-vocab.mjs` plus a hardcoded table in `verify-prompt.mjs` that needed hand-editing after every round, which is the same drift this file exists to end, reintroduced for the other half of the vocabulary.
+
+Three fields carry state the data alone cannot express — `status: 'pending-upstream'` (concluded but the edit lands in a repo we cannot touch, so the *wrong* form is still shipping), `concluded: null` (we looked and decided to publish nothing, as distinct from nobody having looked), and `basis` (attested / structural / coined). Each changes what a brief asks a reviewer to do, and each has its own assertion in [test/vocab-ordering.mjs](./test/vocab-ordering.mjs). See [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md) for the freeze protocol and the coinage track.
+
 **Three facts about lookup, verified against the runtime rather than assumed** (a probe page driven through Playwright, since all three had been guessed at in the brief's own wording):
 
 - A hyphenated multi-word term **does** resolve as an attribute name — `al-taste-losgelassen` reaches `keyup`, because `normEvt` collapses runs of space/hyphen/underscore before matching. The brief previously told reviewers the opposite and pushed them toward single tokens; that pressure was unfounded, and it is how fused compounds like `unavez` get proposed in the first place.
@@ -198,14 +201,9 @@ A `NOTED` entry carries a `constraint` field for a reason: `unavez` is a moxi mo
 
 ### Queuing external research
 
-[scripts/queue-research.mjs](./scripts/queue-research.mjs) turns a brief into a payload for the `gemini-deep-research` MCP queue:
+The wave list, its ordering rationale, and the freeze and coinage protocols are in [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md). Two mechanical facts belong here because they constrain edits to the scripts:
 
-```bash
-npm run queue-research -- --locale=pt   # print and verify one payload
-npm run queue-research -- --wave        # the priority locales
-```
-
-It prints only; queuing is a separate deliberate step. `--wave=<n>` selects a wave; `--wave` alone means the current one. Wave 1 (`ja pt de zh ko es`, done 2026-07-28) was the six best-covered locales, where the risk was a wrong term already in front of learners. Wave 2 (`ar hi id ru bn tr vi fr`) is the large-audience locales, all of which are also badly under-covered (7–10 of the 16 published canonicals), so those briefs lean on the "no term anywhere" section — proposing a term is the work, not correcting one. The ordering rationale, including why audience size is not speaker count, is in [scripts/queue-research.mjs](./scripts/queue-research.mjs). The harvest on the far side parses the context with literal `PROJECT:` and `AIMS (decide these):` anchors — miss one and the report is filed with no synthesis at all, which you learn 6–30 hours later. `assertAnchors` fails the payload locally instead. Aims are phrased as decisions, not questions, because the harvest restates them verbatim and answers a "should we…?" with a summary rather than a verdict.
+The harvest on the far side parses the payload context with literal `PROJECT:` and `AIMS (decide these):` anchors — miss one and the report is filed with no synthesis at all, which you learn 6–30 hours later. `assertAnchors` fails the payload locally instead. Aims are phrased as decisions, not questions, because the harvest restates them verbatim and answers a "should we…?" with a summary rather than a verdict.
 
 The heuristics flag fused compounds, underscores and camelCase — every term of that shape checked so far turned out to be malformed. They deliberately do **not** flag capitalization: German capitalizes nouns, so `Klick` is correct, and lookup folds case anyway.
 
