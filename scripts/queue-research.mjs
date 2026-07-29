@@ -104,13 +104,14 @@ const modeFor = code => (COINAGE_MODE.has(code) ? 'coinage' : 'review');
 const PROJECT = 'loka-js';
 
 function parseArgs() {
-  const args = { locale: null, wave: null, json: false, help: false };
+  const args = { locale: null, wave: null, json: false, help: false, priority: 0 };
   for (const a of process.argv.slice(2)) {
     if (a === '--json') args.json = true;
     else if (a === '--wave') args.wave = DEFAULT_WAVE;
     else if (a.startsWith('--wave=')) args.wave = a.slice('--wave='.length);
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a.startsWith('--locale=')) args.locale = a.slice('--locale='.length);
+    else if (a.startsWith('--priority=')) args.priority = Number(a.slice('--priority='.length));
   }
   return args;
 }
@@ -224,8 +225,17 @@ function additionalContext(code, spec) {
   return lines.join('\n');
 }
 
-/** The full payload for `add_research_topic`. */
-export async function buildPayload(code) {
+/**
+ * The full payload for `add_research_topic`.
+ *
+ * `priority` defaults to 0 deliberately. It is a cross-project contention knob —
+ * it only does anything when topics from other projects are competing for the
+ * same queue slots, and this script cannot see them. Within a wave it is inert:
+ * the queue orders by `priority DESC, created_at ASC`, so queuing a wave in
+ * order already preserves that order at equal priority. Pass --priority only
+ * when you are deciding, at queue time, that this wave outranks other work.
+ */
+export async function buildPayload(code, priority = 0) {
   const spec = LOCALES[code];
   const brief = await buildBrief(code, modeFor(code));
   const aims = aimsFor(code, spec, brief);
@@ -248,7 +258,7 @@ export async function buildPayload(code) {
     brief.context,
   ].join('\n');
 
-  return { code, topic: brief.topic, context, priority: 0 };
+  return { code, topic: brief.topic, context, priority };
 }
 
 /** Fail loudly here rather than 6-30 hours later in an unparseable report. */
@@ -283,6 +293,9 @@ async function main() {
     .map(([n, w]) => `\n                     ${n}: ${w.join(', ')}`)
     .join('')}
   --json           emit JSON instead of a readable payload
+  --priority=<n>   queue priority, default 0. Only affects ordering against
+                   topics from OTHER projects; within a wave, insertion order
+                   already decides
   --help           this message
 
 Prints only. To queue, pass {topic, context, priority} to the
@@ -306,7 +319,7 @@ add_research_topic tool on the gemini-deep-research MCP server.`);
 
   const codes = args.wave ? WAVES[args.wave] : [args.locale];
   const payloads = [];
-  for (const c of codes) payloads.push(await buildPayload(c));
+  for (const c of codes) payloads.push(await buildPayload(c, args.priority));
 
   let bad = 0;
   for (const p of payloads) {
