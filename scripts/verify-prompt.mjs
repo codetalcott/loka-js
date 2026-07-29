@@ -99,7 +99,14 @@ function claim(n, { label, was, verdict, proposed, why, sources, applied }) {
   return lines;
 }
 
-function build(code) {
+/**
+ * Render the adversarial verification prompt for one locale.
+ *
+ * Exported so queue-research.mjs can wrap it in the harvest anchors. A verify
+ * prompt queued without them is filed in aimless mode — a searchable copy with
+ * no synthesis — which you discover 6-30 hours later.
+ */
+export function build(code) {
   const spec = LOCALES[code];
   const f = JSON.parse(fs.readFileSync(path.join(FINDINGS_DIR, `${code}.json`), 'utf8'));
   const L = [];
@@ -448,4 +455,9 @@ function main() {
   }
 }
 
-main();
+// Only run when invoked directly — this module is imported by
+// queue-research.mjs, which must not trigger a stdout dump.
+const invokedDirectly =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (invokedDirectly) main();
