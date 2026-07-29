@@ -78,11 +78,28 @@ const WAVE_1 = ['ja', 'pt', 'de', 'zh', 'ko', 'es'];
 //       last because French developers are the best served by English material.
 const WAVE_2 = ['ar', 'hi', 'id', 'ru', 'bn', 'tr', 'vi', 'fr'];
 
-// Wave 3 — the remainder, deferred rather than dismissed: it, pl, uk, he, ms, th,
-// tl, sw, qu. Smaller audiences, or (qu) an empty attribute stub that needs a
-// vocabulary proposed from nothing, which is a different task from review.
-const WAVES = { 1: WAVE_1, 2: WAVE_2 };
+// Wave 3 — the remainder, deferred rather than dismissed. Smaller audiences,
+// with two locales that are a different task entirely:
+//
+//   qu, sw  queue in COINAGE mode. Searching for Quechua web-development writing
+//           returns essentially nothing, and Swahili has the common events but
+//           nothing for the keyboard and pointer set. Applying the evidence-first
+//           rule there yields an English API for the two audiences least able to
+//           fall back on English, so invention is permitted — see
+//           RESEARCH_PIPELINE.md, "Coinage track", and the COINAGE table in
+//           research-brief.mjs, which gates it per locale.
+//
+// Not queued yet: wave 2 is still in flight, and running two waves at once means
+// harvesting reports against a vocabulary that is moving underneath them.
+const WAVE_3 = ['it', 'pl', 'uk', 'he', 'ms', 'th', 'tl', 'sw', 'qu'];
+
+// Locales whose payload is built from a coinage brief rather than a review brief.
+const COINAGE_MODE = new Set(['qu', 'sw']);
+
+const WAVES = { 1: WAVE_1, 2: WAVE_2, 3: WAVE_3 };
 const DEFAULT_WAVE = 2;
+
+const modeFor = code => (COINAGE_MODE.has(code) ? 'coinage' : 'review');
 
 const PROJECT = 'loka-js';
 
@@ -146,6 +163,20 @@ function aimsFor(code, spec, brief) {
         `exactly which terms differ — a per-term list, not a general impression.`
     );
   }
+  if (brief.context.includes('## Where you find nothing: design a term')) {
+    // Phrased so the search is the first half of the deliverable, not a
+    // precondition the researcher can skip on the way to the fun part.
+    aims.push(
+      `For every canonical with no attested ${spec.name} term, deliver one of two things: ` +
+        `the attested term you found, or a coined term meeting the stated design criteria — ` +
+        `labelled COINED, with the searches you ran before concluding nothing existed.`
+    );
+    aims.push(
+      `Decide which of the coined terms form correct opposing pairs (keydown/keyup, ` +
+        `mousedown/mouseup, mouseover/mouseout), since a learner who meets one will guess ` +
+        `the other and a pair that does not read as opposites is wrong.`
+    );
+  }
   return aims;
 }
 
@@ -196,7 +227,7 @@ function additionalContext(code, spec) {
 /** The full payload for `add_research_topic`. */
 export async function buildPayload(code) {
   const spec = LOCALES[code];
-  const brief = await buildBrief(code);
+  const brief = await buildBrief(code, modeFor(code));
   const aims = aimsFor(code, spec, brief);
 
   // The anchors below are load-bearing: the harvest parser keys on the literal
