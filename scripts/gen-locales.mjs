@@ -337,6 +337,86 @@ ${fields.join('\n')}
 `;
 }
 
+/**
+ * Canonicals where `fx-vocab.mjs` supplies an event term the profile ALSO
+ * publishes — the forbidden overlap, made mechanical.
+ *
+ * `fixi.events` exists for vocabulary genuinely absent from a profile (ja/ar/ms/
+ * tl/sw define no click/change/submit/input). Using it to override a term the
+ * profile already has creates two disagreeing vocabularies, and the loka-side
+ * one wins silently: that is how `pulsacion` shipped for a year while semantic
+ * parsed `tecla abajo`. The rule was prose in CLAUDE.md and nothing enforced it.
+ *
+ * It also pins down what "absent from a profile" means, which the coinage track
+ * depends on: absent = publishes no NON-IDENTITY form. A profile entry like
+ * Swahili's `blur: { primary: 'blur' }` is an identity placeholder that
+ * `stripIdentity` drops, so it publishes nothing and a Swahili blur term
+ * supplied here is filling a gap rather than shadowing a decision.
+ *
+ * Warn rather than throw for now: the fix for a genuine overlap is to edit the
+ * profile, and during the upstream freeze that is not available. See
+ * RESEARCH_PIPELINE.md.
+ * TODO(freeze-lift): escalate to a thrown error, matching orderValues.
+ */
+function shadowedCanonicals(code, spec, profileValues) {
+  const local = spec.fixi?.events ?? {};
+  const localCanonicals = new Set(Object.values(local));
+  const clashes = [];
+  for (const canonical of localCanonicals) {
+    // Identity entries publish nothing, so they are not a shadowed decision.
+    const profileForms = Object.entries(profileValues)
+      .filter(([form, can]) => can === canonical && form !== can)
+      .map(([form]) => form);
+    if (profileForms.length) {
+      const localForms = Object.entries(local)
+        .filter(([, can]) => can === canonical)
+        .map(([form]) => form);
+      clashes.push({ canonical, profileForms, localForms });
+    }
+  }
+  return clashes;
+}
+
+/**
+ * Render one locale's two output files in memory, without touching disk.
+ *
+ * Extracted so the drift guard (test/gen-drift.mjs) can compare a fresh render
+ * against the committed files using this exact pipeline rather than a
+ * reimplementation of it — a second copy of the render logic would agree with
+ * itself while both drifted from the generator.
+ *
+ * Returns `{ code, skipped, eventCount, files: [{ path, output }] }`.
+ * `skipped` is true when the sibling profile checkout is absent.
+ */
+export function renderLocale(code) {
+  const spec = LOCALES[code];
+  const profilePath = path.join(PROFILES_DIR, `${spec.profile}.ts`);
+
+  let profileSource = '';
+  if (fs.existsSync(profilePath)) {
+    profileSource = fs.readFileSync(profilePath, 'utf-8');
+  } else if (code !== 'en') {
+    return { code, skipped: true, profilePath, eventCount: 0, files: [] };
+  }
+
+  const profileValues = profileSource ? extractEventValues(profileSource) : {};
+  const merged = { ...profileValues, ...(spec.fixi?.events ?? {}) };
+  const events = orderValues(merged, code);
+
+  return {
+    code,
+    skipped: false,
+    shadowed: shadowedCanonicals(code, spec, profileValues),
+    eventCount: Object.keys(events).length,
+    attrCount: Object.keys(spec.fixi?.attrs ?? {}).length,
+    propCount: Object.keys(spec.props ?? {}).length,
+    files: [
+      { path: path.join(LOCALES_DIR, `${code}.js`), output: renderLocaleFile(code, spec, events) },
+      { path: path.join(DOM_VOCAB_DIR, `${code}.js`), output: renderDomVocabFile(code, spec, events) },
+    ],
+  };
+}
+
 function main() {
   const args = parseArgs();
 
@@ -367,49 +447,42 @@ function main() {
   let skipCount = 0;
 
   for (const code of codes) {
-    const spec = LOCALES[code];
-    const profilePath = path.join(PROFILES_DIR, `${spec.profile}.ts`);
+    const result = renderLocale(code);
 
-    let profileSource = '';
-    if (fs.existsSync(profilePath)) {
-      profileSource = fs.readFileSync(profilePath, 'utf-8');
-    } else if (code !== 'en') {
-      console.error(`  [SKIP] ${code}: profile not found at ${profilePath}`);
+    if (result.skipped) {
+      console.error(`  [SKIP] ${code}: profile not found at ${result.profilePath}`);
       skipCount++;
       continue;
     }
 
-    const profileValues = profileSource ? extractEventValues(profileSource) : {};
-    const merged = { ...profileValues, ...(spec.fixi?.events ?? {}) };
-    const events = orderValues(merged, code);
-
-    const output = renderLocaleFile(code, spec, events);
-    const outPath = path.join(LOCALES_DIR, `${code}.js`);
-
-    const domVocabOutput = renderDomVocabFile(code, spec, events);
-    const domVocabPath = path.join(DOM_VOCAB_DIR, `${code}.js`);
+    for (const c of result.shadowed ?? []) {
+      console.error(
+        `  [SHADOW] ${code}: fx-vocab.mjs supplies ${c.localForms.map(f => `'${f}'`).join(', ')} ` +
+          `for '${c.canonical}', but the '${LOCALES[code].profile}' profile already publishes ` +
+          `${c.profileForms.map(f => `'${f}'`).join(', ')}.\n` +
+          `             The profile is the source of truth for event names. A local override ` +
+          `shadows it silently — that is how 'pulsacion' shipped for a year while semantic\n` +
+          `             parsed 'tecla abajo'. Either drop the fx-vocab entry, or make the ` +
+          `correction in the profile and regenerate.`
+      );
+    }
 
     if (args.dryRun) {
-      console.log(`  [DRY] ${code}: ${Object.keys(events).length} events, ${Object.keys(spec.fixi?.attrs ?? {}).length} attrs, ${Object.keys(spec.props ?? {}).length} props`);
-    } else {
-      // locales/{code}.js
+      console.log(`  [DRY] ${code}: ${result.eventCount} events, ${result.attrCount} attrs, ${result.propCount} props`);
+      continue;
+    }
+
+    for (const { path: outPath, output } of result.files) {
+      const rel = path.relative(ROOT, outPath);
       const prev = fs.existsSync(outPath) ? fs.readFileSync(outPath, 'utf-8') : '';
       if (prev === output) {
-        console.log(`  [SAME] locales/${code}.js`);
+        console.log(`  [SAME] ${rel}`);
       } else {
         fs.writeFileSync(outPath, output);
-        console.log(`  [WROTE] locales/${code}.js`);
+        console.log(`  [WROTE] ${rel}`);
       }
-      // dom-vocab/{code}.js
-      const prevDV = fs.existsSync(domVocabPath) ? fs.readFileSync(domVocabPath, 'utf-8') : '';
-      if (prevDV === domVocabOutput) {
-        console.log(`  [SAME] dom-vocab/${code}.js`);
-      } else {
-        fs.writeFileSync(domVocabPath, domVocabOutput);
-        console.log(`  [WROTE] dom-vocab/${code}.js`);
-      }
-      writeCount++;
     }
+    writeCount++;
   }
 
   if (!args.dryRun) {

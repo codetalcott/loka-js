@@ -1,0 +1,244 @@
+{
+  "code": "de",
+  "attrs": [
+    {
+      "canonical": "fx-action",
+      "shipped": "fx-aktion",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "SELFHTML/mediaevent keep `action` untranslated but explain it as the address the form data goes to; 'Aktion' is the transparent cognate. 'Endpunkt' appears in German htmx prose but is longer and loses the HTML `action` heritage.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/HTML/Attribute/action",
+        "https://www.mediaevent.de/html/form.html",
+        "https://www.innoq.com/de/blog/2024/06/htmx-einstieg/"
+      ]
+    },
+    {
+      "canonical": "fx-method",
+      "shipped": "fx-methode",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'HTTP-Methode' is settled German for the verb, used verbatim in German AJAX and form tutorials.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/HTML/Attribute/action",
+        "https://molily.de/js/ajax.html"
+      ]
+    },
+    {
+      "canonical": "fx-trigger",
+      "shipped": "fx-auslöser",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Best-evidenced term in the brief: the German innoq htmx introduction uses 'Auslöser' for exactly this attribute. Noun, so it reads as a thing rather than a command.",
+      "sources": [
+        "https://www.innoq.com/de/blog/2024/06/htmx-einstieg/",
+        "https://www.javascript-kurs.de/javascript-addEventListener.htm"
+      ]
+    },
+    {
+      "canonical": "fx-target",
+      "shipped": "fx-ziel",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "molily's German AJAX tutorial names its variable `zielelement`; German htmx write-ups use 'Zielelement' for hx-target. 'Ziel' is the natural short form.",
+      "sources": [
+        "https://molily.de/js/ajax.html",
+        "https://www.innoq.com/de/blog/2024/06/htmx-einstieg/"
+      ]
+    },
+    {
+      "canonical": "fx-swap",
+      "shipped": "fx-tausch",
+      "verdict": "change",
+      "proposed": "fx-austausch",
+      "reasoning": "Bare 'Tausch' means a mutual/barter exchange. German sources describing this operation use the prefixed forms — 'ausgetauscht', 'Austausch von Inhalten'. A refinement rather than a defect; keep fx-tausch as an alias.",
+      "sources": [
+        "https://www.innoq.com/de/blog/2024/06/htmx-einstieg/",
+        "https://www.esono.de/blog/softwareentwicklung/htmx-effiziente-webentwicklung-durch-html-erweiterungen_aid_1166.html"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "canonical": "click",
+      "shipped": "Klick",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Fully naturalised; 'Klick-Event', 'beim Klick' across mediaevent, tutkit, digitalvalley. Noun.",
+      "sources": [
+        "https://www.mediaevent.de/javascript/onclick.html",
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event"
+      ]
+    },
+    {
+      "canonical": "change",
+      "shipped": "Änderung",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "SELFHTML glosses change as 'bei erfolgter Änderung'.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/change",
+        "https://www.mediaevent.de/javascript/onchange.html"
+      ]
+    },
+    {
+      "canonical": "submit",
+      "shipped": "Absenden",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "SELFHTML: 'beim Absenden des Formulars'. Nominalised infinitive, so it reads as an event, not an order.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/submit",
+        "https://www.mediaevent.de/javascript/submit.html"
+      ]
+    },
+    {
+      "canonical": "input",
+      "shipped": "Eingabe",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Universal German word for user input; SELFHTML glosses the event as 'wenn etwas eingeben wird'.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/input",
+        "https://www.mediaevent.de/javascript/oninput.html"
+      ]
+    },
+    {
+      "canonical": "focus",
+      "shipped": "fokussieren",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Verb attested ('Wenn ein Eingabefeld fokussiert wird'). FLAG: bare lowercase infinitive reads as an instruction, but case folding makes it also the nominalised 'Fokussieren'. Worth adding 'Fokus'/'Fokuserhalt' as aliases — brauchbar.de glosses onfocus as 'bei Fokuserhalt'.",
+      "sources": [
+        "https://www.mediaevent.de/javascript/focus-event.html",
+        "https://brauchbar.de/html-4-referenz/attribute-onfocus"
+      ]
+    },
+    {
+      "canonical": "blur",
+      "shipped": "defokussieren",
+      "verdict": "change",
+      "proposed": "Fokusverlust",
+      "reasoning": "DEFECT. No source uses 'defokussieren' or 'entfokussieren' in web dev — in German it belongs to optics/photography. brauchbar.de glosses onblur as 'bei Fokusverlust', paired with 'bei Fokuserhalt' for onfocus. Well-formed compound, single token, event-shaped. Keep defokussieren as a tolerated alias only.",
+      "sources": [
+        "https://brauchbar.de/html-4-referenz/attribute-onblur",
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/blur",
+        "https://www.mediaevent.de/javascript/focus-event.html",
+        "https://molily.de/javascript-fokus-zentral/"
+      ]
+    },
+    {
+      "canonical": "init",
+      "shipped": "initialisieren",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Settled German developer vocabulary. FLAG: same imperative-infinitive shape as fokussieren; 'Initialisierung' is the unambiguously event-shaped noun and a natural alias.",
+      "sources": [
+        "https://www.peterkropff.de/tutorials/js_dom_2/initialisierung.htm"
+      ]
+    },
+    {
+      "canonical": "scroll",
+      "shipped": "scrollen",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Naturalised German verb, used constantly. No alternative in use. Case folding makes it double as the noun 'das Scrollen'.",
+      "sources": [
+        "https://www.mediaevent.de/javascript/scroll-event.html",
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/scroll"
+      ]
+    },
+    {
+      "canonical": "resize",
+      "shipped": "Größenänderung",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Prior structural conclusion now sourced: Delft Stack's German page is titled 'Fenstergrößenänderungsereignis in JavaScript'. Größe + linking -n- + Änderung is the correct compound. No counter-evidence.",
+      "sources": [
+        "https://www.delftstack.com/de/howto/javascript/window-resize-javascript/",
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/resize"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "canonical": "keydown",
+      "upstream": "taste runter, taste unten",
+      "verdict": "publish-corrected",
+      "proposed": "taste gedrückt",
+      "reasoning": "Both upstream forms are calques with zero German attestation. SELFHTML writes 'das Ereignis \"Taste gedrückt\" (keydown)' and names its handler TasteGedrueckt(). Single-token alternative 'Tastendruck' is a real common noun.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/Tastaturabfragen",
+        "https://www.mediaevent.de/javascript/keydown.html"
+      ]
+    },
+    {
+      "canonical": "keyup",
+      "upstream": "taste hoch, taste oben",
+      "verdict": "publish-corrected",
+      "proposed": "taste losgelassen",
+      "reasoning": "Same calque defect, same absence of evidence. SELFHTML glosses keyup as 'bei losgelassener Taste'. No single-word German noun exists here.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event",
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/Tastaturabfragen"
+      ]
+    },
+    {
+      "canonical": "mouseover",
+      "upstream": "maus über, maus drüber",
+      "verdict": "publish",
+      "proposed": null,
+      "reasoning": "Weakly but genuinely attested — German glossaries state 'Mouseover heißt auf Deutsch \"Maus über\"'. A gloss rather than developer usage; devs say 'Mouseover'/'Hover'. Recommend also accepting mouseover and hover as aliases.",
+      "sources": [
+        "https://bantle-media.de/mouseover/",
+        "https://de.ryte.com/wiki/Mouseover/",
+        "https://www.mediaevent.de/javascript/mouseover.html"
+      ]
+    },
+    {
+      "canonical": "mouseout",
+      "upstream": "maus raus, maus weg",
+      "verdict": "publish-corrected",
+      "proposed": "maus heraus",
+      "reasoning": "No evidence for either; 'maus weg' reads as 'mouse gone'. Attested phrasing is 'wenn die Maus aus einem Element herausbewegt wird'. Derived from attested phrasing, not an observed token.",
+      "sources": [
+        "https://www.mediaevent.de/javascript/mouseover.html",
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/mouseout"
+      ]
+    },
+    {
+      "canonical": "load",
+      "upstream": "laden, ladung",
+      "verdict": "publish-corrected",
+      "proposed": "geladen",
+      "reasoning": "Reject both. 'Ladung' means cargo/charge/summons, never a page load. 'laden' is worse than it looks: besides the bare infinitive, 'der Laden' is the everyday word for a shop, so fx-auslöser=\"laden\" is genuinely ambiguous. Sources use the participle: 'wenn die gesamte Seite geladen ist'.",
+      "sources": [
+        "https://www.mediaevent.de/javascript/load-event.html",
+        "https://www.duden.de/rechtschreibung/Ladung_Fracht",
+        "https://de.wiktionary.org/wiki/Laden"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "canonical": "mousedown",
+      "proposed": "maustaste gedrückt",
+      "reasoning": "SELFHTML glosses mousedown as 'bei gedrückter Maustaste'. Must be 'Maustaste', not 'Maus' — German distinguishes device from button. No single-token noun exists ('Mausklick' means click).",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/mousedown",
+        "https://www.mediaevent.de/javascript/events.html"
+      ]
+    },
+    {
+      "canonical": "mouseup",
+      "proposed": "maustaste losgelassen",
+      "reasoning": "SELFHTML: 'Der mouseup-Event-Handler wird bei losgelassener Maustaste ausgelöst.' Pairs with the keyup proposal — German uses gedrückt/losgelassen for both keys and mouse buttons.",
+      "sources": [
+        "https://wiki.selfhtml.org/wiki/JavaScript/DOM/Event/mouseup",
+        "https://www.mediaevent.de/javascript/events.html"
+      ]
+    }
+  ],
+  "variantNote": "Swiss Standard German does not use ß — not taught in Swiss schools, absent from the Swiss keyboard layout, always written 'ss'. That makes `Größenänderung` untypeable for a Swiss author. VERIFIED against the runtime: loka folds case and separators but NOT ß↔ss, so `grössenänderung` does not resolve today. Register it as an explicit alias. This is the only term containing ß. Austrian German diverges nowhere.",
+  "overall": "Shipped attribute names are in good shape — fx-auslöser and fx-ziel are corroborated by the German htmx literature itself; only fx-tausch is slightly off-idiom. Shipped event names split in two: the nouns (Klick, Änderung, Absenden, Eingabe, Größenänderung) are confirmed and need no change; the lowercase infinitives (fokussieren, scrollen, initialisieren) are word-choice-correct but read as commands, tolerable because case folding makes each a nominalised infinitive too. The single real defect is defokussieren. Among candidates the suspected pattern is confirmed and stronger than suspected: every 'fails round-trip' term is a word-for-word calque with zero attestation, and German consistently uses past participles (gedrückt, losgelassen, geladen) rather than directional particles — treat that as a general rule for future German additions."
+}

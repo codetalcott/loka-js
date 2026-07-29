@@ -160,6 +160,13 @@ export const LOCALES = {
         prevenir: 'prevent',
         detener: 'stop',
         parar: 'halt',
+        // 'unavez' fused 'una vez'; Spanish invariably writes it as two words in
+        // exactly this context (Alpine/Vue Spanish docs, lenguajejs on the
+        // addEventListener `once` option). The hyphen is not a compromise —
+        // moxi splits modifiers out of the attribute name and lookup collapses
+        // hyphens to a space, so `.una-vez` resolves identically. Old spelling
+        // retained as a parse alternative.
+        'una-vez': 'once',
         unavez: 'once',
         mismo: 'self',
         fuera: 'outside',
@@ -170,6 +177,12 @@ export const LOCALES = {
       globals: {
         consulta: 'q',
         esperar: 'wait',
+        // Globals are aliased by EXACT property name (loka.js `collectAliases`),
+        // and the event-lookup normalizer that folds case and separators does not
+        // apply here — nor does it fold accents anywhere. So a Spanish author who
+        // correctly writes `transición()` got a ReferenceError while the shipped
+        // fx-acción and fx-método carried their accents. Register both spellings.
+        'transición': 'transition',
         transicion: 'transition',
       },
     },
@@ -269,13 +282,41 @@ export const LOCALES = {
         'fx-メソッド': 'fx-method',
         'fx-トリガー': 'fx-trigger',
         'fx-ターゲット': 'fx-target',
+        // 置換 promoted over スワップ 2026-07-28 (Japanese terminology review).
+        // スワップ is a real IT loanword, but in Japanese it means memory or
+        // financial swapping — no Japanese source uses it for DOM content
+        // replacement, and both Japanese htmx write-ups reach for 置換/挿入方式.
+        // スワップ stays as a parse alias for authors coming from English fixi.
+        'fx-置換': 'fx-swap',
         'fx-スワップ': 'fx-swap',
       },
+      // The 'japanese' profile defines none of these as keywords, so they are
+      // supplied here rather than shadowing it. The four form events predate the
+      // research; the rest were published 2026-07-28 after the Japanese
+      // terminology review verified them against informal Japanese usage.
+      //
+      // Two upstream proposals in @lokascript/semantic's aspirational
+      // eventNameTranslations table were rejected there: マウス押下 (押下 is
+      // genuine but SIer spec-document register — beginners look it up) is kept
+      // only as a trailing parse alias, and マウス解放 is not published at all
+      // (解放 is freeing a resource — memory, locks — never a mouse button; an
+      // exact-phrase search finds no use of it in the event sense).
       events: {
         クリック: 'click',
         変更: 'change',
         送信: 'submit',
         入力: 'input',
+        キーダウン: 'keydown',
+        キーアップ: 'keyup',
+        マウスダウン: 'mousedown',
+        マウス押下: 'mousedown',
+        マウスアップ: 'mouseup',
+        マウスオーバー: 'mouseover',
+        マウスアウト: 'mouseout',
+        サイズ変更: 'resize',
+        リサイズ: 'resize',
+        読み込み: 'load',
+        ロード: 'load',
       },
     },
   },
@@ -325,8 +366,40 @@ export const LOCALES = {
         'fx-methode': 'fx-method',
         'fx-auslöser': 'fx-trigger',
         'fx-ziel': 'fx-target',
+        // 'Tausch' is a reciprocal barter — both sides give something up, which
+        // is not what a swap does to the DOM. The German htmx introduction
+        // (INNOQ) calls hx-swap's job 'die Ersetzung' and its options
+        // 'Ersetzungsstrategie'. 'fx-tausch' stays as a parse alias.
+        'fx-ersetzung': 'fx-swap',
         'fx-tausch': 'fx-swap',
       },
+      // The German profile defines none of these. 'runter'/'hoch' (the upstream
+      // aspirational forms) are colloquial directional adverbs that no German
+      // developer would write as an identifier; SelfHTML's own keyboard tutorial
+      // names its handlers TasteGedrückt / TasteLosgelassen, and MediaEvent
+      // describes mouseup as 'wenn der Mausbutton losgelassen wird'. Maustaste
+      // rather than Maus separates the peripheral from the button being pressed.
+      //
+      // `load` is 'geladen', not 'laden' (which collides with der Laden, the
+      // shop) and not 'Ladung' (cargo, or an electrical charge).
+      //
+      // mouseover/mouseout are deliberately ABSENT — see the note below the
+      // events table.
+      events: {
+        'taste gedrückt': 'keydown',
+        'taste losgelassen': 'keyup',
+        'maustaste gedrückt': 'mousedown',
+        'maustaste losgelassen': 'mouseup',
+        geladen: 'load',
+      },
+      // mouseover / mouseout: no German term published, so an author writes the
+      // canonical English token (identity — see convention 1 at the top of this
+      // file). This is a decision, not a gap. The literal glosses 'maus über' /
+      // 'maus heraus' appear only in prose explaining the English word to
+      // beginners; German developers say 'hovern' and write the English
+      // identifiers. Publishing a synthetic token here would be the one case
+      // where localizing costs the learner more than it gives — it isolates
+      // them from CSS :hover and from every tutorial they will read next.
     },
   },
 
@@ -353,9 +426,39 @@ export const LOCALES = {
       attrs: {
         'fx-ação': 'fx-action',
         'fx-método': 'fx-method',
+        // 'acionador'/'disparador' are what tutorials use for the verb; 'gatilho'
+        // stays primary as the established noun (SQL triggers, DOM triggers).
         'fx-gatilho': 'fx-trigger',
+        'fx-acionador': 'fx-trigger',
+        'fx-disparador': 'fx-trigger',
+        // 'destino' is the more common word for a request target in pt prose.
         'fx-alvo': 'fx-target',
+        'fx-destino': 'fx-target',
         'fx-troca': 'fx-swap',
+        'fx-substituição': 'fx-swap',
+      },
+      // Absent from the Portuguese profile. The upstream aspirational forms
+      // ('tecla baixo', 'tecla cima') were spatial calques of the English
+      // down/up; Portuguese describes the state of the key. pt-PT prefers
+      // 'liberada'/'libertada' over 'solta' for keys, and 'rato' for the mouse —
+      // registered as aliases rather than a separate locale.
+      //
+      // 'carregar' is deliberately NOT published for `load`: in European
+      // Portuguese 'carregar (em)' means to press a button, so a Lisbon reader
+      // would parse fx-gatilho="carregar" as a click. 'carregamento' means
+      // loading in both variants.
+      events: {
+        'tecla pressionada': 'keydown',
+        'tecla solta': 'keyup',
+        'tecla liberada': 'keyup',
+        'tecla libertada': 'keyup',
+        'mouse sobre': 'mouseover',
+        'rato sobre': 'mouseover',
+        'passar o mouse': 'mouseover',
+        'saída do mouse': 'mouseout',
+        'saída do rato': 'mouseout',
+        'mouse fora': 'mouseout',
+        carregamento: 'load',
       },
     },
   },
@@ -396,11 +499,55 @@ export const LOCALES = {
     reviewed: false,
     fixi: {
       attrs: {
+        // 动作 means a physical movement/gesture — it translates the English word
+        // "action", not the concept (an endpoint URL). No Chinese source calls a
+        // request target a 动作; the docs say 地址 / 请求地址 / URL. Old form kept
+        // as a parse alternative.
+        'fx-地址': 'fx-action',
+        'fx-请求地址': 'fx-action',
         'fx-动作': 'fx-action',
         'fx-方法': 'fx-method',
         'fx-触发': 'fx-trigger',
         'fx-目标': 'fx-target',
+        // 交换 is a symmetrical exchange (A and B trade places); a swap
+        // unidirectionally replaces the target's subtree. Chinese DOM writing
+        // says 替换. 交换 kept as a parse alias — it is what the community htmx
+        // cheatsheet translation uses (交换策略), so early adopters may have
+        // learned it.
+        'fx-替换': 'fx-swap',
         'fx-交换': 'fx-swap',
+      },
+      // Absent from the Chinese profile. Each pairs a device with the mechanical
+      // state, which is how MDN zh-CN phrases them ('按键按下的时候',
+      // '按键被松开时触发'). 键入 was rejected upstream-side: it means "type in"
+      // and implies a character was produced, but keydown fires for Shift and
+      // Alt too. 松键 was a back-formation with zero attestation.
+      //
+      // mouseover is 移入 and NOT 进入: Chinese tutorials reserve 进入/离开 for
+      // the non-bubbling mouseenter/mouseleave pair, and that contrast is how
+      // bubbling gets taught. Using 进入 here would erase the distinction.
+      //
+      // 滑鼠-/載入 are the Taiwan/HK forms, registered as aliases rather than a
+      // zh-Hant fork.
+      events: {
+        '按键按下': 'keydown',
+        '按下': 'keydown',
+        '按键松开': 'keyup',
+        '按键抬起': 'keyup',
+        '鼠标按下': 'mousedown',
+        '滑鼠按下': 'mousedown',
+        '鼠标松开': 'mouseup',
+        '滑鼠放開': 'mouseup',
+        '鼠标抬起': 'mouseup',
+        '鼠标移入': 'mouseover',
+        '滑鼠移入': 'mouseover',
+        '鼠标移出': 'mouseout',
+        '滑鼠移出': 'mouseout',
+        // 调整大小 is imperative ("adjust the size"); the event observes a change.
+        '尺寸变化': 'resize',
+        '调整大小': 'resize',
+        '加载': 'load',
+        '載入': 'load',
       },
     },
   },
@@ -411,11 +558,47 @@ export const LOCALES = {
     reviewed: false,
     fixi: {
       attrs: {
+        // 액션 in Korean is overwhelmingly the film/performance sense and has no
+        // attested use for a request URL. Korean tutorials keep English `action`
+        // and gloss the concept as 주소 / '전송할 위치(URL)'. Old form kept as a
+        // parse alternative.
+        'fx-주소': 'fx-action',
         'fx-액션': 'fx-action',
+        // 메서드 is the National Institute of Korean Language transcription of
+        // [meθəd] and what javascript.info ko and MDN ko use. 메소드 survives in
+        // general usage mainly from 메소드 연기 (method acting) subtitles; kept as
+        // a parse alias.
+        'fx-메서드': 'fx-method',
         'fx-메소드': 'fx-method',
         'fx-트리거': 'fx-trigger',
+        // 타깃 is the prescriptive transcription, but unlike 메서드 it never won:
+        // developers type 타겟. Primary follows usage, 타깃 parses.
         'fx-타겟': 'fx-target',
+        'fx-타깃': 'fx-target',
+        // 스왑 in Korean is the finance sense, or the two-variable exchange
+        // (교체 연산) — bidirectional either way. A hypermedia swap replaces, so
+        // 교체 leads. 스왑 kept as a parse alias.
+        'fx-교체': 'fx-swap',
         'fx-스왑': 'fx-swap',
+      },
+      // Absent from the Korean profile. All six are phonetic loanwords, and the
+      // review found them well attested in Hangul on Tistory/Velog — 키다운 and
+      // 키업 unusually so, because Hangul IME composition forces Korean
+      // developers to reason about raw key events far more than English-speaking
+      // ones do. 마우스오버/마우스아웃 are paired constantly when teaching the
+      // bubbling difference against mouseenter/mouseleave.
+      //
+      // resize and load are NOT published: the review could not verify 리사이즈
+      // or 로드 in Hangul event contexts from any accessible source and returned
+      // UNSUPPORTED rather than agreeing. Publishing on intuition alone is what
+      // this pipeline exists to stop.
+      events: {
+        '키다운': 'keydown',
+        '키업': 'keyup',
+        '마우스다운': 'mousedown',
+        '마우스업': 'mouseup',
+        '마우스오버': 'mouseover',
+        '마우스아웃': 'mouseout',
       },
     },
   },

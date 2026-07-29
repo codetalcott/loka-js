@@ -1,3 +1,12 @@
 node_modules/
 .DS_Store
 *.log
+
+# terminology-research working files. Briefs, payloads and verify prompts all
+# regenerate from scripts/, so they stay out. findings/ does NOT: it is the
+# hand-distilled residue of a 6-30h external research run, it is the input to
+# every verify prompt, and under an upstream freeze a conclusion can sit there
+# for weeks between distill and application. Losing it means re-running the
+# research, so it is committed.
+research/*
+!research/findings/

@@ -15,6 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { EVENT_KEYWORDS, extractEventValues } from '../scripts/gen-locales.mjs';
 import { LOCALES } from '../scripts/fx-vocab.mjs';
+import { SETTLED, isAttrKey, statusOf, pendingRecords } from '../scripts/settled-terms.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCALES_DIR = path.resolve(__dirname, '..', 'locales');
@@ -87,18 +88,20 @@ console.log('\nGenerated locale files — primary-first inversion:');
 console.log('\nExpanded event scope — the vocabulary the allowlist used to drop:');
 {
   const es = await loadLocale('es');
+  // What this block asserts is COVERAGE — that widening EVENT_KEYWORDS actually
+  // reached the published data. It used to pin each preferred spelling by hand
+  // too, which made it a second copy of scripts/settled-terms.mjs, and it went
+  // stale the moment the 2026-07-28 review renamed five of them. The spellings
+  // are asserted from SETTLED further down; don't re-add them here.
+  for (const canonical of ['keydown', 'keyup', 'mousedown', 'mouseup', 'scroll', 'resize', 'load']) {
+    ok(!!preferred(es.fixi.events, canonical), `es publishes a term for ${canonical}`);
+  }
   // keydown is the resolution of a two-sources-of-truth bug: loka hand-authored
   // `pulsacion` believing the profile lacked keydown; it didn't — EVENT_KEYWORDS
-  // was filtering it out. The profile form must win and `pulsacion` must be gone.
-  ok(preferred(es.fixi.events, 'keydown') === 'tecla abajo', "es keydown → 'tecla abajo' (profile, not the retired 'pulsacion')");
+  // was filtering it out. The profile is the sole source, so `pulsacion` is gone.
   ok(!('pulsacion' in es.fixi.events), "es no longer ships the hand-authored 'pulsacion'");
-  ok(preferred(es.fixi.events, 'keyup') === 'tecla arriba', "es keyup → 'tecla arriba' (the live-search idiom)");
-  // Asserts the upstream V3 Batch 2 split landed — the fused 'ratónabajo' is
-  // still accepted as an alternative but must not be the form we teach.
-  ok(preferred(es.fixi.events, 'mousedown') === 'ratón abajo', "es mousedown → 'ratón abajo' (not the fused 'ratónabajo')");
   ok(es.fixi.events['ratónabajo'] === 'mousedown', "es still parses the fused 'ratónabajo' (back-compat)");
-  ok(preferred(es.fixi.events, 'scroll') === 'desplazar', "es scroll → 'desplazar' (primary, not the alt 'desplazamiento')");
-  ok(preferred(es.fixi.events, 'resize') === 'redimensionar', "es resize → 'redimensionar'");
+  // Not in SETTLED: 'carga' was right from the start, so no decision was recorded.
   ok(preferred(es.fixi.events, 'load') === 'carga', "es load → 'carga' (primary, not the alt 'cargar')");
 
   // scroll is the one addition every profile defines — the only new canonical
@@ -114,20 +117,67 @@ console.log('\nExpanded event scope — the vocabulary the allowlist used to dro
 
 console.log('\nCorrected terms — the form we teach, with old spellings still parsing:');
 {
-  // Three terms were malformed when the allowlist first exposed them. Each was
+  // Terms that were malformed when the allowlist first exposed them. Each was
   // fixed upstream with the old spelling demoted to a parse alternative, so the
   // assertion is two-sided: the corrected form must win, and the old form must
   // still resolve.
-  const corrections = [
-    ['de', 'resize',    'Größenänderung',    'größeändern',  'malformed compound: German needs the linking -n-'],
-    ['pl', 'resize',    'zmiana rozmiaru',   'zmieńrozmiar', 'fused two-word phrase'],
-    ['pt', 'mousedown', 'mouse pressionado', 'mouse baixo',  'spatial calque; pt-BR says pressionado'],
-    ['pt', 'mouseup',   'mouse solto',       'mouse cima',   'spatial calque; pt-BR says solto'],
-  ];
-  for (const [code, canonical, want, old, why] of corrections) {
+  //
+  // Driven from scripts/settled-terms.mjs, which research-brief.mjs also reads.
+  // These were two hand-kept copies of the same facts; a correction reaching one
+  // and not the other let a brief advertise a term as reviewed with nothing
+  // testing that the reviewed spelling shipped.
+  for (const [key, rec] of Object.entries(SETTLED)) {
+    const [code, canonical] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
     const d = await loadLocale(code);
-    ok(preferred(d.fixi.events, canonical) === want, `${code} ${canonical} → '${want}' (${why})`);
-    ok(d.fixi.events[old] === canonical, `${code} still parses the old '${old}' (back-compat)`);
+    // Attribute records assert against fixi.attrs, event records against
+    // fixi.events. Same two-sided shape, different map.
+    const map = isAttrKey(canonical) ? d.fixi.attrs : d.fixi.events;
+    const target = isAttrKey(canonical) ? `fx-${canonical.slice(3)}` : canonical;
+    const label = isAttrKey(canonical) ? `${canonical} (attr)` : canonical;
+
+    if (statusOf(rec) === 'pending-upstream') {
+      // Assert the pending state, rather than skipping. A skipped assertion
+      // cannot tell you when the freeze has lifted; this one can, so the test
+      // doubles as the reconciliation tool — see RESEARCH_PIPELINE.md.
+      const now = preferred(map, target);
+      ok(
+        now !== rec.concluded,
+        `${code} ${label} is still pending — if this fails, upstream applied ` +
+          `'${rec.concluded}' and the record should flip to status:'applied'`
+      );
+      if (rec.superseded.length) {
+        ok(
+          now === rec.superseded[0],
+          `${code} ${label} still ships '${rec.superseded[0]}' as the record assumes ` +
+            `(got '${now}') — a third form means upstream moved differently and this ` +
+            `decision needs re-looking`
+        );
+      }
+      continue;
+    }
+
+    if (rec.concluded === null) {
+      // A publish-nothing conclusion. The assertion is the ABSENCE — which is
+      // what separates "we looked and found nothing" from "nobody looked".
+      ok(
+        preferred(map, target) === undefined,
+        `${code} ${label} publishes no term, deliberately (${rec.why.slice(0, 80)}…)`
+      );
+      continue;
+    }
+
+    ok(preferred(map, target) === rec.concluded, `${code} ${label} → '${rec.concluded}' (${rec.why})`);
+    for (const old of rec.superseded) {
+      ok(map[old] === target, `${code} still parses the old '${old}' (back-compat)`);
+    }
+  }
+
+  const pending = pendingRecords();
+  if (pending.length) {
+    console.log(
+      `  ⏳ ${pending.length} pending-upstream decision(s), oldest ${pending[0][1].date} ` +
+        `— concluded but not shipping; see RESEARCH_PIPELINE.md`
+    );
   }
 }
 

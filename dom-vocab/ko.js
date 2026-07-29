@@ -23,8 +23,15 @@ export const events = {
   '제출': 'submit',
   '입력': 'input',
   '포커스': 'focus',
+  '포커스아웃': 'blur',
   '블러': 'blur',
   '초기화': 'init',
+  '키다운': 'keydown',
+  '키업': 'keyup',
+  '마우스다운': 'mousedown',
+  '마우스업': 'mouseup',
+  '마우스오버': 'mouseover',
+  '마우스아웃': 'mouseout',
   '스크롤': 'scroll',
 };
 export const props = {};

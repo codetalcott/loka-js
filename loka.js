@@ -115,10 +115,14 @@
 	}
 
 	let invertAttrs = (attrs)=>{
-		// { 'fx-acción': 'fx-action' } -> { action: 'fx-acción' }
+		// { 'fx-acción': 'fx-action' } -> { action: ['fx-acción'] }
+		// ALL spellings, primary first (the published ordering). A locale may
+		// register several names for one attribute — de ships fx-ersetzung with
+		// fx-tausch demoted to an alias — and fx.name picks among them per
+		// element, so the list has to survive inversion.
 		let out = {}
 		for (let [loc, can] of Object.entries(attrs || {})) {
-			if (can.startsWith('fx-')) out[can.slice(3)] = loc
+			if (can.startsWith('fx-')) (out[can.slice(3)] ??= []).push(loc)
 		}
 		return out
 	}
@@ -136,9 +140,23 @@
 
 	// Pre-install hooks. Patched fixi.js uses ??= so it'll keep these.
 	let fx = window.fixi ??= {}
+	// Resolve against the ELEMENT, not just the registry. fixi calls this to read
+	// an attribute (`attr(elt, nm(elt,"swap"), ...)`), so returning only the
+	// locale's primary spelling makes a page written with a demoted alias read as
+	// if the attribute were absent — and fixi then applies its default. For swap
+	// that default is outerHTML, so a page asking for innerHTML has its target
+	// deleted instead of filled. Demoting an attribute spelling is only
+	// back-compatible if the demoted spelling still resolves when it is the one
+	// actually on the element.
 	fx.name = (elt, key)=>{
-		let lang = langOf(elt)
-		return nameByKey[lang]?.[key] || `fx-${key}`
+		let canonical = `fx-${key}`
+		let names = nameByKey[langOf(elt)]?.[key]
+		if (!names) return canonical
+		if (elt?.hasAttribute) {
+			for (let n of names) if (elt.hasAttribute(n)) return n
+			if (elt.hasAttribute(canonical)) return canonical
+		}
+		return names[0]
 	}
 	fx.event = lookupEvt
 	fx.sel = (key)=>buildSelector(key)
@@ -193,7 +211,12 @@
 		if (attrs){
 			let byKey = {}
 			for (let [loc, can] of Object.entries(attrs)){
-				byKey[can] = loc
+				// First-wins (primary-first ordering). moxi does NOT get the
+				// per-element resolution fixi's name hook does, because no locale
+				// registers two spellings for `live` or `mx-ignore` yet; if one
+				// ever does, this needs the same treatment as fx.name above or the
+				// demoted spelling silently stops being recognised.
+				if (!(can in byKey)) byKey[can] = loc
 				if (can === 'live') LIVE_NAMES.add(loc)
 				if (can === 'on-')  ON_PREFIXES.add(loc)
 			}
