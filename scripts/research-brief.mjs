@@ -28,7 +28,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { EVENT_KEYWORDS } from './gen-locales.mjs';
 import { LOCALES } from './fx-vocab.mjs';
-import { SETTLED, describe as describeSettled } from './settled-terms.mjs';
+import {
+  SETTLED,
+  describe as describeSettled,
+  statusOf,
+  basisOf,
+} from './settled-terms.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCALES_DIR = path.resolve(__dirname, '..', 'locales');
@@ -89,6 +94,66 @@ const NOTED = {
       '(`al-clic.unavez`), so it is parsed out of the name — a space is impossible ' +
       'here. `una vez` cannot be the answer. A hyphen is legal (`una-vez`), as is any ' +
       'single-token alternative. Which reads better to a Spanish developer?',
+  },
+  'qu:paqariy': {
+    canonical: 'blur',
+    why:
+      "appears to mean 'to dawn' / 'to be born' / 'to originate' — an origination " +
+      'sense, which is close to the opposite of an element LOSING focus. If that ' +
+      'reading is right this is the same class of defect as ja ぼかし and ko 블러: ' +
+      'a real word carrying entirely the wrong meaning.',
+    constraint:
+      'The whole Quechua event set also ends in -y, the infinitive marker, which ' +
+      'collides with the noun rule stated above. Whatever replaces this should be a ' +
+      'noun or participle, not another -y infinitive.',
+  },
+};
+
+// Locales where coinage is permitted (see RESEARCH_PIPELINE.md, "Coinage track").
+//
+// Everywhere else the rule is absolute: no attested usage, no published term. It
+// is relaxed only where that rule produces a worse outcome than a careful
+// invention — a locale whose developers do NOT have an English-speaking fallback
+// culture, and where searching has genuinely returned nothing. `ko` is the
+// counter-example and stays out: Korean developers read English identifiers
+// fluently, so ko resize/load are recorded as publish-nothing rather than opened
+// for coinage.
+//
+// `notes` carries what the generic criteria cannot know — the specific trap in
+// this language's existing data.
+const COINAGE = {
+  qu: {
+    why:
+      'Quechua has little to no web-development writing to search, so the ' +
+      'evidence-first rule yields nothing publishable and a Quechua-speaking ' +
+      'beginner gets an entirely English API. Coinage is better than that.',
+    notes: [
+      'Every event term currently shipping ends in `-y`, the infinitive marker ' +
+        '(`ñitiy`, `qhaway`, `apakuy`). Under the noun rule above that is the whole ' +
+        'set mis-formed. Quechua nominalizers (`-na`, `-sqa`, the agentive `-q`) are ' +
+        'the obvious material — please say which construction reads best for an ' +
+        'event that has just happened.',
+      'The attribute names (`fx-action`, `fx-method`, `fx-trigger`, `fx-target`, ' +
+        '`fx-swap`) have NO Quechua forms at all — the table is empty on purpose ' +
+        'rather than by oversight. Proposing all five is in scope and valuable.',
+      'Glottalized and aspirated spellings (`ñit’iy`, `p’unchaw`) are fine in ' +
+        'attribute values, but a term used as a JavaScript global cannot contain an ' +
+        'apostrophe. Flag any proposal where that would bite.',
+    ],
+  },
+  sw: {
+    why:
+      'Swahili has attested terms for the common events but nothing for the ' +
+      'keyboard and pointer set, and East African developer writing is thin enough ' +
+      'that further searching is unlikely to turn any up.',
+    notes: [
+      'Unlike Quechua, the existing Swahili vocabulary is in reasonable shape — ' +
+        'the task is filling gaps rather than repairing. Match the register of what ' +
+        'is already there (`bofya`, `wasilisha`, `sogeza`).',
+      'The profile has an identity placeholder for `blur` that publishes nothing, ' +
+        'so Swahili currently has no term for it at all. `lenga` / `angazia` are the ' +
+        'shipped `focus` pair; the blur term should read as its counterpart.',
+    ],
   },
 };
 
@@ -264,13 +329,14 @@ function attrSection(code, spec) {
 }
 
 function parseArgs() {
-  const args = { locale: null, json: false, all: false, help: false, out: null };
+  const args = { locale: null, json: false, all: false, help: false, out: null, mode: 'review' };
   for (const a of process.argv.slice(2)) {
     if (a === '--json') args.json = true;
     else if (a === '--all') args.all = true;
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a.startsWith('--locale=')) args.locale = a.slice('--locale='.length);
     else if (a.startsWith('--out=')) args.out = a.slice('--out='.length);
+    else if (a.startsWith('--mode=')) args.mode = a.slice('--mode='.length);
   }
   return args;
 }
@@ -401,6 +467,83 @@ function crossLocaleFindings(spec) {
   ];
 }
 
+/**
+ * The coinage brief's extra section. Only rendered for `--mode=coinage`.
+ *
+ * This inverts the pipeline's central rule, so it is written to invert it as
+ * narrowly as possible: phase 1 is still an ordinary evidence search, and design
+ * is authorised ONLY where that search comes back empty. A reviewer who reads
+ * this as "invent freely" will hand back inventions for concepts that already
+ * have words, which is worse than the gap.
+ *
+ * The criteria are the wave-1 defects turned into design constraints. Every one
+ * of them is a mistake this project has already shipped and had to correct.
+ */
+function coinageCriteria(spec, entry) {
+  const L = [
+    '## Where you find nothing: design a term',
+    '',
+    `This locale is one of the few where invention is permitted. ${entry.why}`,
+    '',
+    '**This does not relax the evidence rule — it applies after it.** For every term,',
+    'search first, exactly as you would normally. Report what you find. Only where the',
+    'search genuinely comes back empty should you propose something new, and say',
+    'plainly that you are doing so. A real term, however clumsy, always beats a',
+    'designed one; if we later find attested usage, the coined term is demoted.',
+    '',
+    '### What a good coined term looks like',
+    '',
+    '- **Build from the language, not from English.** A metaphor a speaker would',
+    '  recognise beats a transliteration of the English word. Onomatopoeia is welcome',
+    '  where the language uses it productively — these are names for physical',
+    '  actions, and a word that sounds like the action is easier to learn than one',
+    '  that transliterates a foreign one.',
+    '- **Coin in pairs, sharing a stem.** `keydown`/`keyup`, `mousedown`/`mouseup`,',
+    '  `mouseover`/`mouseout` are opposites and must read as opposites. A learner who',
+    '  meets one will guess the other; if the guess fails, the pair is wrong. (We hit',
+    '  this in Korean: publishing 마우스오버 made 마우스아웃 mandatory whether or not',
+    '  it was independently well attested.)',
+    '- **Check the dominant sense first.** The coined word will be read cold by a',
+    `  beginner with no English. If it already means something common in ${spec.name},`,
+    '  that meaning wins and the term is unusable. This is the single most common',
+    '  defect found in this project: four languages shipped the *visual* blur word',
+    '  for the focus-loss event.',
+    '- **Noun or participle, citation form.** Same two rules as above — an event',
+    '  names something that happened, not a command, and it appears with no',
+    '  preposition or sentence around it.',
+    '- **Transparency test.** Would a beginner who has never seen the library guess',
+    '  roughly what it does? If it needs the English word to explain it, it has not',
+    '  earned its place over the English word.',
+    '',
+    '### Mechanical constraints on a coined term',
+    '',
+    '- Spaces are fine in an `fx-trigger` **value**; in an attribute **name** write',
+    '  the same term hyphenated (`on-…`). Both resolve — lookup collapses spaces,',
+    '  hyphens and underscores. So do not fuse words to avoid a space.',
+    '- Terms that become JavaScript globals (the `rexi` verbs, the `paxi` swap name)',
+    '  must be a single valid identifier: **no spaces, no hyphens, no apostrophes**.',
+    '  Say so if your best proposal would be illegal there.',
+    '- Case folds; accents and apostrophes do **not**. Any term carrying a diacritic',
+    '  needs a plain-ASCII twin, so give both spellings.',
+    '',
+  ];
+  if (entry.notes?.length) {
+    L.push(`### Specific to ${spec.name}`, '');
+    for (const n of entry.notes) L.push(`- ${n}`);
+    L.push('');
+  }
+  L.push(
+    '### For each term you coin, give us',
+    '',
+    '1. the term, and its literal meaning word-by-word;',
+    '2. its pair partner, where it has one;',
+    '3. what you searched before deciding nothing existed;',
+    '4. your honest read on whether a beginner would guess it unseen.',
+    ''
+  );
+  return L;
+}
+
 /** Native language name from the semantic profile, when the sibling checkout exists. */
 function nativeName(profile) {
   try {
@@ -437,7 +580,7 @@ function byCanonical(events) {
   return groups;
 }
 
-async function buildBrief(code) {
+async function buildBrief(code, mode = 'review') {
   const spec = LOCALES[code];
   const data = await loadLocale(code);
   const groups = byCanonical(data.fixi.events);
@@ -547,6 +690,9 @@ async function buildBrief(code) {
   lines.push('product decision, not the question.');
   lines.push('');
   lines.push(...crossLocaleFindings(spec));
+  // After the shared rules, because the coinage criteria build on them: a coined
+  // term has to satisfy the noun rule and the false-friend check too.
+  if (mode === 'coinage') lines.push(...coinageCriteria(spec, COINAGE[code]));
 
   if (priority.length) {
     lines.push('## Priority — these spellings look like artifacts');
@@ -569,23 +715,47 @@ async function buildBrief(code) {
   for (const r of rows) {
     if (!r.primary) continue;
     const alts = r.alts.length ? r.alts.map(a => `\`${a}\``).join(', ') : '—';
-    const flag = r.settled ? ' ✓ already reviewed' : r.flags.length ? ' ⚠' : '';
+    // A pending term must NOT read as endorsed: what ships is the form we have
+    // already concluded is wrong, and a reviewer told "already reviewed" would
+    // confirm it back to us.
+    const pending = r.settled && statusOf(r.settled) === 'pending-upstream';
+    const flag = pending
+      ? ` ⚠ **known wrong** — replaced by \`${r.settled.concluded}\`, not yet applied`
+      : r.settled
+        ? ' ✓ already reviewed'
+        : r.flags.length
+          ? ' ⚠'
+          : '';
     lines.push(`| \`${r.canonical}\` | \`${r.primary}\`${flag} | ${alts} | ${r.source} |`);
   }
   lines.push('');
 
   const settled = rows.filter(r => r.settled);
   if (settled.length) {
-    lines.push('Already researched and corrected — confirm only, do not re-derive:');
+    lines.push('Already researched — mostly confirm only, do not re-derive:');
     lines.push('');
     for (const r of settled) {
       lines.push(`- \`${r.canonical}\`: ${describeSettled(r.settled)}`);
-      // A prior decision made without sources is worth a second look; one made
-      // with them is worth checking against them. Say which this is.
-      if (!r.settled.sources.length) {
+      const basis = basisOf(r.settled);
+      if (basis === 'coined') {
+        // The inverse of "confirm only". A coinage is a term we invented because
+        // nothing existed; the most useful thing a reviewer can do is break it.
+        lines.push(
+          `  - **coined ${r.settled.date}, not attested.** Please try to falsify it: ` +
+          `search for any real term for this concept. If you find one, it wins ` +
+          `automatically — a term people already use always beats one we designed.`
+        );
+      } else if (basis === 'structural') {
         lines.push(
           `  - decided ${r.settled.date} on structural grounds, with no cited ` +
           `source. If your reading disagrees, say so — this is not settled by evidence.`
+        );
+      }
+      if (statusOf(r.settled) === 'pending-upstream') {
+        lines.push(
+          `  - **not yet shipping.** The table above shows the OLD form because the ` +
+          `correction lands in a repo we cannot edit yet. Judge the concluded term, ` +
+          `not the shipped one.`
         );
       }
       if (r.settled.variantNote) {
@@ -653,10 +823,18 @@ async function main() {
 
   --locale=<code>  brief for one locale
   --all            every locale
+  --mode=<m>       review (default) | coinage — coinage adds a "design a term
+                   where you find nothing" section, and is only permitted for
+                   ${Object.keys(COINAGE).join(', ')}
   --json           emit {topic, context} instead of markdown
   --out=<dir>      write <dir>/<code>.md (or .json) instead of stdout
   --help           this message`);
     return;
+  }
+
+  if (args.mode !== 'review' && args.mode !== 'coinage') {
+    console.error(`Unknown mode: ${args.mode}. Use 'review' or 'coinage'.`);
+    process.exit(1);
   }
 
   if (!args.locale && !args.all) {
@@ -665,13 +843,33 @@ async function main() {
     for (const code of Object.keys(LOCALES)) {
       if (code === 'en') continue;
       const b = await buildBrief(code);
-      rows.push([code, LOCALES[code].name, LOCALES[code].reviewed ? 'attrs reviewed' : '', b.priorityCount]);
+      // Pending decisions are the thing to check before queueing a new wave: a
+      // locale with pending records is one whose brief describes vocabulary
+      // that is already known to be changing.
+      const pending = Object.entries(SETTLED).filter(
+        ([k, r]) => k.startsWith(`${code}:`) && statusOf(r) === 'pending-upstream'
+      ).length;
+      rows.push([
+        code,
+        LOCALES[code].name,
+        LOCALES[code].reviewed ? 'attrs reviewed' : '',
+        b.priorityCount,
+        pending,
+        COINAGE[code] ? 'coinage' : '',
+      ]);
     }
-    rows.sort((a, b) => b[3] - a[3]);
-    console.log('locale  language        attrs           suspect terms');
-    console.log('-'.repeat(58));
-    for (const [code, name, rev, n] of rows) {
-      console.log(code.padEnd(8) + name.padEnd(16) + rev.padEnd(16) + (n || ''));
+    rows.sort((a, b) => b[4] - a[4] || b[3] - a[3]);
+    console.log('locale  language        attrs           suspect  pending  mode');
+    console.log('-'.repeat(66));
+    for (const [code, name, rev, n, pending, mode] of rows) {
+      console.log(
+        code.padEnd(8) +
+          name.padEnd(16) +
+          rev.padEnd(16) +
+          String(n || '').padEnd(9) +
+          String(pending || '').padEnd(9) +
+          mode
+      );
     }
     console.log('\nBrief for one locale:  node scripts/research-brief.mjs --locale=<code>');
     return;
@@ -684,8 +882,20 @@ async function main() {
     process.exit(1);
   }
 
+  // Coinage is opt-in per locale, and the gate is deliberate rather than
+  // advisory: authorising invention for a language that has attested vocabulary
+  // is how you get invented terms competing with real ones.
+  const notEligible = args.mode === 'coinage' && codes.filter(c => !COINAGE[c]);
+  if (notEligible && notEligible.length) {
+    console.error(`Coinage is not enabled for: ${notEligible.join(', ')}`);
+    console.error(`Enabled: ${Object.keys(COINAGE).join(', ')}`);
+    console.error('Add an entry to COINAGE in scripts/research-brief.mjs to enable one,');
+    console.error('but read RESEARCH_PIPELINE.md "Coinage track" first — the bar is high.');
+    process.exit(1);
+  }
+
   const briefs = [];
-  for (const c of codes) briefs.push(await buildBrief(c));
+  for (const c of codes) briefs.push(await buildBrief(c, args.mode));
 
   // --out writes one file per locale, so a brief can be handed to a research
   // agent or a reviewer without a checkout. Stdout stays the default.
