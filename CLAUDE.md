@@ -172,7 +172,11 @@ The cross-locale finding of the 2026-07-28 research wave, reached independently 
 
 Locales whose event nouns don't inflect (ja, ko, zh) were already right by accident. The Latin-script locales shipped infinitives as primaries and were corrected: de `fokussieren`→`Fokus`, `initialisieren`→`Initialisierung`; pt `focar`→`foco`, `iniciar`→`inicialização`, `rolar`→`rolagem`, `redimensionar`→`redimensionamento`. Apply the rule to any new vocabulary before shipping it.
 
-The paired trap: the obvious nominalization of `blur` is the *visual* blur noun in most languages, and that is the single most common defect this project has found — ja `ぼかし`, ko `블러`, pt `desfoque`, de `defokussieren` were all the image/optics sense. Reach for the "loss of focus" construction instead (`Fokusverlust`, `perda de foco`, `フォーカス解除`, `포커스아웃`).
+The paired trap: the obvious nominalization of `blur` is the *visual* blur noun in most languages, and that is the single most common defect this project has found — ja `ぼかし`, ko `블러`, pt `desfoque`, de `defokussieren` were all the image/optics sense. Reach for the "loss of focus" construction instead (`Fokusverlust`, `perda de foco`, `フォーカス解除`, `포커스아웃`). Wave 2's data suggests it is near-universal: ar `ضبابية`, hi `धुंधला`, bn `ঝাপসা`, tr `bulanık` and ru `размыть` are all the visual sense, unreviewed and shipping now.
+
+A third defect class, visible in the wave-2 data and briefed from 2026-07-29: **the identifier must be the citation form, not an oblique case.** Russian ships `изменении`, `отправке`, `вводе`, `клике` as primaries — prepositional forms that exist because the upstream vocabulary was written for hyperscript's `при изменении` ("on change") phrasing. An author here types the token alone in an attribute, with no preposition, so the nominative (`изменение`) is what belongs. The nominatives are already registered as alternatives in each case, so this is an ordering fix, but nothing would have caught it: both forms are nouns, so rule 1 passes.
+
+`suspicions()` cannot see any of these three. They are word-choice and morphology problems in scripts the heuristics don't read, which is why the brief states them as rules rather than relying on flags.
 
 ### Concluded terms live in one place
 
@@ -201,7 +205,7 @@ npm run queue-research -- --locale=pt   # print and verify one payload
 npm run queue-research -- --wave        # the priority locales
 ```
 
-It prints only; queuing is a separate deliberate step. The harvest on the far side parses the context with literal `PROJECT:` and `AIMS (decide these):` anchors — miss one and the report is filed with no synthesis at all, which you learn 6–30 hours later. `assertAnchors` fails the payload locally instead. Aims are phrased as decisions, not questions, because the harvest restates them verbatim and answers a "should we…?" with a summary rather than a verdict.
+It prints only; queuing is a separate deliberate step. `--wave=<n>` selects a wave; `--wave` alone means the current one. Wave 1 (`ja pt de zh ko es`, done 2026-07-28) was the six best-covered locales, where the risk was a wrong term already in front of learners. Wave 2 (`ar hi id ru bn tr vi fr`) is the large-audience locales, all of which are also badly under-covered (7–10 of the 16 published canonicals), so those briefs lean on the "no term anywhere" section — proposing a term is the work, not correcting one. The ordering rationale, including why audience size is not speaker count, is in [scripts/queue-research.mjs](./scripts/queue-research.mjs). The harvest on the far side parses the context with literal `PROJECT:` and `AIMS (decide these):` anchors — miss one and the report is filed with no synthesis at all, which you learn 6–30 hours later. `assertAnchors` fails the payload locally instead. Aims are phrased as decisions, not questions, because the harvest restates them verbatim and answers a "should we…?" with a summary rather than a verdict.
 
 The heuristics flag fused compounds, underscores and camelCase — every term of that shape checked so far turned out to be malformed. They deliberately do **not** flag capitalization: German capitalizes nouns, so `Klick` is correct, and lookup folds case anyway.
 

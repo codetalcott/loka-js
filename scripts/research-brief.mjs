@@ -342,6 +342,65 @@ function upstreamEventTable() {
 
 const UPSTREAM = upstreamEventTable();
 
+/**
+ * What the first research wave concluded, stated as rules rather than questions.
+ *
+ * Both findings were reached independently by four of the six wave-1 reviews. A
+ * brief that omits them spends a reviewer's effort re-deriving them, and — worse
+ * — invites a recommendation that contradicts vocabulary already shipped in five
+ * other locales, which we then have to reject and explain.
+ *
+ * The blur warning earns its place by hit rate: the visual-blur noun is the
+ * single most common defect this project has found, wrong in four of the six
+ * locales looked at so far. It is stated as a thing to check rather than a term
+ * to avoid, because in a language where the visual sense genuinely does not
+ * dominate, the obvious nominalization is fine and we want to hear that.
+ */
+function crossLocaleFindings(spec) {
+  return [
+    '## Three things already settled across locales — please apply, not re-derive',
+    '',
+    '**1. An event name is a noun or a past participle, never a bare infinitive.**',
+    'Four independent reviews of other languages reached this separately. An',
+    'infinitive reads as an instruction to the browser — German `fokussieren` says',
+    '"focus this!" — while an event names something that already happened, and it',
+    'collides with the method of the same name (`element.focus()`). German, Spanish',
+    'and Portuguese all shipped infinitives and were corrected to nouns',
+    '(`fokussieren`→`Fokus`, `enfocar`→`enfoque`, `rolar`→`rolagem`).',
+    '',
+    `So: if a term below is an infinitive in ${spec.name}, that alone is reason to`,
+    'propose the noun or participle — you do not need to find a source preferring it.',
+    `If ${spec.name} verbs do not inflect this way, or the distinction does not exist,`,
+    'please say so; several languages are unaffected and that is a useful answer.',
+    '',
+    '**2. Check `blur` specifically, against the visual sense.**',
+    'The obvious word for "blur" in most languages is the image/optics one — camera',
+    'blur, Gaussian blur, the CSS `filter: blur()` effect. That is not this event,',
+    'which fires when an element loses keyboard focus. We shipped the wrong sense in',
+    'four languages before catching it (Japanese ぼかし, Korean 블러, Portuguese',
+    '`desfoque`, German `defokussieren`), and in each case the fix was a "loss of',
+    'focus" construction instead.',
+    '',
+    `Please check what a ${spec.name} developer would understand from the term below,`,
+    'and whether the language has a focus-loss phrasing that is unambiguous. If the',
+    'visual sense genuinely is not dominant in your language, say that — the',
+    'nominalization is then fine and we would rather know.',
+    '',
+    '**3. If the language inflects for case, we want the citation form.**',
+    'This vocabulary was originally written for a different system, where the terms',
+    'appeared inside a phrase meaning "on <event>" — so some locales carry the form',
+    'that phrase requires rather than the form a word has on its own. Russian, for',
+    'instance, ships `изменении` (prepositional, from `при изменении` "on change")',
+    'where a standalone identifier wants the nominative `изменение`.',
+    '',
+    'An author here types the term by itself, in an attribute, with no preposition',
+    `and no sentence around it. If any term below is in an oblique case in ${spec.name},`,
+    'or otherwise only makes sense as part of a phrase, say so and give the form a',
+    'dictionary would list. If the language does not inflect this way, skip this.',
+    '',
+  ];
+}
+
 /** Native language name from the semantic profile, when the sibling checkout exists. */
 function nativeName(profile) {
   try {
@@ -487,6 +546,7 @@ async function buildBrief(code) {
   lines.push('references (MDN and similar) keep the English identifiers; that is a settled');
   lines.push('product decision, not the question.');
   lines.push('');
+  lines.push(...crossLocaleFindings(spec));
 
   if (priority.length) {
     lines.push('## Priority — these spellings look like artifacts');
@@ -575,9 +635,13 @@ async function buildBrief(code) {
   lines.push('## Answer format');
   lines.push('');
   lines.push('Per term: **keep** / **change to X** / **no evidence found**, one or two sentences');
-  lines.push('of reasoning, and the sources. Flag any term that reads as an imperative command');
-  lines.push('("do this") rather than an event ("this happened") — that distinction is the one');
-  lines.push('we are least sure we have right.');
+  lines.push('of reasoning, and the sources.');
+  lines.push('');
+  lines.push('Answering "no evidence found" for a term we already ship is a useful result, not a');
+  lines.push('failure to complete the task — it tells us the term was invented. Please do not');
+  lines.push('upgrade it to a confirmation to be agreeable, and if you end up confirming');
+  lines.push('everything, say so explicitly and show what you searched that could have');
+  lines.push('contradicted it.');
 
   return { code, topic, context: lines.join('\n'), priorityCount: priority.length };
 }

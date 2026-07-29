@@ -30,20 +30,68 @@ import { settledFor } from './settled-terms.mjs';
 // never been read by a native speaker. Not a ranking of languages — a ranking of
 // where a wrong term costs the most learners.
 //
-// `es` is here despite being the one locale whose attribute names have had a
+// "Audience" here is not speaker count. It is roughly
+//
+//     speakers  ×  how likely they are to learn to code in their own language
+//
+// and the second factor dominates. India has one of the largest developer
+// populations on earth and most of its professional work happens in English, so
+// Hindi ranks on the strength of school-age and tier-2/3 beginners rather than
+// on the industry. Indonesia is smaller and ranks higher per speaker, because
+// English proficiency there is genuinely low and the developer population is
+// young and growing. loka exists for the beginner who would otherwise bounce off
+// an English-only API, so that is the population being counted.
+//
+// Coverage is the multiplier: a locale missing 9 of the 16 published canonicals
+// has more unwritten vocabulary than wrong vocabulary, and a brief that asks for
+// terms we have never had is worth more than one asking to confirm terms we do.
+//
+// Wave 1 — done 2026-07-28. The six best-covered locales, where the risk was a
+// wrong term already in front of learners rather than a missing one.
+//
+// `es` was in it despite being the one locale whose attribute names had had a
 // native-speaker pass: it is also the only locale that localizes the rest of the
 // fixi family (moxi modifiers, paxi swaps, rexi verbs, ssexi events), and none of
-// that has been reviewed by anyone. It carries roughly three times the tokens of
-// any other locale, so it is simultaneously the best-checked and the least-checked.
-const WAVE = ['ja', 'pt', 'de', 'zh', 'ko', 'es'];
+// that had been reviewed by anyone. It carries roughly three times the tokens of
+// any other locale, so it was simultaneously the best-checked and least-checked.
+const WAVE_1 = ['ja', 'pt', 'de', 'zh', 'ko', 'es'];
+
+// Wave 2 — the large-audience locales, all of which are also badly under-covered
+// (7–10 of 16 canonicals). Every one of them is missing the whole keyboard and
+// pointer set, so these briefs lean on the "no term anywhere" section: proposing
+// a term is the work, not correcting one.
+//
+//   ar  ~400M. Attribute names already reviewed and it is the only RTL locale
+//       with demo and test coverage, so the events are the gap. 8/16.
+//   hi  ~600M speakers, the single largest beginner audience in the set. 8/16.
+//   id  ~250M with the lowest coverage of any non-stub locale and the lowest
+//       English proficiency of the large candidates. Missing `blur` entirely. 7/16.
+//   ru  ~250M including second-language use across Central Asia; large developer
+//       community with a long-standing habit of Russian-language documentation. 9/16.
+//   bn  ~270M. Bangladesh's freelance and product developer population is growing
+//       fast and is served far less well by English material than India's. 8/16.
+//   tr  ~85M. Low English proficiency against a large, young developer
+//       population — the clearest case where a localized API is the difference. 9/16.
+//   vi  ~85M with a very large outsourcing and product sector. 8/16.
+//   fr  ~300M including francophone Africa, which is where the beginner audience
+//       actually is. Best-covered of this wave (10/16), so the cheapest. Ranked
+//       last because French developers are the best served by English material.
+const WAVE_2 = ['ar', 'hi', 'id', 'ru', 'bn', 'tr', 'vi', 'fr'];
+
+// Wave 3 — the remainder, deferred rather than dismissed: it, pl, uk, he, ms, th,
+// tl, sw, qu. Smaller audiences, or (qu) an empty attribute stub that needs a
+// vocabulary proposed from nothing, which is a different task from review.
+const WAVES = { 1: WAVE_1, 2: WAVE_2 };
+const DEFAULT_WAVE = 2;
 
 const PROJECT = 'loka-js';
 
 function parseArgs() {
-  const args = { locale: null, wave: false, json: false, help: false };
+  const args = { locale: null, wave: null, json: false, help: false };
   for (const a of process.argv.slice(2)) {
     if (a === '--json') args.json = true;
-    else if (a === '--wave') args.wave = true;
+    else if (a === '--wave') args.wave = DEFAULT_WAVE;
+    else if (a.startsWith('--wave=')) args.wave = a.slice('--wave='.length);
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a.startsWith('--locale=')) args.locale = a.slice('--locale='.length);
   }
@@ -199,7 +247,10 @@ async function main() {
     console.log(`Compose gemini-deep-research payloads from terminology briefs.
 
   --locale=<code>  one locale
-  --wave           the priority wave (${WAVE.join(', ')})
+  --wave           the current wave, ${DEFAULT_WAVE} (${WAVES[DEFAULT_WAVE].join(', ')})
+  --wave=<n>       a specific wave${Object.entries(WAVES)
+    .map(([n, w]) => `\n                     ${n}: ${w.join(', ')}`)
+    .join('')}
   --json           emit JSON instead of a readable payload
   --help           this message
 
@@ -217,8 +268,12 @@ add_research_topic tool on the gemini-deep-research MCP server.`);
     console.error(`Known: ${Object.keys(LOCALES).join(', ')}`);
     process.exit(1);
   }
+  if (args.wave && !WAVES[args.wave]) {
+    console.error(`Unknown wave: ${args.wave}. Known: ${Object.keys(WAVES).join(', ')}`);
+    process.exit(1);
+  }
 
-  const codes = args.wave ? WAVE : [args.locale];
+  const codes = args.wave ? WAVES[args.wave] : [args.locale];
   const payloads = [];
   for (const c of codes) payloads.push(await buildPayload(c));
 
