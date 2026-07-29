@@ -26,25 +26,62 @@
 //
 // Change it there, `npm run gen`, then add the record below. `npm test` fails if
 // a record and the generated data disagree.
+//
+// When the upstream half is unavailable — another session owns the hyperfixi
+// checkout, say — record the decision anyway with `status: 'pending-upstream'`.
+// See RESEARCH_PIPELINE.md, "Freeze protocol".
 
 /**
  * @typedef {{
- *   concluded: string,      // the form we ship and teach — must be primary in the locale
- *   superseded: string[],   // spellings THIS decision demoted because they were wrong,
- *                           // retained as parse alternatives for back-compat. Not a list
- *                           // of every alternative: legitimate synonyms that were never
- *                           // wrong (pt 'mouse liberado', de 'Größe ändern') don't belong
- *                           // here, because the assertion attached to this field is
- *                           // "the bad old spelling still resolves", not "alts exist".
+ *   concluded: string|null, // the form we ship and teach — must be primary in the locale.
+ *                           // null means the decision was to publish NOTHING: no term
+ *                           // survived review, so authors write the canonical English
+ *                           // token (identity). ko resize/load and de mouseover/mouseout
+ *                           // are the cases. A null record is what distinguishes "we
+ *                           // looked and found nothing" from "nobody has looked yet" —
+ *                           // the second is a gap, the first is a conclusion.
+ *   superseded: string[],   // spellings THIS decision demoted, retained as parse
+ *                           // alternatives for back-compat. Not a list of every
+ *                           // alternative: legitimate synonyms that were never wrong
+ *                           // (pt 'mouse liberado', de 'Größe ändern') don't belong here,
+ *                           // because the assertion attached to this field is "the bad
+ *                           // old spelling still resolves", not "alts exist". One
+ *                           // exception: a COINED form later displaced by an attested one
+ *                           // belongs here even though it was never wrong — it shipped,
+ *                           // learners may have typed it, and it must keep parsing.
+ *                           // For `pending-upstream` records, superseded[0] is the
+ *                           // currently-shipping wrong primary — the test asserts it, so
+ *                           // that a third form appearing means upstream moved
+ *                           // differently and the record's premise is void.
  *   why: string,            // one line; what was wrong with the superseded form
  *   date: string,           // ISO date the decision concluded
  *   sources: string[],      // URLs the decision rests on; [] for pre-research corrections
  *   variantNote: string|null, // regional caveat, e.g. 'pt-BR usage; pt-PT unverified'
+ *   status?: 'applied'|'pending-upstream', // absent = 'applied'. 'pending-upstream' means
+ *                           // the decision is made but the edit lands in a repo we cannot
+ *                           // touch right now, so the WRONG form is still shipping. The
+ *                           // brief must say so rather than advertising the term as
+ *                           // reviewed, and vocab-ordering asserts the pending state
+ *                           // affirmatively so the freeze lifting is self-reporting.
+ *   basis?: 'attested'|'structural'|'coined', // absent: sources.length ? attested :
+ *                           // structural. 'attested' = real usage was found. 'structural'
+ *                           // = decided on morphology/collision grounds with no citation.
+ *                           // 'coined' = deliberately invented because no term existed
+ *                           // (see RESEARCH_PIPELINE.md, "Coinage track"). MUST be set
+ *                           // explicitly — a coinage has no sources either, so it is
+ *                           // indistinguishable from 'structural' by the default rule,
+ *                           // and the two get opposite treatment in a brief: structural
+ *                           // is open to challenge, coined is actively asking to be
+ *                           // falsified by any attested term at all.
  * }} SettledTerm
  */
 
 /**
- * Keyed `${localeCode}:${canonicalEvent}`.
+ * Keyed `${localeCode}:${canonical}`, where canonical is either a DOM event name
+ * (`es:mousedown`) or an attribute name (`de:fx-swap`). Attribute records were
+ * previously a hardcoded table inside verify-prompt.mjs and comments in
+ * fx-vocab.mjs — the same two-copies-of-one-fact problem this file was created
+ * to end, reintroduced for the other half of the vocabulary.
  * @type {Record<string, SettledTerm>}
  */
 export const SETTLED = {
@@ -379,6 +416,115 @@ export const SETTLED = {
     sources: [],
     variantNote: null,
   },
+
+  // ── Publish-nothing conclusions ──────────────────────────────────────────
+  // `concluded: null`. These look like gaps in the data and are not: someone
+  // looked, found nothing worth shipping, and decided the English canonical is
+  // what an author should write. Recorded so the next brief does not re-ask, and
+  // so vocab-ordering asserts the absence rather than trusting a comment.
+  'ko:resize': {
+    concluded: null,
+    superseded: [],
+    why: "the review returned UNSUPPORTED rather than agreeing — its sources for 리사이즈 were inaccessible and no Hangul usage could be verified in a DOM-event context. Publishing on intuition is what this pipeline exists to stop",
+    date: '2026-07-28',
+    sources: [],
+    variantNote: 'revisit with Tistory/Velog evidence; 리사이즈 is plausible but unverified',
+  },
+  'ko:load': {
+    concluded: null,
+    superseded: [],
+    why: "same as ko:resize — no snippet showed whether Korean developers write 로드, 페이지 로드 or the native 불러오기 for the event",
+    date: '2026-07-28',
+    sources: [],
+    variantNote: 'the three candidates are 로드 / 페이지 로드 / 불러오기; evidence would settle it',
+  },
+  'de:mouseover': {
+    concluded: null,
+    superseded: [],
+    why: "the literal glosses 'maus über' / 'maus drüber' appear only in prose explaining the English word to beginners, never as identifiers; German developers say 'hovern' and write the English names. Localizing here would isolate a learner from CSS :hover and from every tutorial they read next — the one case found so far where translating costs more than it gives",
+    date: '2026-07-28',
+    sources: ['https://www.mediaevent.de/javascript/mouseover.html'],
+    variantNote: null,
+  },
+  'de:mouseout': {
+    concluded: null,
+    superseded: [],
+    why: "same as de:mouseover; 'maus heraus' is clumsy and unidiomatic as an identifier, and the alternative 'maus verlässt' pairs with nothing",
+    date: '2026-07-28',
+    sources: ['https://www.mediaevent.de/javascript/mouseover.html'],
+    variantNote: null,
+  },
+
+  // ── Attribute names ──────────────────────────────────────────────────────
+  // Keyed on the attribute rather than an event. These decisions were previously
+  // recorded twice and tested zero times: prose in fx-vocab.mjs, plus a
+  // hardcoded APPLIED_EXTRA table in verify-prompt.mjs that had to be hand-edited
+  // after every round. Both are gone; this is the single record.
+  //
+  // Note these matter more at runtime than event records do. An event alias
+  // resolves through lookupEvt, which consults the whole map, so demoting an
+  // event spelling is free. An attribute alias only resolves because fx.name
+  // scans the element for each registered spelling — see CLAUDE.md, "An
+  // attribute-name alias is only an alias if it resolves per element".
+  'ja:fx-swap': {
+    concluded: 'fx-置換',
+    superseded: ['fx-スワップ'],
+    why: "スワップ is a real IT loanword but no Japanese source uses it for DOM content replacement — both Japanese htmx write-ups reach for 置換/挿入方式. It reads as memory or financial swapping",
+    date: '2026-07-28',
+    sources: [
+      'https://www.appleple.com/blog/frontend/htmx202402.html',
+      'https://e-words.jp/w/%E3%82%B9%E3%83%AF%E3%83%83%E3%83%97.html',
+    ],
+    variantNote: null,
+  },
+  'de:fx-swap': {
+    concluded: 'fx-ersetzung',
+    superseded: ['fx-tausch'],
+    why: "'Tausch' is a reciprocal barter — both sides give something up, which is not what a swap does to the DOM. The German htmx introduction calls hx-swap's job 'die Ersetzung' and its options 'Ersetzungsstrategie'",
+    date: '2026-07-28',
+    sources: ['https://www.innoq.com/de/blog/2024/06/htmx-einstieg/'],
+    variantNote: null,
+  },
+  'ko:fx-swap': {
+    concluded: 'fx-교체',
+    superseded: ['fx-스왑'],
+    why: "스왑 in Korean is the finance sense, or the two-variable exchange (교체 연산) — bidirectional either way, while a hypermedia swap replaces",
+    date: '2026-07-28',
+    sources: [],
+    variantNote: null,
+  },
+  'zh:fx-swap': {
+    concluded: 'fx-替换',
+    superseded: ['fx-交换'],
+    why: "交换 is a symmetrical exchange (A and B trade places); a swap unidirectionally replaces the target's subtree. Chinese DOM writing says 替换. 交换 kept parsing because the community htmx cheatsheet translation uses it (交换策略)",
+    date: '2026-07-28',
+    sources: ['https://quickref.me/zh-CN/docs/htmx.html'],
+    variantNote: null,
+  },
+  'ko:fx-method': {
+    concluded: 'fx-메서드',
+    superseded: ['fx-메소드'],
+    why: "메서드 is the National Institute of Korean Language transcription of [meθəd] and what javascript.info ko and MDN ko use; 메소드 survives in general usage mainly from 메소드 연기 (method acting) subtitles",
+    date: '2026-07-28',
+    sources: [],
+    variantNote: null,
+  },
+  'ko:fx-action': {
+    concluded: 'fx-주소',
+    superseded: ['fx-액션'],
+    why: "액션 in Korean is overwhelmingly the film/performance sense and has no attested use for a request URL; Korean tutorials gloss the concept as 주소 / '전송할 위치(URL)'",
+    date: '2026-07-28',
+    sources: ['https://lasbe.tistory.com/83'],
+    variantNote: null,
+  },
+  'zh:fx-action': {
+    concluded: 'fx-地址',
+    superseded: ['fx-动作'],
+    why: "动作 means a physical movement or gesture — it translates the English word 'action', not the concept (an endpoint URL). Chinese docs say 地址 / 请求地址 / URL. 'fx-请求地址' is registered alongside as the more precise form the verification pass preferred",
+    date: '2026-07-28',
+    sources: ['https://www.w3school.com.cn/tags/att_form_action.asp'],
+    variantNote: null,
+  },
 };
 
 /** Records for one locale, as `[canonical, record]` pairs. */
@@ -388,11 +534,68 @@ export function settledFor(code) {
     .map(([key, rec]) => [key.slice(code.length + 1), rec]);
 }
 
+/** True for a record keyed on an attribute name rather than a DOM event. */
+export const isAttrKey = canonical => canonical.startsWith('fx-');
+
+/** Effective status/basis, applying the documented defaults. */
+export const statusOf = rec => rec.status ?? 'applied';
+export const basisOf = rec => rec.basis ?? (rec.sources.length ? 'attested' : 'structural');
+
+/** Decisions concluded but not yet applied, as `[key, rec]` pairs, oldest first. */
+export function pendingRecords() {
+  return Object.entries(SETTLED)
+    .filter(([, rec]) => statusOf(rec) === 'pending-upstream')
+    .sort(([, a], [, b]) => a.date.localeCompare(b.date));
+}
+
 /**
  * One-line prose rendering, the shape research-brief.mjs puts in front of a
  * reviewer: what we concluded, why, and what to check it against.
+ *
+ * The three qualifiers are not decoration — each one changes what we are asking
+ * the reviewer to do. A pending record is asking them to check a term that is
+ * NOT what they will see shipping; a coined one is asking them to break it; a
+ * null one is asking whether "nothing" was the right answer.
  */
 export function describe(rec) {
   const src = rec.sources.length ? ` [${rec.sources.join(', ')}]` : '';
-  return `concluded: '${rec.concluded}' — ${rec.why}${src}`;
+  const basis = basisOf(rec);
+  const head =
+    rec.concluded === null
+      ? 'concluded: publish no term — authors write the English canonical'
+      : `concluded: '${rec.concluded}'`;
+  const flags = [];
+  if (statusOf(rec) === 'pending-upstream') {
+    flags.push(
+      `NOT YET SHIPPING — the wrong form ('${rec.superseded[0] ?? '?'}') is still live, ` +
+        'because the fix lands in a repo we cannot edit right now'
+    );
+  }
+  if (basis === 'coined') {
+    flags.push(
+      `coined ${rec.date}, no attested usage existed — any attested term you find replaces it`
+    );
+  } else if (basis === 'structural') {
+    flags.push('decided on structural grounds with no citation — open to challenge');
+  }
+  const suffix = flags.length ? ` (${flags.join('; ')})` : '';
+  return `${head} — ${rec.why}${src}${suffix}`;
+}
+
+// `node scripts/settled-terms.mjs` — what is concluded but not yet shipping.
+// Cheap to run, and the thing to check before queueing a new wave: a pending
+// record means a locale's brief is describing vocabulary that is about to change.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const pending = pendingRecords();
+  if (!pending.length) {
+    console.log('No pending-upstream decisions — everything concluded is shipping.');
+  } else {
+    console.log(`${pending.length} decision(s) concluded but not yet applied:\n`);
+    for (const [key, rec] of pending) {
+      console.log(`  ${key}`);
+      console.log(`    concluded ${rec.date}: ${rec.concluded ?? '(publish nothing)'}`);
+      console.log(`    still shipping: ${rec.superseded[0] ?? '(unknown)'}`);
+    }
+    console.log('\nSee RESEARCH_PIPELINE.md, "Freeze-lift runbook".');
+  }
 }

@@ -15,7 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { EVENT_KEYWORDS, extractEventValues } from '../scripts/gen-locales.mjs';
 import { LOCALES } from '../scripts/fx-vocab.mjs';
-import { SETTLED } from '../scripts/settled-terms.mjs';
+import { SETTLED, isAttrKey, statusOf, pendingRecords } from '../scripts/settled-terms.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCALES_DIR = path.resolve(__dirname, '..', 'locales');
@@ -129,13 +129,55 @@ console.log('\nCorrected terms — the form we teach, with old spellings still p
   for (const [key, rec] of Object.entries(SETTLED)) {
     const [code, canonical] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
     const d = await loadLocale(code);
-    ok(
-      preferred(d.fixi.events, canonical) === rec.concluded,
-      `${code} ${canonical} → '${rec.concluded}' (${rec.why})`
-    );
-    for (const old of rec.superseded) {
-      ok(d.fixi.events[old] === canonical, `${code} still parses the old '${old}' (back-compat)`);
+    // Attribute records assert against fixi.attrs, event records against
+    // fixi.events. Same two-sided shape, different map.
+    const map = isAttrKey(canonical) ? d.fixi.attrs : d.fixi.events;
+    const target = isAttrKey(canonical) ? `fx-${canonical.slice(3)}` : canonical;
+    const label = isAttrKey(canonical) ? `${canonical} (attr)` : canonical;
+
+    if (statusOf(rec) === 'pending-upstream') {
+      // Assert the pending state, rather than skipping. A skipped assertion
+      // cannot tell you when the freeze has lifted; this one can, so the test
+      // doubles as the reconciliation tool — see RESEARCH_PIPELINE.md.
+      const now = preferred(map, target);
+      ok(
+        now !== rec.concluded,
+        `${code} ${label} is still pending — if this fails, upstream applied ` +
+          `'${rec.concluded}' and the record should flip to status:'applied'`
+      );
+      if (rec.superseded.length) {
+        ok(
+          now === rec.superseded[0],
+          `${code} ${label} still ships '${rec.superseded[0]}' as the record assumes ` +
+            `(got '${now}') — a third form means upstream moved differently and this ` +
+            `decision needs re-looking`
+        );
+      }
+      continue;
     }
+
+    if (rec.concluded === null) {
+      // A publish-nothing conclusion. The assertion is the ABSENCE — which is
+      // what separates "we looked and found nothing" from "nobody looked".
+      ok(
+        preferred(map, target) === undefined,
+        `${code} ${label} publishes no term, deliberately (${rec.why.slice(0, 80)}…)`
+      );
+      continue;
+    }
+
+    ok(preferred(map, target) === rec.concluded, `${code} ${label} → '${rec.concluded}' (${rec.why})`);
+    for (const old of rec.superseded) {
+      ok(map[old] === target, `${code} still parses the old '${old}' (back-compat)`);
+    }
+  }
+
+  const pending = pendingRecords();
+  if (pending.length) {
+    console.log(
+      `  ⏳ ${pending.length} pending-upstream decision(s), oldest ${pending[0][1].date} ` +
+        `— concluded but not shipping; see RESEARCH_PIPELINE.md`
+    );
   }
 }
 
