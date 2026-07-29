@@ -30,7 +30,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { LOCALES } from './fx-vocab.mjs';
-import { SETTLED } from './settled-terms.mjs';
+import { SETTLED, statusOf, basisOf } from './settled-terms.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FINDINGS_DIR = path.resolve(__dirname, '..', 'research', 'findings');
@@ -40,24 +40,22 @@ const FINDINGS_DIR = path.resolve(__dirname, '..', 'research', 'findings');
 // prompt calls them out separately and asks for them to be attacked first.
 // Event-name corrections come from SETTLED; the rest are attrs, modifiers and
 // globals, which SETTLED does not cover.
+// Applied changes that SETTLED does not record, because they are not decisions
+// about which of several spellings wins: they are additions and removals of
+// alternates, and moxi/rexi tokens that live outside the attr/event namespaces.
+// Everything that IS a "we ship X, demoting Y" decision — including every
+// attribute name — now comes from SETTLED. This table used to carry those too,
+// which meant hand-editing it after every round to keep it agreeing with
+// settled-terms.mjs; that is precisely the drift settled-terms exists to end.
 const APPLIED_EXTRA = {
-  'ko:fx-action': "shipped 'fx-주소' as primary, demoting 'fx-액션'",
-  'zh:fx-action': "shipped 'fx-地址' as primary, demoting 'fx-动作'",
   'zh:change': "reordered to '变化' primary, '改变' second",
   'ja:focus': "dropped the alternate '集中' (kept 'フォーカス')",
   'ja:init': "dropped the alternate 'イニット' (kept '初期化')",
   'es:once': "shipped the moxi modifier '.una-vez' as primary, demoting '.unavez'",
   'es:transition': "registered the global 'transición' alongside 'transicion'",
   'de:resize': "added 'grössenänderung' (ss) as an alias for Swiss keyboards",
-  // Applied 2026-07-28 as a result of the verification round itself. These have
-  // had exactly one reviewer each, so they are the least-checked things in the
-  // published vocabulary despite being the newest.
-  'ja:fx-swap': "shipped 'fx-置換' as primary, demoting 'fx-スワップ'",
-  'de:fx-swap': "shipped 'fx-ersetzung' as primary, demoting 'fx-tausch'",
-  'ko:fx-swap': "shipped 'fx-교체' as primary, demoting 'fx-스왑'",
-  'zh:fx-swap': "shipped 'fx-替换' as primary, demoting 'fx-交换'",
-  'ko:fx-method': "shipped 'fx-메서드' as primary, demoting 'fx-메소드'; added 'fx-타깃' as a target alias",
-  'zh:fx-action-2': "added 'fx-请求地址' alongside 'fx-地址'",
+  'ko:fx-method': "added 'fx-타깃' as a target alias",
+  'zh:fx-action': "added 'fx-请求地址' alongside 'fx-地址'",
   'pt:fx-trigger': "added 'fx-acionador' and 'fx-disparador' as aliases of 'fx-gatilho'",
   'pt:fx-target': "added 'fx-destino' as an alias of 'fx-alvo'",
   'pt:fx-swap': "added 'fx-substituição' as an alias of 'fx-troca'",
@@ -113,12 +111,29 @@ function build(code) {
   const appliedFor = (canonical) => {
     const notes = [];
     const s = SETTLED[`${code}:${canonical}`];
-    if (s && s.date === '2026-07-28') {
-      notes.push(`ships '${s.concluded}', demoting ${s.superseded.map(x => `'${x}'`).join(', ')}`);
+    // Was `s.date === '2026-07-28'`, a literal standing in for "applied in the
+    // round being verified" — which silently stops being true for every later
+    // round. Status is the real question, and a pending record must NOT be
+    // described as shipped: what ships is still the wrong form.
+    if (s && statusOf(s) !== 'pending-upstream') {
+      notes.push(
+        s.concluded === null
+          ? 'decided to publish NO term — authors write the English canonical'
+          : `ships '${s.concluded}'` +
+            (s.superseded.length
+              ? `, demoting ${s.superseded.map(x => `'${x}'`).join(', ')}`
+              : '')
+      );
     }
     const extra = APPLIED_EXTRA[`${code}:${canonical}`];
     if (extra) notes.push(extra);
     return notes.length ? notes.join('; also ') : null;
+  };
+
+  /** Concluded but not shipping — the cheapest possible moment to be challenged. */
+  const pendingFor = (canonical) => {
+    const s = SETTLED[`${code}:${canonical}`];
+    return s && statusOf(s) === 'pending-upstream' ? s : null;
   };
 
   // Show the hyphenation rule using a term from THIS language. A Spanish example
@@ -184,9 +199,12 @@ function build(code) {
     ...(f.events ?? []).map(r => ({ ...r, kind: 'event name' })),
     ...(f.familyTokens ?? []).map(r => ({ ...r, kind: `${r.library} token` })),
   ];
-  const applied = allRows.filter(isApplied);
-  const changes = allRows.filter(r => !isApplied(r) && r.verdict === 'change');
-  const keeps = allRows.filter(r => !isApplied(r) && r.verdict === 'keep');
+  const isPending = r => !!pendingFor(r.canonical);
+  const applied = allRows.filter(r => isApplied(r) && !isPending(r));
+  const pending = allRows.filter(isPending);
+  const rest = r => !isApplied(r) && !isPending(r);
+  const changes = allRows.filter(r => rest(r) && r.verdict === 'change');
+  const keeps = allRows.filter(r => rest(r) && r.verdict === 'keep');
 
   if (applied.length) {
     L.push('## Part 1 — Already shipped (attack these first)');
@@ -205,6 +223,33 @@ function build(code) {
         why: r.reasoning,
         sources: r.sources,
         applied: appliedFor(r.canonical),
+      }));
+    }
+  }
+
+  if (pending.length) {
+    L.push('## Part 1b — Concluded, not yet applied (challenge these before we act)');
+    L.push('');
+    L.push(
+      'We have decided to change these but the edit has not landed, so what ships is still ' +
+      'the old form. That makes this the cheapest possible moment to tell us we are wrong: ' +
+      'nothing has been published, no learner has seen the new term, and reversing costs ' +
+      'nothing. After it ships, reversing means another correction on top of a correction.'
+    );
+    L.push('');
+    for (const r of pending) {
+      const s = pendingFor(r.canonical);
+      L.push(...claim(++n, {
+        label: `\`${r.canonical}\` (${r.kind})`,
+        was: r.shipped,
+        verdict: r.verdict,
+        proposed: r.proposed,
+        why: r.reasoning,
+        sources: r.sources,
+        applied:
+          `CONCLUDED but NOT shipping — we intend '${s.concluded}'` +
+          (s.superseded.length ? `, replacing '${s.superseded[0]}'` : '') +
+          `. Reason on record: ${s.why}`,
       }));
     }
   }
