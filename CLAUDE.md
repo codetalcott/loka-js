@@ -18,12 +18,12 @@ Single-file sources at the repo root, no bundler, no compile step.
 - [ssexi.js](./ssexi.js), [rexi.js](./rexi.js) — verbatim upstream copies (no patches; localized from outside)
 - [loka.js](./loka.js) — installs hooks on all five libraries; defines `window.loka.register` and `window.loka.alias`
 - [locales/](./locales/) — 24 generated locale data files (each calls `window.loka.register`)
-- [scripts/](./scripts/) — locale generator, per-library vocab table, concluded-terms record, and the terminology-research brief/queue tooling
+- [scripts/](./scripts/) — locale generator, per-library vocab table, concluded-terms record, and the terminology-research brief/queue/distill tooling
 - [demo/](./demo/) — multi-language demos including per-element-lang, `joint-all` (all 5 libs on one Spanish page), and `eventos` (the expanded event vocabulary)
 - [tutorial/](./tutorial/) — Spanish per-library tutorial pages mirroring fixiproject.org examples
 - [test/](./test/) — Playwright acceptance suite (10 phases) + behavior-preservation harness + two pure-Node data checks (vocab conventions, generation drift)
 - [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md) — how terminology gets researched, decided, applied and tested
-- `research/` — working directory. Briefs, payloads and verify prompts are gitignored (they regenerate); `research/findings/` is **committed**, being the hand-distilled residue of external research runs
+- `research/` — working directory. Briefs, payloads and verify prompts are gitignored (they regenerate); `research/findings/` is **committed**, being the distilled residue of external research runs — the judgement is human, the row set and verdicts are checked by `distill.mjs --check`
 - [reference-patches/](./reference-patches/) — diff artifacts (`fixi.patch`, `moxi.patch`, `paxi.patch`) showing what our patched copies differ from upstream; kept as documentation of the fork, not PR submissions
 
 Do not introduce a build step, dist directory, or package bundling. Edits to patched library files should keep their patch surface small — not because the patches are headed upstream, but because small surface area minimizes drift when we re-port against upstream changes.
@@ -159,7 +159,13 @@ npm run brief                        # index: suspect terms, pending decisions, 
 npm run brief -- --locale=de         # markdown brief for one locale
 npm run queue-research -- --wave     # payloads for the current wave (prints only)
 node scripts/settled-terms.mjs       # decisions concluded but not yet shipping
+
+# A report lands as prose; structure is imposed here, not asked for upstream.
+node scripts/distill.mjs --locale=tr --report=<path>          # distillation prompt
+node scripts/distill.mjs --locale=tr --check=research/findings/tr.json
 ```
+
+**Do not ask the research step for a verdict table.** It is retrieval-first — a long context is a topic to search from, not a work list to iterate over — so a countable output constraint gets satisfied by fabrication. Asked for "a verdict on each of 21 terms", a July 2026 run returned 23 rows of which 16 were terms nobody asked about, including a row assessing the word *verdict* lifted from the instruction. `distill.mjs` builds its rows from `buildBrief`'s `inventory` instead, so they cannot be invented, dropped or renamed, and `--check` is the gate before `settled-terms.mjs`. Full account in [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md).
 
 Two things about the brief worth knowing while editing it. It briefs **both** surfaces, and attribute names get their own section because each names a *concept* rather than a word — `fx-swap` is a DOM replacement strategy, not "exchange". Without that gloss a reviewer translates the English word and returns a term no developer would recognise. That section also distinguishes two blanks that look identical in the data: an omitted attr is a deliberate identity decision (French `fx-action`), while an *entirely* empty table is an unfilled stub (`qu`) — telling a reviewer we "judged English reads fine" for a stub claims a judgment nobody made.
 
@@ -171,7 +177,7 @@ The cross-locale finding of the 2026-07-28 research wave, reached independently 
 
 Locales whose event nouns don't inflect (ja, ko, zh) were already right by accident. The Latin-script locales shipped infinitives as primaries and were corrected: de `fokussieren`→`Fokus`, `initialisieren`→`Initialisierung`; pt `focar`→`foco`, `iniciar`→`inicialização`, `rolar`→`rolagem`, `redimensionar`→`redimensionamento`. Apply the rule to any new vocabulary before shipping it.
 
-The paired trap: the obvious nominalization of `blur` is the *visual* blur noun in most languages, and that is the single most common defect this project has found — ja `ぼかし`, ko `블러`, pt `desfoque`, de `defokussieren` were all the image/optics sense. Reach for the "loss of focus" construction instead (`Fokusverlust`, `perda de foco`, `フォーカス解除`, `포커스아웃`). Wave 2's data suggests it is near-universal: ar `ضبابية`, hi `धुंधला`, bn `ঝাপসা`, tr `bulanık` and ru `размыть` are all the visual sense, unreviewed and shipping now.
+The paired trap: the obvious nominalization of `blur` is the *visual* blur noun in most languages, and that is the single most common defect this project has found — ja `ぼかし`, ko `블러`, pt `desfoque`, de `defokussieren` were all the image/optics sense. Reach for the "loss of focus" construction instead (`Fokusverlust`, `perda de foco`, `フォーカス解除`, `포커스아웃`). Wave 2 is confirming it is near-universal. Turkish `bulanık` came back reviewed 2026-07-29 — "absolutely never used by native developers" for the DOM event, correct form `odak kaybı` — making it the fifth locale to ship the optical sense. French independently reached the same verdict against *le flou*. Still unreviewed and shipping now: ar `ضبابية`, hi `धुंधला`, bn `ঝাপসা`, ru `размыть`.
 
 A third defect class, visible in the wave-2 data and briefed from 2026-07-29: **the identifier must be the citation form, not an oblique case.** Russian ships `изменении`, `отправке`, `вводе`, `клике` as primaries — prepositional forms that exist because the upstream vocabulary was written for hyperscript's `при изменении` ("on change") phrasing. An author here types the token alone in an attribute, with no preposition, so the nominative (`изменение`) is what belongs. The nominatives are already registered as alternatives in each case, so this is an ordering fix, but nothing would have caught it: both forms are nouns, so rule 1 passes.
 
