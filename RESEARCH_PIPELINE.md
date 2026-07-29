@@ -15,9 +15,10 @@ Most of loka's published vocabulary was never read by a native speaker before mi
                                                                         ▼
    settled record ◄── apply or pend ◄── decide ◄── verification ◄──  distill
    + npm run gen                                    report          findings/<code>.json
-        │                                              ▲                │
-        ▼                                              └── verify prompt ┘
-     npm test                                            (closed question)
+        │                                              ▲             (distill.mjs
+        ▼                                              │              --check)
+     npm test                                          └── verify prompt ┘
+                                                          (closed question)
 ```
 
 Two research passes, deliberately. The brief asks an open question ("what do developers call this?"); the verify prompt asks a closed one ("here is a claim and its sources — attack it"). Reusing the brief for the second pass gets a second opinion formed the same way as the first, which is not independent evidence.
@@ -65,11 +66,33 @@ Wraps the brief for the `gemini-deep-research` MCP queue. Prints only — queuin
 
 The harvest side parses the context with literal `PROJECT:` and `AIMS (decide these):` anchors. Miss one and the report is filed with no synthesis at all, which you learn 6–30 hours later; `assertAnchors` fails the payload locally instead. Aims are phrased as decisions, not questions, because the harvest restates them verbatim and answers a "should we…?" with a summary rather than a verdict.
 
-### 3. Distill (the stage with no script)
+### 3. Distill
 
-A report lands as prose. Someone reads it and writes `research/findings/<code>.json`. This is the only hand step in the pipeline and the only artifact that does not regenerate, which is why `research/findings/` is committed while the rest of `research/` is ignored.
+```bash
+node scripts/distill.mjs --locale=tr --report=<path/to/report.md>   # prompt
+node scripts/distill.mjs --locale=tr --skeleton                     # empty rows
+node scripts/distill.mjs --locale=tr --check=research/findings/tr.json
+```
 
-Checklist:
+A report lands as prose. The judgement in converting it to `research/findings/<code>.json` is still human — that is why `research/findings/` is committed while the rest of `research/` is ignored — but the *shape* is no longer hand-kept.
+
+**Why the structure is imposed here and not asked for upstream.** Two French runs in July 2026 settled this. Asked an open question, Deep Research returned genuinely useful sourced evidence in continuous prose, on a term set of its own choosing. Asked for "a verdict on each of 21 terms" with a row count and an output template, it returned a well-formed 23-row table in which 16 rows were terms nobody asked about — `CSS`, `API`, `Daemon`, `Cache` — including a row assessing the word *verdict*, lifted from the instruction. It is retrieval-first: a long context is a topic to search from, not a work list to iterate over, so a countable output constraint gets satisfied by fabrication. Do not put a required row count back into the brief.
+
+`distill.mjs` builds its row set from `buildBrief`'s `inventory`, so the terms come from our data and cannot be invented, dropped or renamed. `--check` is the part that carries the guarantee, and it is the gate before anything reaches `settled-terms.mjs`:
+
+| Mistake | `--check` says |
+|---|---|
+| A term the report discussed but we never asked about | `` `API` is not a term we asked about `` |
+| A listed term silently omitted | `` missing `input` `` |
+| `keep`/`change` asserted with no evidence | asserts usage but cites no sources |
+| `change` with no replacement named | needs a `proposed` form |
+| `"code.mu (cite 16)"` in `sources` | is not a URL — resolve it against the citation map |
+
+That last one matters more than it looks: Gemini cites inline as `[cite: 7]` and lists sources once at the end. The prompt renders the resolved map so rows carry followable URLs, because the verify prompt's whole premise is that the next reviewer *checks* the sources rather than trusting them.
+
+An unaddressed term is `reject` with reasoning "not addressed by the report" — never an omission. `reject` on a shipped term means "publish nothing", which becomes `concluded: null`: the difference between *we looked and found nothing* and *nobody has looked*.
+
+Checklist for the judgement `--check` cannot make:
 
 - Read the report **against the brief**, not on its own. A report that answers a question you did not ask is a report that drifted.
 - One row per claim, including confirmations. A "keep" that nothing recorded is a decision that will be re-litigated next wave.
@@ -186,7 +209,7 @@ Ordered by developer-audience size against how much of the vocabulary has never 
 | Wave | Locales | Status |
 |---|---|---|
 | 1 | ja pt de zh ko es | Applied 2026-07-28 |
-| 2 | ar hi id ru bn tr vi fr | Briefs generated; in flight |
+| 2 | ar hi id ru bn tr vi fr | In flight. `tr` distilled to findings 2026-07-29, awaiting verify. `fr` reported twice (see Distill) and is not yet distilled |
 | 3 | it pl uk he ms th tl sw qu | Defined, not queued (`qu`, `sw` in coinage mode) |
 
 Run one wave at a time. Two in flight means harvesting reports against a vocabulary that is moving underneath them.
@@ -200,6 +223,9 @@ Run one wave at a time. Two in flight means harvesting reports against a vocabul
 | A demoted spelling stopped parsing | `test/vocab-ordering.mjs` (superseded assertions) |
 | A pending decision silently became applied | `test/vocab-ordering.mjs` (pending branch) |
 | Upstream moved a term we had pending | `test/vocab-ordering.mjs` (`superseded[0]` premise check) |
+| Findings assess a term nobody asked about | `scripts/distill.mjs --check` |
+| A briefed term silently absent from findings | `scripts/distill.mjs --check` |
+| A verdict asserting usage with no source, or an unfollowable `cite N` source | `scripts/distill.mjs --check` |
 | `fx-vocab.mjs` shadowing a profile term | `scripts/gen-locales.mjs` (warn; throw after freeze-lift) |
 | A canonical published outside the allowlist | `orderValues` in `gen-locales.mjs` (throws) |
 | A localized term never reaching `addEventListener` | `test/loka-js.spec.mjs` phase J |

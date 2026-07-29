@@ -1,0 +1,262 @@
+{
+  "code": "tr",
+  "attrs": [
+    {
+      "canonical": "fx-action",
+      "shipped": "fx-eylem",
+      "verdict": "change",
+      "proposed": "istek",
+      "reasoning": "The report never evaluates `eylem` ('deed, action'), but it answers the concept directly: for Request URL, 'Native Turkish developers almost universally write *İstek URL'i* or *İstek Adresi*', and 'The English word \"Request\" maps directly, flawlessly, and without semantic baggage to the Turkish word *istek*.' `eylem` translates the English attribute's name rather than the concept it denotes. `hedef` is unavailable here — it is fx-target.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH-YQ2Ir7t2jkwpFi-T3HRnfM_OGzvURfcmUkNcaX7JfTksLB2tXJZHzPCdN2CPcMXZhi8flfz5Kp9YJ_Mh7jt5KOzdvUY_ALKeP_z9ws8fG6YjnWDAfZmK5HIwaqguA_rWLLaejTk=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3L2UXi7lDQrEbd3UaYwKuq2s0THqHHt__PpFcYzUq_7piur4WUWNOVPDfpsNQ0s6zh-f8bSfHJBPY8Rdm8rXvQ2u1vKPXZ-CQQdWYBSasiwiPZUTDQkZzo8XeoxfjvbKwMro-LEkOpEixvM0fooHP08gCjbdXdcxdTYWQmA=="
+      ]
+    },
+    {
+      "canonical": "fx-method",
+      "shipped": "fx-yöntem",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Directly attested: 'Native developers unequivocally and universally write *HTTP Metodu* or *HTTP Yöntemi*.' `yöntem` is one of the two attested forms. `metot` appears to be the more common of the pair ('a deeply entrenched, historical loanword'), so it is worth registering as an alternative, but there is no case for demoting `yöntem`.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHPe3qPKbmtr6XDI8Hzqk63dPHDiBV06DgYnpMkUSWhiwhTaZsPN_AMCmPS9CHqZhx0vObXRy_DrjmuH-W5m44D3zdiEfE8qD_Hk1z0jqO9hf_PnJl11qe_j3wnwZWZlLNKb522B3JtqUKbrXC4uKefQJ7ydjNRxf1LIPaC3B4X2bI="
+      ]
+    },
+    {
+      "canonical": "fx-trigger",
+      "shipped": "fx-tetikleyici",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'Native developers write *Tetikleyici Olay*… defining it as the *tetikleyici olay* is the exact, sophisticated phrase a native technical writer would use.' The report also notes the root is established elsewhere in software — SQL triggers are 'uniformly known as *tetikleyiciler*'.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEufyQs6Qu3so2C5c-ZcLQaz6tKZlWUoFWdrXuemtO6UtGF2sL1vXYn76tlu75l_FBKM5fJxjYn2ZXLMFxnR2BhNkPbijIlHWEd6pVdbG--Ri8yHEaNEvCy5lW1gnpoI9RRhrMCTS7rrRKRyzp3fUYbuy0mcNro8ForanKPZQ273lbdYhEvglD0EMTtNdpFnDdJbM0qHR8="
+      ]
+    },
+    {
+      "canonical": "fx-target",
+      "shipped": "fx-hedef",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'The English word \"target\" universally and cleanly translates to *hedef* in all Turkish IT environments.' Natives write *hedef eleman* or *hedef öğe*; the head noun is not part of our attribute, so `hedef` alone is correct.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFXb-LZOAl1ruxzFs_fLzFmuYaRPZ4GZzaBbzV60nI7Q_f80-xNpZEVbwAJpk_Yhgm522z7zZiRkfLQTzqWosRmfiXIl5albBVK2iqUVlKiJNnGgdS8JdqKZZ5lazQyMA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3L2UXi7lDQrEbd3UaYwKuq2s0THqHHt__PpFcYzUq_7piur4WUWNOVPDfpsNQ0s6zh-f8bSfHJBPY8Rdm8rXvQ2u1vKPXZ-CQQdWYBSasiwiPZUTDQkZzo8XeoxfjvbKwMro-LEkOpEixvM0fooHP08gCjbdXdcxdTYWQmA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGEN0HlLU51ymKgVZpvqNcJ3r4vTPBN4b8c91pklDLfim0j2jC3uYSZ8TleWNv-W_XtDq2Z3-7hnI-9j2sSKgMeY7YSKKWc7CcNTuHXPCYXyDcK7ybP4jkkJDJeWpjCk4Qayfve8if8JEPEws_x-IBvuBwuRz0Fgj2MQQ=="
+      ]
+    },
+    {
+      "canonical": "fx-swap",
+      "shipped": "fx-değişim",
+      "verdict": "change",
+      "proposed": "değiştirme",
+      "reasoning": "The report endorses *yer değiştirme* or *değiştirme* ('replacing') and warns off the literal *takas*, which 'carries a heavy, distracting economic and financial connotation'. Our `değişim` is neither — it is 'change/variation', the intransitive noun, and it additionally collides with `değişim`, an accepted alternative for the `change` event. `değiştirme` is the transitive form the report uses and removes the collision. Attribute names cannot contain a space, so the fuller *yer değiştirme* is unavailable here.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEU2oCRd2jw6GvqHboGBU6QAYdu2j0neTGXnf70z2_xUEOlIFk8Dv4VuJ1EiWNBE19cFEIShjnoo3ahl93NuCU-Yb1ft9xkPzmd8eLpDksxNJrpCGi-hZtk3WYBuZzwxUbOAyaBBQIPYf6r23m408dpGsJ1o3SFQLg0hLcaDcD4orqyFcpw3BKE",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH-YQ2Ir7t2jkwpFi-T3HRnfM_OGzvURfcmUkNcaX7JfTksLB2tXJZHzPCdN2CPcMXZhi8flfz5Kp9YJ_Mh7jt5KOzdvUY_ALKeP_z9ws8fG6YjnWDAfZmK5HIwaqguA_rWLLaejTk="
+      ]
+    }
+  ],
+  "events": [
+    {
+      "canonical": "click",
+      "shipped": "tıklama",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'Highly accurate, universally accepted, and exactly what a native developer would write in both formal and educational contexts.' Educational resources 'consistently and confidently define the `click` event as *tıklama olayı*'. The report notes the Anglicized *clicklemek* exists in production jargon but that *tıklama* 'remains heavily utilized even by elite senior engineers'.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3L2UXi7lDQrEbd3UaYwKuq2s0THqHHt__PpFcYzUq_7piur4WUWNOVPDfpsNQ0s6zh-f8bSfHJBPY8Rdm8rXvQ2u1vKPXZ-CQQdWYBSasiwiPZUTDQkZzo8XeoxfjvbKwMro-LEkOpEixvM0fooHP08gCjbdXdcxdTYWQmA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0cd3EfnKCuhFTyIHwK9QTNVQ-bd5mJ_35jaUrB8hEpcWLwgHnMPT3AfdxjSngN1ZC-CYNkZezhr0-LoEH7krhZahMMvtZGuwxd885_LtientAUD1NP4XLnyYVbm8MFRQWGP2B4s9yFvdyI3HEX105K24PuvtMBq2Dq6lbo9wdnE9o9tPpUDcb0c0uxAvPO5w=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH-YQ2Ir7t2jkwpFi-T3HRnfM_OGzvURfcmUkNcaX7JfTksLB2tXJZHzPCdN2CPcMXZhi8flfz5Kp9YJ_Mh7jt5KOzdvUY_ALKeP_z9ws8fG6YjnWDAfZmK5HIwaqguA_rWLLaejTk=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGRt9OWEKCf1ZH7sHzrh8kwnJvAST06qKnWl6ILhyt0pf2KSjdHrA8Ys9peSipJz9kqxjXWnW85rQCF9wFQZoAdyMk4s8EAXZlyBS8BV9_9QK2kr_2Q9WMTv4_oVN3gRO19Wae9qYwX_DY3_cOlb5ZnofM2bMn4LkSTuMyGcLEQxNuDlS6XeRdR_Qk="
+      ]
+    },
+    {
+      "canonical": "change",
+      "shipped": "değişiklik",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'Functionally correct, logically sound, and heavily utilized across the industry'; 'texts routinely refer to *değişiklik halinde*'. The report records that developers often write *değeri değiştiğinde* or the English *change eventi* in practice, but neither displaces the pedagogical term, which is the register our audience reads.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHPe3qPKbmtr6XDI8Hzqk63dPHDiBV06DgYnpMkUSWhiwhTaZsPN_AMCmPS9CHqZhx0vObXRy_DrjmuH-W5m44D3zdiEfE8qD_Hk1z0jqO9hf_PnJl11qe_j3wnwZWZlLNKb522B3JtqUKbrXC4uKefQJ7ydjNRxf1LIPaC3B4X2bI="
+      ]
+    },
+    {
+      "canonical": "submit",
+      "shipped": "gönderme",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'*form gönderme* is the correct, universally understood formal term', and 'educational tutorials and entry-level documentation universally refer to *bir form gönderme*'. The report's own verdict column prefers the hybrid *submit etmek*, but explicitly as production jargon distinguishing a programmatic payload from a UI 'send' button — the brief asks for the register a beginner is taught in.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3L2UXi7lDQrEbd3UaYwKuq2s0THqHHt__PpFcYzUq_7piur4WUWNOVPDfpsNQ0s6zh-f8bSfHJBPY8Rdm8rXvQ2u1vKPXZ-CQQdWYBSasiwiPZUTDQkZzo8XeoxfjvbKwMro-LEkOpEixvM0fooHP08gCjbdXdcxdTYWQmA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEU2oCRd2jw6GvqHboGBU6QAYdu2j0neTGXnf70z2_xUEOlIFk8Dv4VuJ1EiWNBE19cFEIShjnoo3ahl93NuCU-Yb1ft9xkPzmd8eLpDksxNJrpCGi-hZtk3WYBuZzwxUbOAyaBBQIPYf6r23m408dpGsJ1o3SFQLg0hLcaDcD4orqyFcpw3BKE",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGKPR01V-YKUQUXe1rPY6IUigoszI8uJdWnFCk9sXhyANHXXkSKie-odwN_JfncKjReSFT8YdwaHVXNa-u5blZLaPuKUdHhPTZNdVfD5hM7UwKWB8jnLV0IMDBqOv5IN-7flrAcASw2ydb3KLZU03_WYOBbwrzVoCTzlZyWKtbVkKA="
+      ]
+    },
+    {
+      "canonical": "input",
+      "shipped": "giriş",
+      "verdict": "change",
+      "proposed": "girdi",
+      "reasoning": "DEFECT. '*giriş* in standard conversational Turkish means \"entry\"… or \"login/authentication\" (as in *giriş yapma*)', so calling the event a *giriş olayı* 'can frequently sound overly literal, awkwardly academic, or confusingly imply an authentication event'. The report's recommendation is explicit: '*girdi olayı* is vastly preferred and significantly more accurate than a standalone, ambiguous *giriş olayı*'. `girdi` already ships as an accepted alternative, so this is a promotion, not a new term.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGRt9OWEKCf1ZH7sHzrh8kwnJvAST06qKnWl6ILhyt0pf2KSjdHrA8Ys9peSipJz9kqxjXWnW85rQCF9wFQZoAdyMk4s8EAXZlyBS8BV9_9QK2kr_2Q9WMTv4_oVN3gRO19Wae9qYwX_DY3_cOlb5ZnofM2bMn4LkSTuMyGcLEQxNuDlS6XeRdR_Qk=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHYlGzoy8VGcWsWQZZ3I0K0SyrMV9TdyBJP7xIr-HNdo89qo6iiDMNAxW1WQP11DqUa3uk9vgqHkgr_aa8bXj4VzKTIIemrs7tOJCKZFrQU5PoynZjUfYYErHkotrarwwgv2swXU6fcIMxY955s4BbQ-A1XZGFeWtODnH4kJZ3P2MoUNQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHjh8zdAgkxN7Cszemh-ib8SYyhkiZf2ctKCvv0JNYWKbgXVSb9nkUdgDU8W2OMpyaut_edPMVpdCrGCdbFmdS_fsBx7aBv_wB_I7iZJVdWRLzMRoGXYY-zqNLe6BaGD20jQBqD4Nrj4KmlrQ0XCMJza8t71dn1N6116-ChzWFm_cjVSM0vRlnQ5dKHQ0gvwykJs0GpWQk3ig==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEdZF7oadZQCrvS9RBvhdlyD0KBZlDcGf9T61BQEFr73UrWlMQdyZkSkZ_3veqn1gYxU9Wt-vCChJaCrkq4SnWVr7dAa2n6TLHjIte1EmTU-WL78fo-2Z9XTVHKY96-oH4zzQ3DYy_wEHFEde4_4hS7DmPYiPDPkBY9xqyOKSuPmkEbiqfIMLBiJFoxjwaJh7F_4AY9-wZAaQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHsT6GRoG7uotOnJuQXpBlQHK-za9EIxSPNxV-WDOu4C8FHgvC9CGu4JzWBUfhPaZE9OexRZS0JMefiBt-o812bvpyvU8Zg6n_knxRgtEurODgcdMt82e5B6eoX1osHsFKHRVHdlcpzBYVvqVl79W1LsNeabDD5Q7GGK4RSKD1ODZZaiU9ZEemyc_bcCvLHuFbFlojD"
+      ]
+    },
+    {
+      "canonical": "focus",
+      "shipped": "odak",
+      "verdict": "change",
+      "proposed": "odaklanma",
+      "reasoning": "Both forms are attested — '*odak* or *odaklanma* is highly accurate, semantically flawless' — but the report's verdict for what a developer actually writes is *Odaklanma*, and the running examples are *odaklanma olayı* and *öğenin odaklanması*. `odaklanma` is also the better fit for the cross-locale noun rule: it names the event (the act of focusing) where `odak` names the state. `odaklanma` already ships as an accepted alternative.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVVy2kkAp-fMJODC3XAaV_4YMkdo4bz8blGw9rTI5FMr8zVVDuWCwPWwB8vZW20CWp8VI21jCrhWPDTA0vmCLezHVbY6v2wgf7Y8o5Oo3RTmmDTzH4NHV3O4sb2P-CcohoKbaR-b8jbZBuVRV3G7bAHtG8rKBzTPOajXjHkNELMSPXZlQ9xZ5mvxcrz65G1cgUOA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoQYW6V_htIvrQNN6yVLixAekhhazn4DmRntr2lB92nJBRES3Hy4taW13IOU0XASvcwBkwMntiR2ByCu6hTJ93id1EtwzIEEXP74C3jNVAl-ZHbWLCIrO6SDW0xVFynMD83b0yrnYYa5TV3VILy9eW14NNGWd-EnofsBTfCkxQ-4IPAa3fyHS0eiAP7keNXtA20Q==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHXOCFmTZ1ryPHXbuQX-r2tf-OhwRQzJXI3PiEklI0bQBY2wIMTMlXyY2ruI3vXh2J0geNBuW2en44oe-vDo1ADeNYyAe81hFfzPWHj8yOyGUO4-d4DErAeAH0IuLEU06whqRgZKMa-PZhhgmbn23k6lznqvSdHPOrhq9JLaCIM5EGGVVcZzCGg96THmthMj9xKJ6N5",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEufyQs6Qu3so2C5c-ZcLQaz6tKZlWUoFWdrXuemtO6UtGF2sL1vXYn76tlu75l_FBKM5fJxjYn2ZXLMFxnR2BhNkPbijIlHWEd6pVdbG--Ri8yHEaNEvCy5lW1gnpoI9RRhrMCTS7rrRKRyzp3fUYbuy0mcNro8ForanKPZQ273lbdYhEvglD0EMTtNdpFnDdJbM0qHR8="
+      ]
+    },
+    {
+      "canonical": "blur",
+      "shipped": "bulanık",
+      "verdict": "change",
+      "proposed": "odak kaybı",
+      "reasoning": "DEFECT, and the fifth language to ship this one. '*bulanık*… is fundamentally and technically incorrect when referring to the interactive DOM event'; the visual sense 'is strictly reserved for CSS visual filters, image processing libraries, and visual censorship tools'. 'When referring to the JavaScript DOM event… the term *bulanık* is absolutely never used by native developers.' Natives 'would exclusively write *odak kaybı* (loss of focus) or *odaktan çıkma*'. A cited glossary explicitly delineates the two senses. Multi-word is legal for an event value; lookup folds the space.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHg_3XxauGmDD2bKkyBcPP3VIFQiKukFDPfjsS9oQDsRthF_UntIb1cEEIseXacxdRqdata4MAlhOfj2WBRgvcOR4Szd_u7okIx-NzJ0Z7oM_c8f51m2wdohfr59JPFLLLvvhYamgaRusXqcZjjcAF0B2s1760ON6R7dK-1-RAu2Eo=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEU2oCRd2jw6GvqHboGBU6QAYdu2j0neTGXnf70z2_xUEOlIFk8Dv4VuJ1EiWNBE19cFEIShjnoo3ahl93NuCU-Yb1ft9xkPzmd8eLpDksxNJrpCGi-hZtk3WYBuZzwxUbOAyaBBQIPYf6r23m408dpGsJ1o3SFQLg0hLcaDcD4orqyFcpw3BKE",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH-YQ2Ir7t2jkwpFi-T3HRnfM_OGzvURfcmUkNcaX7JfTksLB2tXJZHzPCdN2CPcMXZhi8flfz5Kp9YJ_Mh7jt5KOzdvUY_ALKeP_z9ws8fG6YjnWDAfZmK5HIwaqguA_rWLLaejTk=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVVy2kkAp-fMJODC3XAaV_4YMkdo4bz8blGw9rTI5FMr8zVVDuWCwPWwB8vZW20CWp8VI21jCrhWPDTA0vmCLezHVbY6v2wgf7Y8o5Oo3RTmmDTzH4NHV3O4sb2P-CcohoKbaR-b8jbZBuVRV3G7bAHtG8rKBzTPOajXjHkNELMSPXZlQ9xZ5mvxcrz65G1cgUOA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGNeLhBij1Gjg-ex5ua0RNdt6aVgXD2WuNsxdRRJO6fiDle-XhgqbqpobfnIO6U7r5-zD8FzzsG-5xh1xwALax7pE_LFlIk3gx7vZBk7NRdQ0YYOgscaBf8kh75Ld8HsOpjpbv1Uac="
+      ]
+    },
+    {
+      "canonical": "init",
+      "shipped": "başlat",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `init` is not among the nine events it evaluated, and `başlat` appears nowhere in the text. No evidence either way; the term remains unreviewed rather than confirmed.",
+      "sources": []
+    },
+    {
+      "canonical": "scroll",
+      "shipped": "kaydır",
+      "verdict": "change",
+      "proposed": "kaydırma",
+      "reasoning": "The concept is well localized — '*kaydırma*… is highly accurate, universally understood, and commonly utilized' — but every attested form in the report is the verbal noun *kaydırma* (*sayfaları kaydırma*, *kaydırma olayı*), never the bare stem. Our `kaydır` is the imperative ('scroll!'), which is exactly the form the cross-locale noun rule exists to correct.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGEN0HlLU51ymKgVZpvqNcJ3r4vTPBN4b8c91pklDLfim0j2jC3uYSZ8TleWNv-W_XtDq2Z3-7hnI-9j2sSKgMeY7YSKKWc7CcNTuHXPCYXyDcK7ybP4jkkJDJeWpjCk4Qayfve8if8JEPEws_x-IBvuBwuRz0Fgj2MQQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEufyQs6Qu3so2C5c-ZcLQaz6tKZlWUoFWdrXuemtO6UtGF2sL1vXYn76tlu75l_FBKM5fJxjYn2ZXLMFxnR2BhNkPbijIlHWEd6pVdbG--Ri8yHEaNEvCy5lW1gnpoI9RRhrMCTS7rrRKRyzp3fUYbuy0mcNro8ForanKPZQ273lbdYhEvglD0EMTtNdpFnDdJbM0qHR8=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFn3hQZq2wHCSzOna7H7RSwMP5WcnmRUWtG3aB1GSNTVDRFhhOBIpQrf-VB2VRJNfGrWg1HqHiiWy-VHctF8WTG2jaRaMB527nFfE0iKhn5sxO-snpceTa84Lt210cSO6FbfE200K4Ed6P_bFD3SKRGbCbG",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEHSzbSal2i9B7nBYP3c5UwZVm8rFWKLI6u1erBobgiq182biDLUBGHNAhZlNtT8gvNGpWXYk4c6e8uZcnfsmR8P7p1WiSXR98rr59c3lF41_pzPm3nOWaAvEaIaSBsiRgTI0WkJQV575uDgQanpBeIMP8y"
+      ]
+    },
+    {
+      "canonical": "load",
+      "shipped": "yükle",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `load` is not among the nine events it evaluated and `yükle` appears nowhere in the text. Note for the next pass: `yükle` is a bare imperative like `kaydır`, so it is a likely candidate for the same correction — but that is a suspicion, not a finding.",
+      "sources": []
+    }
+  ],
+  "candidates": [
+    {
+      "canonical": "keydown",
+      "upstream": [
+        "tuşbasma"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "The report treats keydown only in contrast with keyup ('the moment of physical depression') and proposes no Turkish form for it. Its finding for the keyboard class is that 'native developers almost exclusively resort to the English terms to entirely bypass translation ambiguity'. Publishing the fused `tuşbasma` on no evidence would repeat the defect the fused-compound rule exists to catch.",
+      "sources": []
+    },
+    {
+      "canonical": "keyup",
+      "upstream": [
+        "tuşbırakma"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "'In virtually all practical applications, they write *keyup eventi* or *keyup olayı*'; 'Attempting to force a pure Turkish translation in this specific instance usually results in confusion or unnecessary verbosity.' The careful written forms it does record (*tuş bırakıldığında*, *tuşu serbest bırakma olayı*) are clause-shaped, not identifiers, and neither is the fused `tuşbırakma`. Publish nothing; authors write the English token.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH-YQ2Ir7t2jkwpFi-T3HRnfM_OGzvURfcmUkNcaX7JfTksLB2tXJZHzPCdN2CPcMXZhi8flfz5Kp9YJ_Mh7jt5KOzdvUY_ALKeP_z9ws8fG6YjnWDAfZmK5HIwaqguA_rWLLaejTk="
+      ]
+    },
+    {
+      "canonical": "mousedown",
+      "upstream": [
+        "fare_bas",
+        "farebas"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "'Developers usually revert directly to the API name, writing *mousedown eventi*.' The descriptive form the report records is *fare tuşuna basılması* — a four-word phrase, not a token — and the fused `farebas` is not attested anywhere in the text.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXLdFmcmfXbojxKNQJW-s8Nl6dcEz8d3DiSf9xwMsProiKuESKwqBq1LWdTWurpctr51TFjWHo7ha8RzIf737pxrNHXOO4OnhINrUIWfvZHXa9xYaZ8W7ZC5jzZb5BSaKV182KO3cba5fAME_3jkVUBozBDbAhlogKPinmu_kpThQe2aP3cMBchTECSPzC-1U8-lG8C_sqJswytac=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoWYxh1XC7_el9TBWbD6xzrmjoQgvZZ5tFF8RQoRboNAkri4nnktHlLkEKoywMl0OBtL6E19gKWlNZaEt6BPvi86nDWatRNhb-5uxTbY_EPu8bObY8_bnMKuSghMkGjEvFcpe9CTxQdldh8ljXsSfEbXYYd1h--1q77zR8cTwG-5QfluNnh5hskbEB0Z5TvIKzbWvsOdBR27i2"
+      ]
+    },
+    {
+      "canonical": "mouseup",
+      "upstream": [
+        "fare_bırak",
+        "farebırak"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Covered only as the counterpart inside the mousedown section, where the descriptive form is *farenin bırakılması*, again a phrase rather than an identifier. The same conclusion applies: the English event name is what developers write.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEXLdFmcmfXbojxKNQJW-s8Nl6dcEz8d3DiSf9xwMsProiKuESKwqBq1LWdTWurpctr51TFjWHo7ha8RzIf737pxrNHXOO4OnhINrUIWfvZHXa9xYaZ8W7ZC5jzZb5BSaKV182KO3cba5fAME_3jkVUBozBDbAhlogKPinmu_kpThQe2aP3cMBchTECSPzC-1U8-lG8C_sqJswytac=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoWYxh1XC7_el9TBWbD6xzrmjoQgvZZ5tFF8RQoRboNAkri4nnktHlLkEKoywMl0OBtL6E19gKWlNZaEt6BPvi86nDWatRNhb-5uxTbY_EPu8bObY8_bnMKuSghMkGjEvFcpe9CTxQdldh8ljXsSfEbXYYd1h--1q77zR8cTwG-5QfluNnh5hskbEB0Z5TvIKzbWvsOdBR27i2"
+      ]
+    },
+    {
+      "canonical": "mouseover",
+      "upstream": [
+        "fareiçinde"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed. `mouseover` appears once, in a list of example triggers, and `fareiçinde` appears nowhere. No evidence for or against.",
+      "sources": []
+    },
+    {
+      "canonical": "mouseout",
+      "upstream": [
+        "faredışında"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report at all — neither `mouseout` nor `faredışında` occurs in the text.",
+      "sources": []
+    },
+    {
+      "canonical": "resize",
+      "upstream": [
+        "boyutlandırma",
+        "boyutlandır"
+      ],
+      "verdict": "publish-corrected",
+      "proposed": "yeniden boyutlandırma",
+      "reasoning": "The strongest positive result in the report: 'one of the most successful technical localizations in the Turkish tech ecosystem', 'pervasive and unquestioned', and unusually 'developers rarely ever use the Anglicized \"resize etmek\"'. But the attested form carries *yeniden* ('again') — the report's own table lists bare *Boyutlandırma* as the literal dictionary translation and *Yeniden boyutlandırma* as both the pedagogical term and the developer verdict. Publish the corrected form; the bare `boyutlandırma` should be registered as an alternative since it is close and would otherwise stop resolving.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHBsU1wlc4eWRMPTP96-D_ZVVRZg9wneMUqD5CSLOnWzKFx_5Ld1BhpOZdlwzN3z3Hj2BpsrlCIV9vf2QSJoIw2Ywn6dIIQVImvZwq9mTkRFIXopdm5whmaJ6U50SuqCpvLTtRg3A==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF1tCDqJIU3vkwdYyAjkOgMGuRD3vyuDLtbGagvm_cWqofqsRNz9naC8-BC3aa6JwD7ZkoOjmvokO1y-MgzalkHvWWXDik06NdJnGAVi6n11EA06mR5WoQRojWWYJ6noL_9qccLtxezVHSt_NGPUHBm0WnJQk_umjKFVrVK0-ShSRYDAVEhJK7wxXvfVU7Ow0rK",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHzlMMjvATDPS-tTHWpwlBYX2jWHxE5omKfEU8x4WPYR8DNEat8A9b92PpoeiGmqmmD7ua09jo_q5hjc5biwjf2jE7s2oxnZRBNH3C-2n9_jdHjHWf2NDODcLwPw1N_fkCDPkjYsJHcCGleRjiPDwG91Sf4VfVwi4m20wBa03b3ZR8=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG6ptO0Zn1665yviazxIIFBCELQMUmRjWNtRkxRAjaZKyELrqh6G00jp7TWnmfLVelHDYBFC3n2dCxWSIQZaU-YlUDGy15MEIZEYbXTLChoTxUyisPNR4R8Wkic7NKNN9G9Kkyqhp9u8XW_k0e1",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHVVy2kkAp-fMJODC3XAaV_4YMkdo4bz8blGw9rTI5FMr8zVVDuWCwPWwB8vZW20CWp8VI21jCrhWPDTA0vmCLezHVbY6v2wgf7Y8o5Oo3RTmmDTzH4NHV3O4sb2P-CcohoKbaR-b8jbZBuVRV3G7bAHtG8rKBzTPOajXjHkNELMSPXZlQ9xZ5mvxcrz65G1cgUOA=="
+      ]
+    }
+  ],
+  "gaps": [],
+  "familyTokens": [],
+  "variantSplit": {
+    "warranted": false,
+    "reasoning": "Not asked and not addressed. The report describes a register split — a formal pedagogical Turkish against a heavily Anglicized 'Plaza Turkish' used in production — but that is a register axis, not a regional one, and Turkish has a single written standard here."
+  },
+  "overall": "The report answered the brief. It assessed 7 of our 9 shipped events, 3 of the 7 candidates, and all 5 attribute concepts, staying on our terms and citing 44 sources; it did not drift into a general glossary. Two shipped events (init, load) were simply not covered and are recorded as unreviewed rather than confirmed. It did not confirm everything — it found a hard defect in `bulanık` for blur (the fifth language to ship the visual sense), an ambiguity defect in `giriş`, and imperative-stem problems in `kaydır`. Its consistent framing is that Turkish developers hybridize with English for granular DOM API boundaries and localize confidently for kinetic, visible concepts, which reads as a real finding rather than a way of avoiding verdicts. Caveat on sources: they are vertexaisearch redirect URLs, recorded here by domain and cite number, and several rows lean on a single citation."
+}
