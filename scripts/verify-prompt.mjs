@@ -49,6 +49,30 @@ const APPLIED_EXTRA = {
   'es:once': "shipped the moxi modifier '.una-vez' as primary, demoting '.unavez'",
   'es:transition': "registered the global 'transición' alongside 'transicion'",
   'de:resize': "added 'grössenänderung' (ss) as an alias for Swiss keyboards",
+  // Applied 2026-07-28 as a result of the verification round itself. These have
+  // had exactly one reviewer each, so they are the least-checked things in the
+  // published vocabulary despite being the newest.
+  'ja:fx-swap': "shipped 'fx-置換' as primary, demoting 'fx-スワップ'",
+  'de:fx-swap': "shipped 'fx-ersetzung' as primary, demoting 'fx-tausch'",
+  'ko:fx-swap': "shipped 'fx-교체' as primary, demoting 'fx-스왑'",
+  'zh:fx-swap': "shipped 'fx-替换' as primary, demoting 'fx-交换'",
+  'ko:fx-method': "shipped 'fx-메서드' as primary, demoting 'fx-메소드'; added 'fx-타깃' as a target alias",
+  'zh:fx-action-2': "added 'fx-请求地址' alongside 'fx-地址'",
+  'pt:fx-trigger': "added 'fx-acionador' and 'fx-disparador' as aliases of 'fx-gatilho'",
+  'pt:fx-target': "added 'fx-destino' as an alias of 'fx-alvo'",
+  'pt:fx-swap': "added 'fx-substituição' as an alias of 'fx-troca'",
+};
+
+// Vocabulary published for the first time in the wave-1 round: canonicals that
+// had NO term in this locale before. One reviewer proposed each, and nothing has
+// checked them since — so the prompt asks for them by name rather than letting
+// them pass as settled.
+const NEWLY_PUBLISHED = {
+  ja: 'キーダウン (keydown), キーアップ (keyup), マウスダウン (mousedown), マウスアップ (mouseup), マウスオーバー (mouseover), マウスアウト (mouseout), サイズ変更 (resize), 読み込み (load)',
+  de: 'taste gedrückt (keydown), taste losgelassen (keyup), maustaste gedrückt (mousedown), maustaste losgelassen (mouseup), geladen (load). mouseover and mouseout were deliberately left in English — challenge that too',
+  pt: 'tecla pressionada (keydown), tecla solta (keyup), mouse sobre (mouseover), saída do mouse (mouseout), carregamento (load)',
+  ko: '키다운 (keydown), 키업 (keyup), 마우스다운 (mousedown), 마우스업 (mouseup), 마우스오버 (mouseover), 마우스아웃 (mouseout). resize and load were left unpublished for lack of evidence — challenge that too',
+  zh: '按键按下 (keydown), 按键松开 (keyup), 鼠标按下 (mousedown), 鼠标松开 (mouseup), 鼠标移入 (mouseover), 鼠标移出 (mouseout), 尺寸变化 (resize), 加载 (load), plus the zh-Hant aliases 滑鼠-, 捲動, 載入, 送出, 取得焦點, 失去焦點',
 };
 
 function parseArgs() {
@@ -225,15 +249,30 @@ function build(code) {
   const cands = f.candidates ?? [];
   const gaps = f.gaps ?? [];
   if (cands.length || gaps.length) {
-    L.push('## Part 4 — Terms not yet published');
+    L.push('## Part 4 — Terms that were not published when the claims below were written');
     L.push('');
     L.push(
-      'The library currently ships **no term** for these concepts, so an author must write the ' +
-      `English identifier. The question is whether a real ${spec.name} term exists to publish. ` +
-      'Some candidates below come from an upstream table documented as *aspirational* — forms ' +
-      'proposed but never verified in use — and the prior pass judged several of them invented. ' +
-      'Confirm or contradict each judgement, and propose a term where none is offered.'
+      'These concepts had **no term** in this locale, so an author had to write the English ' +
+      `identifier. The question was whether a real ${spec.name} term exists to publish. Some ` +
+      'candidates come from an upstream table documented as *aspirational* — forms proposed but ' +
+      'never verified in use — and the prior pass judged several of them invented.'
     );
+    L.push('');
+    if (NEWLY_PUBLISHED[code]) {
+      L.push(
+        '**Several were published as a result of that review, and are now live:** ' +
+        `${NEWLY_PUBLISHED[code]}.`
+      );
+      L.push('');
+      L.push(
+        'Those carry more risk than anything else in this prompt, not less. Every other term here ' +
+        'has been in front of users long enough for someone to complain about it; these were ' +
+        'proposed by one reviewer, applied within a day, and have been read by nobody since. ' +
+        'Treat them as Part 1 — attack them first, and say plainly if one is not a real term.'
+      );
+      L.push('');
+    }
+    L.push('Confirm or contradict each judgement below, and propose a term where none is offered.');
     L.push('');
     for (const r of cands) {
       L.push(...claim(++n, {
