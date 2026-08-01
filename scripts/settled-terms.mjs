@@ -525,6 +525,272 @@ export const SETTLED = {
     sources: ['https://www.w3school.com.cn/tags/att_form_action.asp'],
     variantNote: null,
   },
+
+  // ── Second research wave: tr / fr ────────────────────────────────────────
+  // First pass 2026-07-29, adversarial second pass 2026-07-30, decided
+  // 2026-08-01. The two audits behaved very differently and these records
+  // weigh them accordingly: the French audit did the citation-integrity work
+  // (it caught three miscited first-pass sources, including a psychology
+  // textbook cited for fx-swap) but its one "contradiction" (fx-action)
+  // misread the identity convention; the Turkish audit confirmed every
+  // substantive first-pass claim without checking a single citation, so its
+  // six reversals are accepted only where the term is attested in the
+  // pedagogical sources it names, and its weakest pair is marked open to
+  // challenge. hyperfixi was again owned by another session on 2026-08-01,
+  // so profile-side corrections are pending-upstream.
+  'tr:fx-action': {
+    concluded: 'fx-istek',
+    superseded: ['fx-eylem'],
+    why: "'eylem' translates the English attribute's name ('deed/act'), not the concept — an endpoint URL. Turkish developers universally write 'istek' / 'İstek Adresi' for the request target, and 'hedef' is taken by fx-target. Both passes agree",
+    date: '2026-08-01',
+    sources: [
+      'https://github.com/luminati-io/luminati-proxy/blob/master/www/lum/pub/locale/tr.json',
+      'https://thinktech.stm.com.tr/uploads/docs/1634628247_stm-siber-tehdit-durum-raporu-temmuz-eylul-2021.pdf',
+    ],
+    variantNote: null,
+  },
+  'tr:fx-swap': {
+    concluded: 'fx-değiştirme',
+    superseded: ['fx-değişim'],
+    why: "'değişim' (-im) is the intransitive noun of systemic change (değişim yönetimi = change management) and collided with the `change` event's accepted alternative; 'değiştirme' (-me on the causative stem) is the transitive act of replacing. Same replace-not-exchange convergence as de/ko/zh/ja/fr; 'takas' rejected as financial",
+    date: '2026-08-01',
+    sources: [
+      'https://www.scribd.com/document/500407320/3rd-International-New-York-Conference-on-Evolving-Trends-in-Interdisciplinary-Research-Practices-Bildiri-Kitab%C4%B1',
+    ],
+    variantNote: null,
+  },
+  'tr:keydown': {
+    concluded: 'tuşa basma',
+    superseded: [],
+    why: "reversal of the first pass's keep-English verdict: it had searched for the fused 'tuşbasma' (upstream's aspirational form, orthographically invalid, never shipped) and found nothing; the attested pedagogical phrase is the noun phrase 'tuşa basma' ('klavyedeki tuşlara basılma anı'), legal here because lookup collapses spaces",
+    date: '2026-08-01',
+    sources: ['https://afguven.com/depo/dersnot/bahar22/Bkontrol/Bkontrol2.pdf'],
+    variantNote: null,
+  },
+  'tr:keyup': {
+    concluded: 'tuşu bırakma',
+    superseded: [],
+    why: "pairs with tr:keydown on the basma/bırakma dichotomy Turkish tutorials teach the two events with ('tuşu bırakma', 'tuş bırakıldığında'); the fused 'tuşbırakma' never shipped",
+    date: '2026-08-01',
+    sources: [
+      'https://afguven.com/depo/dersnot/bahar22/Bkontrol/Bkontrol2.pdf',
+      'https://www.ekasunucu.com/en/software-knowledge',
+    ],
+    variantNote: null,
+  },
+  'tr:mousedown': {
+    concluded: 'fare tuşuna basma',
+    superseded: [],
+    why: "instructional texts define the event as 'farenin herhangi bir tuşuna basılması'; the token names the button press, parallel to es 'ratón pulsado' and de 'maustaste gedrückt'. Upstream's 'fare_bas'/'farebas' never shipped",
+    date: '2026-08-01',
+    sources: ['https://afguven.com/depo/dersnot/bahar22/Bkontrol/Bkontrol2.pdf'],
+    variantNote: null,
+  },
+  'tr:mouseup': {
+    concluded: 'fare tuşunu bırakma',
+    superseded: [],
+    why: "documented as 'fare tuşu serbest bırakıldığında'; keeps structural symmetry with tr:mousedown",
+    date: '2026-08-01',
+    sources: ['https://www.scribd.com/document/970238368/JAVASCRI-PT'],
+    variantNote: null,
+  },
+  'tr:mouseover': {
+    concluded: 'üzerine gelme',
+    superseded: [],
+    why: "'Fare işaretçisi ile nesne üzerine gelme' is how Turkish web-design course notes describe the event. The audit itself flags this pair as its weakest — the gerund is derived from descriptive prose, not found as a standalone token. Open to challenge next wave",
+    date: '2026-08-01',
+    sources: [
+      'https://afguven.com/depo/dersnot/bahar22/Bkontrol/Bkontrol2.pdf',
+      'https://cemsutcu.files.wordpress.com/2013/10/web-design-ders-notlarc4b1-tc3bcrkc3a7e_ac3bcuzem.pdf',
+    ],
+    variantNote:
+      'a government IT glossary or university syllabus mapping W3C UI Events to Turkish noun phrases would settle it — the audit names exactly this missing artifact',
+  },
+  'tr:mouseout': {
+    concluded: 'dışına çıkma',
+    superseded: [],
+    why: "tutorials describe the exit as 'dışına çıktığımızda' / 'üzerinden çekildiğinde'; pairs spatially with üzerine gelme. Same weakest-pair caveat as tr:mouseover — derived from prose, open to challenge",
+    date: '2026-08-01',
+    sources: [
+      'https://www.scribd.com/document/970238368/JAVASCRI-PT',
+      'https://github.com/busenurcetin/JavaScript-Tutorial-Notlar',
+    ],
+    variantNote: 'same evidence gap as tr:mouseover',
+  },
+  'tr:resize': {
+    concluded: 'yeniden boyutlandırma',
+    superseded: [],
+    why: "'one of the most successful technical localizations in the Turkish tech ecosystem' — but the attested form carries 'yeniden' (again); bare 'boyutlandırma' means the initial dimensioning and is registered as a close-miss parse alias, not primary. Both passes agree",
+    date: '2026-08-01',
+    sources: [
+      'https://www.udemy.com/course/komple-web-uygulamas-gelistirme-egitimi-net-framework/',
+      'https://manual.calibre-ebook.com/tr/calibre.pdf',
+    ],
+    variantNote: null,
+  },
+  'tr:input': {
+    concluded: 'girdi',
+    superseded: ['giriş'],
+    why: "'giriş' reads as entry/login (giriş yapma) and can imply an authentication event; the technical term for data input is 'girdi' ('Girdi (Input) Eventleri'). Ordering fix — girdi already ships as a profile alternative",
+    date: '2026-08-01',
+    sources: [
+      'https://eroglumit.medium.com/javascript-notlar%C4%B1-iii-events-de45e324ac5c',
+      'https://www.scribd.com/document/502552773/Ybs405u-Internet-Ve-Web-Programlama',
+    ],
+    variantNote: null,
+    status: 'pending-upstream',
+  },
+  'tr:focus': {
+    concluded: 'odaklanma',
+    superseded: ['odak'],
+    why: "both are attested, but 'odak' names the static focal point where 'odaklanma' names the act of acquiring it — the event ('odaklanma olayı', 'odaklanma durumu'). Ordering fix — odaklanma already ships as a profile alternative",
+    date: '2026-08-01',
+    sources: [
+      'https://developer.android.com/develop/ui/views/layout/webapps/understand-window-insets?hl=tr',
+      'https://www.klinik.com.tr/bilgi-bankasi/blog/wcag-22-uyumlu-ozel-odak-gostergeleri-olusturma',
+    ],
+    variantNote: null,
+    status: 'pending-upstream',
+  },
+  'tr:blur': {
+    concluded: 'odak kaybı',
+    superseded: ['bulanık'],
+    why: "the fifth locale found shipping the optical sense: 'bulanık' is strictly visual (CSS filters, image processing) and 'absolutely never used by native developers' for the DOM event; the pedagogical term is 'odak kaybı' (loss of focus), the same construction as de/pt/es/fr",
+    date: '2026-08-01',
+    sources: [
+      'https://github.com/busenurcetin/YazilimTerimleriSozlugu/blob/main/readme.md',
+      'https://www.hizhosting.com/blog/asp-net-mvc-ile-gelismis-form-dogrulama-teknikleri',
+    ],
+    variantNote:
+      "when applying upstream, register the ASCII twin 'odak kaybi' alongside (ı does not fold), and demote the profile's 'bulanıklık'/'bulanik' alternatives with the primary",
+    status: 'pending-upstream',
+  },
+  'tr:scroll': {
+    concluded: 'kaydırma',
+    superseded: ['kaydır'],
+    why: "'kaydır' is the bare imperative ('scroll!'); every attested form is the verbal noun 'kaydırma' ('kaydırma olayı', 'sayfaları kaydırma') — the same imperative-stem defect the noun rule exists to catch",
+    date: '2026-08-01',
+    sources: ['https://noyabilgisayar.net/ders-notlari/java-script-ders-notlari.pdf'],
+    variantNote: "register the ASCII twin 'kaydirma' alongside when applying upstream",
+    status: 'pending-upstream',
+  },
+  'fr:fx-swap': {
+    concluded: 'fx-remplacement',
+    superseded: ['fx-échange'],
+    why: "'échange' implies a bidirectional trade between co-equal entities, and 'FX swap' is entrenched financial French for foreign-exchange swaps; a hypermedia swap destructively replaces, and French DOM writing says 'remplacement' (Node.replaceChild = remplacer l'enfant). The first pass's citation for this claim was one of the three the audit caught as fabricated (a psychology textbook); the conclusion survives on the audit's re-verified sources",
+    date: '2026-08-01',
+    sources: [
+      'https://www.banque-france.fr/system/files/2023-05/822288_livre_diip_v2.pdf',
+      'https://fr.scribd.com/document/733601975/Tutoriel-Dynamisez-Vos-Sites-Web-Avec-Javascript',
+    ],
+    variantNote: null,
+  },
+  'fr:fx-action': {
+    concluded: null,
+    superseded: [],
+    why: "'action' is a native French noun spelled identically to the canonical, so identity omission already publishes exactly what both passes want authors to write. The audit's CONTRADICTED verdict ('publish action rather than null') misread the omission-means-identity convention — its recommended outcome is the current state",
+    date: '2026-08-01',
+    sources: [],
+    variantNote: null,
+  },
+  'fr:keydown': {
+    concluded: 'touche enfoncée',
+    superseded: [],
+    why: "upstream's 'touche bas' must never ship — it is the standardized French name of the Down ARROW key, so a reader would bind the event to one specific key (the audit's false-friend finding, which the first pass missed). 'touche enfoncée' is standard French for a depressed key across technical registers and parallels es 'tecla pulsada' / de 'taste gedrückt' / pt 'tecla pressionada'",
+    date: '2026-08-01',
+    sources: [
+      'https://ppk.developpez.com/tutoriels/javascript/creer-fonctionnalite-drag-and-drop-sur-votre-site/',
+      'https://docs.oracle.com/cd/E19253-01/817-3917/817-3917.pdf',
+    ],
+    variantNote:
+      'attestation is strongest in system/device documentation; French web prose mostly writes the English identifier — our audience reads the pedagogical register',
+  },
+  'fr:keyup': {
+    concluded: 'touche relâchée',
+    superseded: [],
+    why: "'touche haut' is the Up ARROW key — same false friend as fr:keydown; 'relâchée' is the mechanical opposite of 'enfoncée' ('relâchement de la touche')",
+    date: '2026-08-01',
+    sources: ['https://docs.oracle.com/cd/E19253-01/817-3917/817-3917.pdf'],
+    variantNote: 'same register caveat as fr:keydown',
+  },
+  'fr:mouseover': {
+    concluded: 'survol',
+    superseded: [],
+    why: "'survol' is the universally standardized French hover noun — 'état au survol', 'au moment du survol' — used by web.dev and Mailchimp's French docs; upstream's 'souris dessus' is an infantile calque and never shipped",
+    date: '2026-08-01',
+    sources: [
+      'https://web.dev/learn/css/transitions?hl=fr',
+      'https://mailchimp.com/fr/resources/dropdown-menu/',
+    ],
+    variantNote: null,
+  },
+  'fr:mouseout': {
+    concluded: null,
+    superseded: [],
+    why: "publish nothing yet: 'survol' has no attested exit partner. The audit proposed 'fin de survol' but itself flags it as needing user testing against 'sortie survol' — the noun is attested in prose, the token is not, and French is not a coinage locale",
+    date: '2026-08-01',
+    sources: [],
+    variantNote:
+      "candidates: 'fin de survol', 'sortie survol'; corpus attestation of either token, or the bootcamp A/B test the audit describes, would settle it",
+  },
+  'fr:mousedown': {
+    concluded: null,
+    superseded: [],
+    why: "both passes agree no attested token exists ('souris descendue' is nonsensical; developers write the English identifier). The audit's 'appui souris' is a constructed pairing whose sources are VB.NET-era desktop books, unattested as a web token — below the evidence bar for a non-coinage locale",
+    date: '2026-08-01',
+    sources: [],
+    variantNote: "candidate: 'appui souris', pending real attestation as an identifier",
+  },
+  'fr:mouseup': {
+    concluded: null,
+    superseded: [],
+    why: "same as fr:mousedown; 'relâchement souris' is unattested as a token",
+    date: '2026-08-01',
+    sources: [],
+    variantNote: "candidate: 'relâchement souris', pending real attestation as an identifier",
+  },
+  'fr:blur': {
+    concluded: 'perte de focus',
+    superseded: ['défocaliser'],
+    why: "the sixth locale on the optical false friend: 'le flou' is visual, and French pedagogy exclusively writes 'perte de focus' for the event. 'défocaliser' is an unattested infinitive, doubly condemned by the noun rule. This is the one first-pass citation the audit re-verified and confirmed",
+    date: '2026-08-01',
+    sources: [
+      'https://www.lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/sites/lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/IMG/pdf/javascript.pdf',
+      'https://fr.scribd.com/document/733601975/Tutoriel-Dynamisez-Vos-Sites-Web-Avec-Javascript',
+    ],
+    variantNote: null,
+    status: 'pending-upstream',
+  },
+  'fr:scroll': {
+    concluded: 'défilement',
+    superseded: ['défiler'],
+    why: "infinitive→noun: MDN fr writes 'l'événement de défilement' and the OQLF standardizes 'défilement'; 'défiler' commands. The first pass's second citation here was one of the miscites the audit caught (an English-only W3C/Mozilla page) — MDN fr is the good source",
+    date: '2026-08-01',
+    sources: ['https://developer.mozilla.org/fr/docs/Web/API/Document_Object_Model/Events'],
+    variantNote: null,
+    status: 'pending-upstream',
+  },
+  'fr:resize': {
+    concluded: 'redimensionnement',
+    superseded: ['redimensionner'],
+    why: "'lors du redimensionnement de la fenêtre' is the documented phrasing (MDN fr: 'Désactive le redimensionnement'); the infinitive commands. Confirmed by both passes",
+    date: '2026-08-01',
+    sources: ['https://developer.mozilla.org/fr/docs/Web/API/Document_Object_Model/Events'],
+    variantNote: null,
+    status: 'pending-upstream',
+  },
+  'fr:focus': {
+    concluded: null,
+    superseded: ['focaliser'],
+    why: "publish nothing: 'focus' is wholly assimilated French technical jargon (RGAA standardizes 'le focus clavier'; developers write 'donner le focus'), and native alternatives ('la focalisation') are 'overly academic and generally ignored'. 'focaliser' is the infinitive of the ignored form. Single-pass evidence — the audit did not revisit it — but the noun rule independently condemns the current primary",
+    date: '2026-08-01',
+    sources: [
+      'https://fr.scribd.com/document/733601975/Tutoriel-Dynamisez-Vos-Sites-Web-Avec-Javascript',
+      'https://www.lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/sites/lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/IMG/pdf/javascript.pdf',
+    ],
+    variantNote: "the profile's alternative 'concentrer' is equally unattested for the event and goes with it",
+    status: 'pending-upstream',
+  },
 };
 
 /** Records for one locale, as `[canonical, record]` pairs. */

@@ -209,7 +209,7 @@ Ordered by developer-audience size against how much of the vocabulary has never 
 | Wave | Locales | Status |
 |---|---|---|
 | 1 | ja pt de zh ko es | Applied 2026-07-28 |
-| 2 | ar hi id ru bn tr vi fr | In flight. `tr` distilled to findings 2026-07-29, awaiting verify. `fr` reported twice (see Distill) and is not yet distilled |
+| 2 | ar hi id ru bn tr vi fr | In flight. `tr` and `fr` concluded 2026-08-01: both were verified by second-pass audits (harvested 2026-07-30), loka-side vocabulary applied, and the 8 profile-side corrections recorded `pending-upstream` (hyperfixi owned by another session again that day). ar hi id ru bn vi not yet queued |
 | 3 | it pl uk he ms th tl sw qu | Defined, not queued (`qu`, `sw` in coinage mode) |
 
 Run one wave at a time. Two in flight means harvesting reports against a vocabulary that is moving underneath them.

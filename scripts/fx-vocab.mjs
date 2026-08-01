@@ -348,10 +348,40 @@ export const LOCALES = {
     reviewed: false,
     fixi: {
       attrs: {
+        // fx-action is deliberately ABSENT: 'action' is a native French noun
+        // spelled identically to the canonical, so identity omission
+        // (convention 1) IS the decision — settled as fr:fx-action. The
+        // 2026-07-30 audit's recommendation to "publish action" is the same
+        // outcome; its CONTRADICTED verdict misread the convention.
         'fx-méthode': 'fx-method',
         'fx-déclencheur': 'fx-trigger',
         'fx-cible': 'fx-target',
+        // 'échange' implies a bidirectional trade between co-equal entities
+        // (and "FX swap" is entrenched financial French); a hypermedia swap
+        // destructively replaces — French DOM writing says 'remplacement'
+        // (Node.replaceChild = remplacer l'enfant). Same replace-not-exchange
+        // convergence as de/ko/zh/ja/tr. Old form kept as a parse alias.
+        'fx-remplacement': 'fx-swap',
         'fx-échange': 'fx-swap',
+      },
+      // Absent from the French profile. Upstream's 'touche bas'/'touche haut'
+      // must never ship: they are the standardized French names of the Down
+      // and Up ARROW KEYS, so a reader would bind the event to one specific
+      // key. The state phrases 'touche enfoncée'/'touche relâchée' parallel
+      // es 'tecla pulsada', de 'taste gedrückt', pt 'tecla pressionada'.
+      // ASCII twins registered because accents do not fold.
+      //
+      // 'survol' is the universal French hover noun ('état au survol').
+      // mouseout/mousedown/mouseup deliberately publish NOTHING — the audit's
+      // proposed tokens (fin de survol, appui souris, relâchement souris) are
+      // unattested as identifiers and French is not a coinage locale; see the
+      // fr:mouseout / fr:mousedown / fr:mouseup settled records.
+      events: {
+        'touche enfoncée': 'keydown',
+        'touche enfoncee': 'keydown',
+        'touche relâchée': 'keyup',
+        'touche relachee': 'keyup',
+        survol: 'mouseover',
       },
     },
   },
@@ -609,11 +639,55 @@ export const LOCALES = {
     reviewed: false,
     fixi: {
       attrs: {
+        // 'eylem' translated the English word ("deed/act"), not the concept —
+        // an endpoint URL. Turkish developers universally write 'istek' /
+        // 'İstek Adresi' for the request target, and 'hedef' is taken by
+        // fx-target. Old form kept as a parse alias.
+        'fx-istek': 'fx-action',
         'fx-eylem': 'fx-action',
+        // 'metot' is the entrenched loanword register (HTTP metodu); 'yöntem'
+        // stays primary as the pedagogical form our audience reads.
         'fx-yöntem': 'fx-method',
+        'fx-metot': 'fx-method',
         'fx-tetikleyici': 'fx-trigger',
         'fx-hedef': 'fx-target',
+        // 'değişim' (-im) is the intransitive noun of systemic change and
+        // collided with the `change` event's accepted alternative; 'değiştirme'
+        // (-me on the causative stem) is the transitive act of replacing —
+        // which is what a swap does to the DOM. Old form kept as a parse alias.
+        'fx-değiştirme': 'fx-swap',
         'fx-değişim': 'fx-swap',
+      },
+      // Absent from the Turkish profile. The upstream aspirational forms were
+      // fused compounds (tuşbasma, fareiçinde) that violate Turkish orthography
+      // and are attested nowhere; the pedagogical forms are multi-word noun
+      // phrases, legal in both positions because lookup collapses space/hyphen
+      // runs. ASCII twins are registered because ı/ş/ü/ç do not fold — the
+      // profile does the same (giris, kaydir, bulanik).
+      //
+      // mouseover/mouseout are the weakest pair: the gerunds are derived from
+      // descriptive tutorial prose ('nesne üzerine gelme', 'dışına
+      // çıktığımızda') rather than found as standalone tokens — the 2026-07-30
+      // audit's own limitation note. Open to challenge next wave.
+      events: {
+        'tuşa basma': 'keydown',
+        'tusa basma': 'keydown',
+        'tuşu bırakma': 'keyup',
+        'tusu birakma': 'keyup',
+        'fare tuşuna basma': 'mousedown',
+        'fare tusuna basma': 'mousedown',
+        'fare tuşunu bırakma': 'mouseup',
+        'fare tusunu birakma': 'mouseup',
+        'üzerine gelme': 'mouseover',
+        'uzerine gelme': 'mouseover',
+        'dışına çıkma': 'mouseout',
+        'disina cikma': 'mouseout',
+        // The attested form carries 'yeniden' ("again") — bare 'boyutlandırma'
+        // is the initial dimensioning, kept as a close-miss parse alias.
+        'yeniden boyutlandırma': 'resize',
+        'yeniden boyutlandirma': 'resize',
+        'boyutlandırma': 'resize',
+        'boyutlandirma': 'resize',
       },
     },
   },
