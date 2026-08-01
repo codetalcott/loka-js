@@ -417,6 +417,89 @@ export const SETTLED = {
     variantNote: null,
   },
 
+  // ── ko candidates: the two-pass reversal (recorded late, 2026-08-01) ─────
+  // Korean's wave-1 review had a second pass — the "Formative Review" doc of
+  // 2026-07-29, harvested to research-notes/loka-js-verification-review-
+  // korean-terminology-audit.md — which CONTRADICTED the first pass's
+  // rejection of these six with direct Hangul attestation. What shipped
+  // followed the second pass, but only the FIRST pass was ever distilled into
+  // research/findings/ko.json, so the brief flagged all six as suspects and
+  // the regenerated verify prompt claimed they had been "read by nobody
+  // since". These records file the decision where the tooling can see it.
+  // Dates are the decision date (applied in #10), not the recording date.
+  //
+  // The dividing line the second pass drew: natural loanword fusion (클릭-
+  // pattern single tokens that entered colloquial Korean) is authentic, while
+  // forced fusion of semantic words would violate 띄어쓰기 — so the fused-
+  // compound heuristic's flag on these was a false positive.
+  'ko:keydown': {
+    concluded: '키다운',
+    superseded: [],
+    why: "first pass rejected it as unattested; the second-pass audit contradicted that with organic Hangul usage ('키다운 로직구현', '간단한 키다운 이벤트') and a structural driver — Hangul IME composition bugs force Korean developers to work with raw key events, so the transliterated pair is unusually alive in Korean writing",
+    date: '2026-07-29',
+    sources: [
+      'https://sh77113.tistory.com/entry/Jquery-%ED%82%A4%EB%B3%B4%EB%93%9Ckeydown%EC%9D%B4%EB%B2%A4%ED%8A%B8',
+      'https://davinchicoder.tistory.com/entry/TIL-20220929-keydown-%ED%95%9C%EA%B8%80%EC%9E%85%EB%A0%A5-%EC%97%90%EB%9F%AC%ED%95%B4%EA%B2%B0-feat-compositionEnd',
+      'https://velog.io/@kjuni1914/IME%EB%A5%BC-%ED%86%B5%ED%95%9C-%ED%95%9C%EA%B5%AD%EC%96%B4-%EC%9E%85%EB%A0%A5%EA%B3%BC-isComposing',
+    ],
+    variantNote: null,
+  },
+  'ko:keyup': {
+    concluded: '키업',
+    superseded: [],
+    why: "pairs with ko:keydown; attested in Hangul ('키업 이벤트(키가 눌리고 올라올 때)') in the same IME-driven tutorials that keep the pair alive",
+    date: '2026-07-29',
+    sources: [
+      'https://velog.io/@tmdgp0212/MiniProject-virtualkeyboard',
+      'https://gomtak.tistory.com/m/3',
+    ],
+    variantNote: null,
+  },
+  'ko:mousedown': {
+    concluded: '마우스다운',
+    superseded: [],
+    why: "first pass said only machine-translated Microsoft docs use it; the audit contradicted that with human-authored click-lifecycle tutorials ('실행 - 마우스다운, 마우스무브, 마우스업')",
+    date: '2026-07-29',
+    sources: [
+      'https://shinluckyarchive.tistory.com/56',
+      'https://jows1110.tistory.com/84',
+    ],
+    variantNote: null,
+  },
+  'ko:mouseup': {
+    concluded: '마우스업',
+    superseded: [],
+    why: "attested alongside 마우스다운 ('마우스 다운시와 업할때'), and drag-and-drop write-ups lean on the 마우스업-vs-클릭 distinction to prevent accidental firing after a drag",
+    date: '2026-07-29',
+    sources: [
+      'https://23life.tistory.com/entry/DragDrop-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%97%90%EC%84%9C-%ED%81%B4%EB%A6%AD-%EC%9D%B4%EB%B2%A4%ED%8A%B8%EC%99%80-%EB%93%9C%EB%9E%98%EA%B7%B8-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%B6%84%EB%A6%AC%ED%95%98%EA%B8%B0',
+      'https://aosceno.tistory.com/555',
+    ],
+    variantNote: null,
+  },
+  'ko:mouseover': {
+    concluded: '마우스오버',
+    superseded: [],
+    why: "the one candidate both passes agreed on — standard across web-design, no-code and DOM tutorials; tutorial titles carry it in Hangul",
+    date: '2026-07-29',
+    sources: [
+      'https://green-grapes.tistory.com/m/entry/Javascript-%EB%A7%88%EC%9A%B0%EC%8A%A4%EC%98%A4%EB%B2%84-%EB%A7%88%EC%9A%B0%EC%8A%A4%EC%95%84%EC%9B%83-%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C-%EB%A7%8C%EB%93%A4%EA%B8%B0',
+      'https://rgy0409.tistory.com/3028',
+    ],
+    variantNote: null,
+  },
+  'ko:mouseout': {
+    concluded: '마우스아웃',
+    superseded: [],
+    why: "first pass published it 'reluctantly, weakest item, no textual evidence'; the audit contradicted the non-attestation claim — the 마우스오버/마우스아웃 pairing is robust in Hangul because teaching the bubbling contrast against mouseenter/mouseleave requires naming both",
+    date: '2026-07-29',
+    sources: [
+      'https://green-grapes.tistory.com/m/entry/Javascript-%EB%A7%88%EC%9A%B0%EC%8A%A4%EC%98%A4%EB%B2%84-%EB%A7%88%EC%9A%B0%EC%8A%A4%EC%95%84%EC%9B%83-%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C-%EB%A7%8C%EB%93%A4%EA%B8%B0',
+      'https://ahnsso.tistory.com/180',
+    ],
+    variantNote: null,
+  },
+
   // ── Publish-nothing conclusions ──────────────────────────────────────────
   // `concluded: null`. These look like gaps in the data and are not: someone
   // looked, found nothing worth shipping, and decided the English canonical is
@@ -425,15 +508,15 @@ export const SETTLED = {
   'ko:resize': {
     concluded: null,
     superseded: [],
-    why: "the review returned UNSUPPORTED rather than agreeing — its sources for 리사이즈 were inaccessible and no Hangul usage could be verified in a DOM-event context. Publishing on intuition is what this pipeline exists to stop",
+    why: "the 2026-07-29 second-pass audit returned UNSUPPORTED rather than agreeing — the first pass endorsed 리사이즈, but the audit's one source URL was inaccessible and no Hangul usage could be verified in a DOM-event context. An artifacts failure, not counter-evidence; publishing on intuition is what this pipeline exists to stop",
     date: '2026-07-28',
     sources: [],
-    variantNote: 'revisit with Tistory/Velog evidence; 리사이즈 is plausible but unverified',
+    variantNote: 'revisit with Tistory/Velog evidence; 리사이즈 is plausible but unverified — the audit names the exact snippets needed (see research-notes/loka-js-verification-review-korean-terminology-audit.md)',
   },
   'ko:load': {
     concluded: null,
     superseded: [],
-    why: "same as ko:resize — no snippet showed whether Korean developers write 로드, 페이지 로드 or the native 불러오기 for the event",
+    why: "same as ko:resize — the audit was given no snippet showing whether Korean developers write 로드, 페이지 로드 or the native 불러오기 for the event, so the first pass's endorsement of 로드 could not be corroborated",
     date: '2026-07-28',
     sources: [],
     variantNote: 'the three candidates are 로드 / 페이지 로드 / 불러오기; evidence would settle it',

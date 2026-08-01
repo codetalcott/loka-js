@@ -316,12 +316,27 @@ export function build(code) {
         `${NEWLY_PUBLISHED[code]}.`
       );
       L.push('');
-      L.push(
-        'Those carry more risk than anything else in this prompt, not less. Every other term here ' +
-        'has been in front of users long enough for someone to complain about it; these were ' +
-        'proposed by one reviewer, applied within a day, and have been read by nobody since. ' +
-        'Treat them as Part 1 — attack them first, and say plainly if one is not a real term.'
-      );
+      // "Read by nobody since" was true when the table above was written and
+      // goes stale the moment a second pass reviews a locale — it did for ko,
+      // and the regenerated prompt kept asserting otherwise. Derive the framing
+      // from SETTLED instead of asserting it.
+      const settledCands = [...cands, ...gaps].filter(r => SETTLED[`${code}:${r.canonical}`]);
+      if (settledCands.length === cands.length + gaps.length && settledCands.length > 0) {
+        L.push(
+          'Since the claims below were written, a second pass has reviewed every one of them and ' +
+          'its conclusions are recorded in the settled records, with sources. The verdicts below ' +
+          "are the FIRST pass's — where a settled conclusion disagrees with one, that " +
+          "disagreement is the point: weigh the second pass's cited usage before re-running the " +
+          "first pass's search."
+        );
+      } else {
+        L.push(
+          'Those carry more risk than anything else in this prompt, not less. Every other term here ' +
+          'has been in front of users long enough for someone to complain about it; these were ' +
+          'proposed by one reviewer, applied within a day, and have been read by nobody since. ' +
+          'Treat them as Part 1 — attack them first, and say plainly if one is not a real term.'
+        );
+      }
       L.push('');
     }
     L.push('Confirm or contradict each judgement below, and propose a term where none is offered.');

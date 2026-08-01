@@ -611,17 +611,25 @@ export const LOCALES = {
         'fx-교체': 'fx-swap',
         'fx-스왑': 'fx-swap',
       },
-      // Absent from the Korean profile. All six are phonetic loanwords, and the
-      // review found them well attested in Hangul on Tistory/Velog — 키다운 and
-      // 키업 unusually so, because Hangul IME composition forces Korean
-      // developers to reason about raw key events far more than English-speaking
-      // ones do. 마우스오버/마우스아웃 are paired constantly when teaching the
-      // bubbling difference against mouseenter/mouseleave.
+      // Absent from the Korean profile. All six are phonetic loanwords, and
+      // Korean had TWO wave-1 passes that disagreed here: the first pass
+      // rejected 키다운/키업/마우스다운/마우스업 as unattested (that pass is what
+      // research/findings/ko.json records), and the second-pass audit
+      // CONTRADICTED those rejections with direct Hangul attestation — 키다운
+      // and 키업 unusually well attested, because Hangul IME composition forces
+      // Korean developers to reason about raw key events far more than
+      // English-speaking ones do. 마우스오버/마우스아웃 are paired constantly
+      // when teaching the bubbling difference against mouseenter/mouseleave.
+      // What ships follows the second pass; the ko:* settled records carry its
+      // sources, and the report itself is harvested at research-notes/
+      // loka-js-verification-review-korean-terminology-audit.md.
       //
-      // resize and load are NOT published: the review could not verify 리사이즈
-      // or 로드 in Hangul event contexts from any accessible source and returned
-      // UNSUPPORTED rather than agreeing. Publishing on intuition alone is what
-      // this pipeline exists to stop.
+      // resize and load are NOT published: the second pass returned UNSUPPORTED
+      // — its resize source was inaccessible and it was given no load snippets
+      // at all. That is an artifacts failure rather than counter-evidence (the
+      // first pass endorsed both), but publishing on intuition alone is what
+      // this pipeline exists to stop; concluded:null until the targeted
+      // evidence the audit prescribes shows up.
       events: {
         '키다운': 'keydown',
         '키업': 'keyup',
