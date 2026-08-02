@@ -23,6 +23,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildBrief } from './research-brief.mjs';
+import { build as buildVerifyPrompt } from './verify-prompt.mjs';
 import { LOCALES } from './fx-vocab.mjs';
 import { settledFor } from './settled-terms.mjs';
 
@@ -104,7 +105,7 @@ const modeFor = code => (COINAGE_MODE.has(code) ? 'coinage' : 'review');
 const PROJECT = 'loka-js';
 
 function parseArgs() {
-  const args = { locale: null, wave: null, json: false, help: false, priority: 0 };
+  const args = { locale: null, wave: null, json: false, help: false, priority: 0, verify: false };
   for (const a of process.argv.slice(2)) {
     if (a === '--json') args.json = true;
     else if (a === '--wave') args.wave = DEFAULT_WAVE;
@@ -112,6 +113,7 @@ function parseArgs() {
     else if (a === '--help' || a === '-h') args.help = true;
     else if (a.startsWith('--locale=')) args.locale = a.slice('--locale='.length);
     else if (a.startsWith('--priority=')) args.priority = Number(a.slice('--priority='.length));
+    else if (a === '--verify') args.verify = true;
   }
   return args;
 }
@@ -261,6 +263,67 @@ export async function buildPayload(code, priority = 0) {
   return { code, topic: brief.topic, context, priority };
 }
 
+/**
+ * The payload for a second-pass verification run.
+ *
+ * The verify prompt itself is rendered by verify-prompt.mjs and is deliberately
+ * a *closed* question — it states each prior verdict as a claim to attack. What
+ * it lacks is the harvest's anchors, so queuing it raw files the report in
+ * aimless mode: a searchable copy with no synthesis, discovered 6-30 hours
+ * later. That is the same trap `assertAnchors` was written for, and this puts
+ * verify passes behind the same guard as briefs.
+ *
+ * The aims are about *checking* claims, not making them, so they are phrased
+ * differently from a review brief's — the harvest restates them verbatim, and
+ * a verify report answering review-shaped aims reads as a second opinion rather
+ * than an audit.
+ */
+export async function buildVerifyPayload(code, priority = 0) {
+  const spec = LOCALES[code];
+  const prompt = buildVerifyPrompt(code);
+
+  const aims = [
+    `For every numbered claim, decide one of CONFIRMED, CONTRADICTED, BETTER ALTERNATIVE or ` +
+      `UNSUPPORTED, and name the ${spec.name} term you land on.`,
+    `Decide which of the cited sources do not actually support the claim attached to them — ` +
+      `open them and check, rather than trusting the summary.`,
+    `For every claim you contradict or improve on, decide what the term should be instead.`,
+    `Decide which claims you were least able to verify, and what evidence would settle them.`,
+  ];
+
+  const topic =
+    `Verification review: audit specific claims about ${spec.name} web-development ` +
+    `terminology against their cited sources. For each claim, decide whether it is confirmed, ` +
+    `contradicted, better served by a different ${spec.name} term, or unsupported by the ` +
+    `evidence available — checking the sources rather than restating the reasoning.`;
+
+  const context = [
+    `PROJECT: ${PROJECT}`,
+    ``,
+    `AIMS (decide these):`,
+    ...aims.map((a, i) => `${i + 1}. ${a}`),
+    ``,
+    `TOPIC: ${topic}`,
+    ``,
+    `ADDITIONAL CONTEXT:`,
+    `This is the SECOND pass over this vocabulary. A prior research run produced the claims ` +
+      `below; this run exists to attack them, not to reproduce them. A review that confirms ` +
+      `every claim is a failed review — the first pass was fallible and the point of paying ` +
+      `for an independent check is disconfirmation. If you do confirm everything, say so ` +
+      `explicitly and show what you searched that could have contradicted it.`,
+    ``,
+    `Note on sources: the cited URLs are search-redirect links from the first pass and may not ` +
+      `resolve. Where one does not, say so and search for the claim independently — an ` +
+      `unreachable citation is itself a finding about the claim's support.`,
+    ``,
+    `---`,
+    ``,
+    prompt,
+  ].join('\n');
+
+  return { code, topic, context, priority };
+}
+
 /** Fail loudly here rather than 6-30 hours later in an unparseable report. */
 function assertAnchors(payload) {
   const problems = [];
@@ -293,6 +356,8 @@ async function main() {
     .map(([n, w]) => `\n                     ${n}: ${w.join(', ')}`)
     .join('')}
   --json           emit JSON instead of a readable payload
+  --verify         second-pass payload: audit the findings in
+                   research/findings/<code>.json instead of briefing a review
   --priority=<n>   queue priority, default 0. Only affects ordering against
                    topics from OTHER projects; within a wave, insertion order
                    already decides
@@ -319,7 +384,13 @@ add_research_topic tool on the gemini-deep-research MCP server.`);
 
   const codes = args.wave ? WAVES[args.wave] : [args.locale];
   const payloads = [];
-  for (const c of codes) payloads.push(await buildPayload(c, args.priority));
+  for (const c of codes) {
+    payloads.push(
+      args.verify
+        ? await buildVerifyPayload(c, args.priority)
+        : await buildPayload(c, args.priority)
+    );
+  }
 
   let bad = 0;
   for (const p of payloads) {
