@@ -619,8 +619,11 @@ export const SETTLED = {
   // substantive first-pass claim without checking a single citation, so its
   // six reversals are accepted only where the term is attested in the
   // pedagogical sources it names, and its weakest pair is marked open to
-  // challenge. hyperfixi was again owned by another session on 2026-08-01,
-  // so profile-side corrections are pending-upstream.
+  // challenge. hyperfixi was owned by another session earlier on 2026-08-01,
+  // so profile-side corrections were first recorded pending-upstream; the
+  // freeze lifted the same evening and seven of the eight were applied
+  // upstream (hyperfixi branch fix/wave2-tr-fr-event-vocab). fr:focus alone
+  // stays pending — its record says why.
   'tr:fx-action': {
     concluded: 'fx-istek',
     superseded: ['fx-eylem'],
@@ -721,7 +724,6 @@ export const SETTLED = {
       'https://www.scribd.com/document/502552773/Ybs405u-Internet-Ve-Web-Programlama',
     ],
     variantNote: null,
-    status: 'pending-upstream',
   },
   'tr:focus': {
     concluded: 'odaklanma',
@@ -733,7 +735,6 @@ export const SETTLED = {
       'https://www.klinik.com.tr/bilgi-bankasi/blog/wcag-22-uyumlu-ozel-odak-gostergeleri-olusturma',
     ],
     variantNote: null,
-    status: 'pending-upstream',
   },
   'tr:blur': {
     concluded: 'odak kaybı',
@@ -745,8 +746,7 @@ export const SETTLED = {
       'https://www.hizhosting.com/blog/asp-net-mvc-ile-gelismis-form-dogrulama-teknikleri',
     ],
     variantNote:
-      "when applying upstream, register the ASCII twin 'odak kaybi' alongside (ı does not fold), and demote the profile's 'bulanıklık'/'bulanik' alternatives with the primary",
-    status: 'pending-upstream',
+      "ASCII twin 'odak kaybi' registered upstream (ı does not fold); 'bulanıklık'/'bulanik' remain as parse alternatives behind the demoted primary",
   },
   'tr:scroll': {
     concluded: 'kaydırma',
@@ -754,8 +754,7 @@ export const SETTLED = {
     why: "'kaydır' is the bare imperative ('scroll!'); every attested form is the verbal noun 'kaydırma' ('kaydırma olayı', 'sayfaları kaydırma') — the same imperative-stem defect the noun rule exists to catch",
     date: '2026-08-01',
     sources: ['https://noyabilgisayar.net/ders-notlari/java-script-ders-notlari.pdf'],
-    variantNote: "register the ASCII twin 'kaydirma' alongside when applying upstream",
-    status: 'pending-upstream',
+    variantNote: "ASCII twin 'kaydirma' registered upstream",
   },
   'fr:fx-swap': {
     concluded: 'fx-remplacement',
@@ -842,7 +841,6 @@ export const SETTLED = {
       'https://fr.scribd.com/document/733601975/Tutoriel-Dynamisez-Vos-Sites-Web-Avec-Javascript',
     ],
     variantNote: null,
-    status: 'pending-upstream',
   },
   'fr:scroll': {
     concluded: 'défilement',
@@ -851,7 +849,6 @@ export const SETTLED = {
     date: '2026-08-01',
     sources: ['https://developer.mozilla.org/fr/docs/Web/API/Document_Object_Model/Events'],
     variantNote: null,
-    status: 'pending-upstream',
   },
   'fr:resize': {
     concluded: 'redimensionnement',
@@ -860,7 +857,6 @@ export const SETTLED = {
     date: '2026-08-01',
     sources: ['https://developer.mozilla.org/fr/docs/Web/API/Document_Object_Model/Events'],
     variantNote: null,
-    status: 'pending-upstream',
   },
   'fr:focus': {
     concluded: null,
@@ -871,7 +867,8 @@ export const SETTLED = {
       'https://fr.scribd.com/document/733601975/Tutoriel-Dynamisez-Vos-Sites-Web-Avec-Javascript',
       'https://www.lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/sites/lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/IMG/pdf/javascript.pdf',
     ],
-    variantNote: "the profile's alternative 'concentrer' is equally unattested for the event and goes with it",
+    variantNote:
+      "the profile's alternative 'concentrer' is equally unattested for the event and goes with it. Deliberately NOT applied at the 2026-08-01 freeze-lift with the other seven: those were primary/alternative swaps, but 'focaliser' is load-bearing upstream beyond the profile (French tokenizer, event-handler patterns, generated grammar), so publishing nothing means removing French focus vocabulary from hyperscript parsing — an upstream design decision to take to hyperfixi explicitly, not a vocab reorder",
     status: 'pending-upstream',
   },
 };

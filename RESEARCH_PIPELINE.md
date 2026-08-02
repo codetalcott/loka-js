@@ -209,7 +209,7 @@ Ordered by developer-audience size against how much of the vocabulary has never 
 | Wave | Locales | Status |
 |---|---|---|
 | 1 | ja pt de zh ko es | Applied 2026-07-28 |
-| 2 | ar hi id ru bn tr vi fr | In flight. `tr` and `fr` concluded 2026-08-01: both were verified by second-pass audits (harvested 2026-07-30), loka-side vocabulary applied, and the 8 profile-side corrections recorded `pending-upstream` (hyperfixi owned by another session again that day). ar hi id ru bn vi not yet queued |
+| 2 | ar hi id ru bn tr vi fr | In flight. `tr` and `fr` concluded 2026-08-01: both verified by second-pass audits (harvested 2026-07-30), loka-side vocabulary applied, and 7 of the 8 profile-side corrections applied upstream at the same-day freeze-lift (hyperfixi `fix/wave2-tr-fr-event-vocab`). `fr:focus` alone stays `pending-upstream` — its removal touches the French tokenizer and generated grammar, an upstream design decision rather than a vocab reorder. ar hi id ru bn vi not yet queued |
 | 3 | it pl uk he ms th tl sw qu | Defined, not queued (`qu`, `sw` in coinage mode) |
 
 Run one wave at a time. Two in flight means harvesting reports against a vocabulary that is moving underneath them.
