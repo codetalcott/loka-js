@@ -166,7 +166,7 @@ The same pattern applied to a templating library is [psatina-modular](https://gi
 
 ## Relationship to lokascript
 
-[lokascript.org](https://lokascript.org) is the multilingual counterpart for **hyperscript** — write rich behaviors like `on click set my.count to ...` in 24 languages. loka-js is the same idea applied to the **fixi family** — write minimal hypermedia attributes (`fx-action`, `fx-target`, ...) in those same 24 languages. Both share the `@lokascript/semantic` vocabulary source, so a "click" is `clic` in both worlds and a Spanish-speaking dev moving between the two doesn't relearn DOM-event names.
+[lokascript.org](https://lokascript.org) is the multilingual counterpart for **hyperscript** — write rich behaviors like `on click set my.count to ...` in 24 languages. loka-js is the same idea applied to the **fixi family** — write minimal hypermedia attributes (`fx-action`, `fx-target`, ...) in most of those same languages (22 so far — see [Coverage](#coverage)). Both share the `@lokascript/semantic` vocabulary source, so a "click" is `clic` in both worlds and a Spanish-speaking dev moving between the two doesn't relearn DOM-event names.
 
 Use whichever matches your library choice. If you're writing rich client-side behaviors, reach for hyperscript / lokascript. If you're writing minimal HTTP-attribute hypermedia, loka-js + fixi-family. The two compose on one page if you mix lokascript-driven behaviors with fixi-family hypermedia — they don't conflict.
 
