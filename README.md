@@ -1,12 +1,12 @@
 # loka-js
 
-> Write fixi-family HTML in your own language. 24 locales, no DOM mutation, per-element selection.
+> Write fixi-family HTML in your own language. fixi in 23 languages, the whole family in Spanish so far. No DOM mutation, per-element selection.
 
-**Status:** v1 — all five fixiproject libraries supported (fixi, moxi, paxi, ssexi, rexi).
+**Status:** v1 — the runtime supports all five fixiproject libraries (fixi, moxi, paxi, ssexi, rexi). The vocabulary is further along for some than others: see [Coverage](#coverage).
 
 ## What it is
 
-The [fixiproject family](https://fixiproject.org/) uses English attribute names: `fx-action`, `live`, `on-click`, `mx-ignore`. loka-js lets you write the equivalents in 24 other languages — `fx-acción`, `vivo`, `al-clic`, `mx-ignorar` — and the libraries resolve the right name **at processing time**. No preprocessor. No DOM mutation. The author writes Spanish; devtools shows Spanish; fixi processes the button correctly.
+The [fixiproject family](https://fixiproject.org/) uses English attribute names: `fx-action`, `live`, `on-click`, `mx-ignore`. loka-js lets you write the equivalents in your own language — in Spanish, `fx-acción`, `vivo`, `al-clic`, `mx-ignorar` — and the libraries resolve the right name **at processing time**. No preprocessor. No DOM mutation. The author writes Spanish; devtools shows Spanish; fixi processes the button correctly.
 
 Per-element language is the killer feature: a `<section lang="es">` and a `<section lang="ja">` on the same page each get their own vocabulary. Mix freely.
 
@@ -54,6 +54,23 @@ Three things to notice:
 ```
 
 Each section's buttons resolve via the nearest `lang` ancestor at attribute-read time. The markup is never rewritten — devtools shows what you wrote.
+
+## Coverage
+
+What a locale gives you depends on the library, and on whether a native speaker has read the words. As of 2026-10-30:
+
+| What you write | Locales | Native-speaker reviewed |
+|---|---|---|
+| fixi attribute names — `fx-acción`, `fx-objetivo` | 22 | es, ja, ar |
+| Event names in `fx-trigger` — `fx-disparador="clic"` | 23 (all but English; Quechua has events only) | Some terms in es, pt, de, ja, ko, zh, tr, fr |
+| moxi, paxi, rexi, ssexi — `vivo`, `al-clic.prevenir`, `morfar`, `obtener()` | Spanish only | No |
+
+Unreviewed vocabulary works, but it is best-effort: each such locale file carries a warning banner, and some terms are known to be wrong (several still use the visual "blur" word for the focus-loss event). `npm run brief` prints the current per-locale state, including which locales have the full family.
+
+Two things stay English in every locale:
+
+- **Values fixi hands to the DOM** — swap strategies such as `innerHTML` and `beforeend`, and HTTP methods. paxi's `morph` is the exception.
+- **The JavaScript inside moxi and rexi handlers.** loka renames moxi's `q` to `consulta` and rexi's `get` to `obtener`, but `this`, `.value` and `.then` are JavaScript. For behaviour written in your own language, use hyperscript through [lokascript](#relationship-to-lokascript); its event words parse the same spellings loka publishes.
 
 ## See it working
 

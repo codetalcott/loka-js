@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 loka-js applies a hook-contract pattern to the [fixiproject family](https://fixiproject.org/) (fixi, moxi, ssexi, paxi, rexi) so locale modules can register localized authoring vocabulary that each library resolves at processing time — no DOM mutation, no MutationObserver overhead, per-element language via `lang` ancestor.
 
-Status: **v1** — all five fixiproject libraries supported. fixi/moxi/paxi are patched (small hook contracts; faithful to upstream style for fork hygiene, not because we're pursuing upstream merges — see "Patch discipline" below); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
+Status: **v1** — the runtime supports all five fixiproject libraries; the *vocabulary* does not yet. fixi attribute names ship in 22 locales and event names in 23, but moxi/paxi/rexi/ssexi tokens exist only in Spanish. The README's "Coverage" section is the public statement of this — keep it true when adding a locale's family tokens. fixi/moxi/paxi are patched (small hook contracts; faithful to upstream style for fork hygiene, not because we're pursuing upstream merges — see "Patch discipline" below); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
 
 When no locale module is loaded, every patched library is behaviorally identical to upstream (the `??=` defaults reproduce the original literals).
 
@@ -36,22 +36,19 @@ npm run gen
 node scripts/gen-locales.mjs --dry-run         # preview
 node scripts/gen-locales.mjs --locale=es       # one locale
 
-# Full suite: drift guard, vocab conventions, then Playwright acceptance.
-# Only the last needs a static server on :3002.
+# Full suite: drift guard, vocab conventions, then every browser check
+# (acceptance, behavior preservation, the two psatina demo checks).
+# Only the browser checks need a static server, all on the same :3002.
 npx http-server . -p 3002 -c-1 -s &
 npm test
+npm run test:browser                           # just the browser checks
 
 # The two pure-Node checks run standalone, no server:
 npm run test:drift                             # committed output == fresh generate
 npm run test:vocab                             # ordering + identity conventions
-
-# Behavior-preservation smoke test (patched fixi with NO orchestrator).
-# Needs a static server on :3001.
-npx http-server . -p 3001 -c-1 -s &
-node test/preservation.mjs
 ```
 
-The test script does not start its own server; start one before running.
+The test script does not start its own server; start one before running. Every browser check reads `LOKA_BASE_URL` (default `http://127.0.0.1:3002`). The behavior-preservation harness used to want :3001 and the psatina checks :8125, so the latter two were never run; CI (`.github/workflows/test.yml`) runs all of them.
 
 ## Architecture
 
