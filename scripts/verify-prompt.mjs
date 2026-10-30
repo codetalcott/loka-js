@@ -99,7 +99,14 @@ function claim(n, { label, was, verdict, proposed, why, sources, applied }) {
   return lines;
 }
 
-function build(code) {
+/**
+ * Render the adversarial verification prompt for one locale.
+ *
+ * Exported so queue-research.mjs can wrap it in the harvest anchors. A verify
+ * prompt queued without them is filed in aimless mode — a searchable copy with
+ * no synthesis — which you discover 6-30 hours later.
+ */
+export function build(code) {
   const spec = LOCALES[code];
   const f = JSON.parse(fs.readFileSync(path.join(FINDINGS_DIR, `${code}.json`), 'utf8'));
   const L = [];
@@ -309,12 +316,27 @@ function build(code) {
         `${NEWLY_PUBLISHED[code]}.`
       );
       L.push('');
-      L.push(
-        'Those carry more risk than anything else in this prompt, not less. Every other term here ' +
-        'has been in front of users long enough for someone to complain about it; these were ' +
-        'proposed by one reviewer, applied within a day, and have been read by nobody since. ' +
-        'Treat them as Part 1 — attack them first, and say plainly if one is not a real term.'
-      );
+      // "Read by nobody since" was true when the table above was written and
+      // goes stale the moment a second pass reviews a locale — it did for ko,
+      // and the regenerated prompt kept asserting otherwise. Derive the framing
+      // from SETTLED instead of asserting it.
+      const settledCands = [...cands, ...gaps].filter(r => SETTLED[`${code}:${r.canonical}`]);
+      if (settledCands.length === cands.length + gaps.length && settledCands.length > 0) {
+        L.push(
+          'Since the claims below were written, a second pass has reviewed every one of them and ' +
+          'its conclusions are recorded in the settled records, with sources. The verdicts below ' +
+          "are the FIRST pass's — where a settled conclusion disagrees with one, that " +
+          "disagreement is the point: weigh the second pass's cited usage before re-running the " +
+          "first pass's search."
+        );
+      } else {
+        L.push(
+          'Those carry more risk than anything else in this prompt, not less. Every other term here ' +
+          'has been in front of users long enough for someone to complain about it; these were ' +
+          'proposed by one reviewer, applied within a day, and have been read by nobody since. ' +
+          'Treat them as Part 1 — attack them first, and say plainly if one is not a real term.'
+        );
+      }
       L.push('');
     }
     L.push('Confirm or contradict each judgement below, and propose a term where none is offered.');
@@ -448,4 +470,9 @@ function main() {
   }
 }
 
-main();
+// Only run when invoked directly — this module is imported by
+// queue-research.mjs, which must not trigger a stdout dump.
+const invokedDirectly =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (invokedDirectly) main();

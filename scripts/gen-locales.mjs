@@ -356,7 +356,8 @@ ${fields.join('\n')}
  * Warn rather than throw for now: the fix for a genuine overlap is to edit the
  * profile, and during the upstream freeze that is not available. See
  * RESEARCH_PIPELINE.md.
- * TODO(freeze-lift): escalate to a thrown error, matching orderValues.
+ * Escalated 2026-07-29 when the freeze lifted: shadows now refuse to generate,
+ * matching orderValues. The pre-pass lives in main().
  */
 function shadowedCanonicals(code, spec, profileValues) {
   const local = spec.fixi?.events ?? {};
@@ -446,6 +447,38 @@ function main() {
   let writeCount = 0;
   let skipCount = 0;
 
+  // Shadow guard. Escalated from a warning to a refusal now the upstream freeze
+  // has lifted: the fix for a genuine overlap is to edit the profile, and that
+  // is available again.
+  //
+  // Runs as a pre-pass rather than inside the write loop because renderLocale is
+  // pure but the loop is not — a shadow in the twentieth locale would otherwise
+  // be reported only after nineteen files had already been rewritten.
+  // renderLocale costs ~2ms, so the second pass is free.
+  const shadows = [];
+  for (const code of codes) {
+    const probe = renderLocale(code);
+    if (probe.skipped) continue;
+    for (const c of probe.shadowed ?? []) shadows.push({ code, ...c });
+  }
+  if (shadows.length) {
+    for (const c of shadows) {
+      console.error(
+        `  [SHADOW] ${c.code}: fx-vocab.mjs supplies ${c.localForms.map(f => `'${f}'`).join(', ')} ` +
+          `for '${c.canonical}', but the '${LOCALES[c.code].profile}' profile already publishes ` +
+          `${c.profileForms.map(f => `'${f}'`).join(', ')}.`
+      );
+    }
+    console.error(
+      `\n${shadows.length} shadowed canonical(s) — refusing to generate.\n` +
+        `The profile is the source of truth for event names. A local override shadows it\n` +
+        `silently — that is how 'pulsacion' shipped for a year while semantic parsed\n` +
+        `'tecla abajo'. Either drop the fx-vocab entry, or make the correction in the\n` +
+        `profile and regenerate.`
+    );
+    process.exit(1);
+  }
+
   for (const code of codes) {
     const result = renderLocale(code);
 
@@ -453,18 +486,6 @@ function main() {
       console.error(`  [SKIP] ${code}: profile not found at ${result.profilePath}`);
       skipCount++;
       continue;
-    }
-
-    for (const c of result.shadowed ?? []) {
-      console.error(
-        `  [SHADOW] ${code}: fx-vocab.mjs supplies ${c.localForms.map(f => `'${f}'`).join(', ')} ` +
-          `for '${c.canonical}', but the '${LOCALES[code].profile}' profile already publishes ` +
-          `${c.profileForms.map(f => `'${f}'`).join(', ')}.\n` +
-          `             The profile is the source of truth for event names. A local override ` +
-          `shadows it silently — that is how 'pulsacion' shipped for a year while semantic\n` +
-          `             parsed 'tecla abajo'. Either drop the fx-vocab entry, or make the ` +
-          `correction in the profile and regenerate.`
-      );
     }
 
     if (args.dryRun) {

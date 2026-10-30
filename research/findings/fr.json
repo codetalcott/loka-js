@@ -1,0 +1,274 @@
+{
+  "code": "fr",
+  "attrs": [
+    {
+      "canonical": "fx-action",
+      "shipped": null,
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "Keep publishing nothing. The report treats 'Request URL' as a prose concept and never proposes an attribute-name translation: natives write *l'URL de la requête*, *l'URL d'appel* or *l'URL cible*, all phrases rather than tokens, and 'borrowing the complete English string (\"Request URL\") is highly uncommon in continuous prose' — which is about prose, not identifiers. Worth recording for any future attempt: the concept word is *requête*, and 'in French software engineering, a network request is always *une requête*, never *une demande*', so a machine-suggested `demande` would be wrong.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFIa1TpvKKbXZ8Vg7MdGN-N-kf9QqAB0LbRiqhxahvFBfmCpRMb3A1BRnokaE15ZFZwYsoj0caS37O2mgtYbvVCfBd_JhXd4c1PcOe2S8AvzmpeVJ7h",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEnaA0HtMFIJtFhhKg9XWVOIbE3KzZVRzM0235pYuAwzd-YWdpnSEkaywc8BAzmEZpyINbVJ6DpnbpC3qaqxUT68w-B-qZyuABKVDqxRzfqDjRV9mIGvdxWmDW5ryKyOuRfl5sfn58_v4XF52t5nIEJ13Q4PHXULLnShC2MIVh6M6a0Jem0RUxqCW45FK8sXSt9PZYICwfxWQbq5tA=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHO4jbsWrMVjY91U2N84biYwmn8oTORpyhKkw11x6oBgWnYIjATzcvYS_s5b8y_vqzup73LmNqAjyv16hZxvvIL99vS1ST1iqMOj8A9",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG6PzLkiY9R78jAg2VuSgy7GO_ehxz83d5dzRL5LzNTqBT8sL5RaGtK_98IcTn_taRvRQtkHqe1tQyEuXl8vRLtqNS4YpjDfzrFA9XjbnalYrtyQMWY_ChA5ZSVw9FqJs1KE1mTfotPaa0r8bGjmRw="
+      ]
+    },
+    {
+      "canonical": "fx-method",
+      "shipped": "fx-méthode",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'The term translates seamlessly into French through a simple syntactic inversion, resulting in *la méthode HTTP*. This is the universally accepted standard across all formal documentation, including MDN and academic literature.' Developers also shorten it to *la méthode*, which is exactly our token.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGyEVY_AiEekYlo147kfF2SdSXNpfdoxNTnzTKGio-dnZ9ETRaYNiP2gzf8vi3MqVsKuzYKxCNZHXyeMsGwjZyR0yfTfauFv0T3glg2HuvzIjTCpJCjCYkhsaKU_tpZ3FpePb6jcCyzz6gzkQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGa484nen_5dpNVkVKldTE105xI1ndG4UvxQDjHwPCNAT3XzG27---cI0vZKhslYPk2VQJkRtUUF-cFRLgzKzhqYRVd_jllG0VW9CvcNzXyQMkuzzpTwFSwRskNTOKpc8WRSFIt",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDaydDUcF4VSoQUZxKdxQcA1mEPWKQH6PU6c92_pR-DfBjfcpy4m_QFqXcqosTTMripsTr8se1cpya6xmMJnAdUQIAMgOrxIIfjaRrrXUwJUUcRMfalUnwgwLXDc9azzezI85XPg6Ocm1tE8-Cq9Cqe4pJJDTZ6JKTAXQ0XvcTq0CeDKvDXzYxIvOpmjsjuahC",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH1i6oiMlfmSMSxRq7RqI5EV-f3ibtwmR7jAfEMFKdsOY6DIoEKfLL7d-1qo_NKTm0SLLHHYPB-e5Iw7Xl1AeTwley5oVY9KGjviiTl3a0Maiy4Cvv3aNrmh_I7uKwgYtCqA3fJyPCLR42f0DfUDmk="
+      ]
+    },
+    {
+      "canonical": "fx-trigger",
+      "shipped": "fx-déclencheur",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'The literal English string \"triggering event\" is never used in authentic French prose. The exact and universally accepted translation is *l'événement déclencheur*.' The report notes it is 'often abbreviated simply to *le déclencheur*' — our token — and gives a worked example documenting `hx-trigger` that way.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEMWX-87IrEy4GtWtc7IdyW43Di6G8a-h9DINdbFBWiR6nR7mfuxACcLxtyiUwtHJNTgCJUqIUlrH58cKrdpsv1yG6-Zs3g4-omf5Pef9bmt0DL2coAGfjm9_1sBL_Zt32tmJcNCYgDsW2VLc7RQf4YRwVf5q9pYKl5ovFSIRk=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE-t65A6t8KDgVjRFZeZ4ALSUEbMTFFnNP9AZkfq_whHwwGZGCrtVyzdnAusHLLwItddkKYX5IyBA7Mr-adqGnJTlKZHA7QHfDzV0bRQeVQhJ1gcUaGmE80TW9GevD3GFJkjIP5nA7olvJUtXRW-x0sa2YxIy_dyy5G",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG6PzLkiY9R78jAg2VuSgy7GO_ehxz83d5dzRL5LzNTqBT8sL5RaGtK_98IcTn_taRvRQtkHqe1tQyEuXl8vRLtqNS4YpjDfzrFA9XjbnalYrtyQMWY_ChA5ZSVw9FqJs1KE1mTfotPaa0r8bGjmRw=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG7VYdM6tN75aegX7RlXE01ORM1vnMNJfN0ZA3n80q7qwmYHV2JCctxy4UF4uhtbJzD-rslGMsG-2go6L2sKjGkZbn-FkBvbqM10XOs57spvIahED3mXUWKXOU1i5kC1zN0OOSGfgMcj9OsKRu_Mqx0xdJXwNnWmbF2mpWJR8hm6KCHd5LQ_XvWG_M4AJwPNWswalC9aCloznIDvoLaiQwbZtFKde8FYg7WVwuObw=="
+      ]
+    },
+    {
+      "canonical": "fx-target",
+      "shipped": "fx-cible",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'For documentation and pedagogy, the direct translation *l'élément cible* is flawless and heavily utilized… In fluid technical communication, it is frequently shortened to simply *la cible*.' The head noun is not part of our attribute, so `cible` alone is right.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEMWX-87IrEy4GtWtc7IdyW43Di6G8a-h9DINdbFBWiR6nR7mfuxACcLxtyiUwtHJNTgCJUqIUlrH58cKrdpsv1yG6-Zs3g4-omf5Pef9bmt0DL2coAGfjm9_1sBL_Zt32tmJcNCYgDsW2VLc7RQf4YRwVf5q9pYKl5ovFSIRk=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE4hIwo3BdzyrIRiRtT31rj4U6pVAXUer5hAmBXErT-A2P0tw3xEAht7iEmyeBDda66RTgF_ODQKOXqnqB2-4vUiODo7kDzTh0fMtgJVRofOukipZpndpOpbTFJ3Hr9N0VRj6S5z_DLbQm0N0G8pTWEpao-BbY0u9WsHCV1Y3Gk5HzVZvRjKQarvJOrADPxmRx6ZdqLeeJq2CXOYIRgw60jwMn4R3wD0JcUTGs-CpP9FQ19isQ_f6paWAMViOj1N-FDQIUYcCFgijV6rELphi0sCJpkgbyV",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDaydDUcF4VSoQUZxKdxQcA1mEPWKQH6PU6c92_pR-DfBjfcpy4m_QFqXcqosTTMripsTr8se1cpya6xmMJnAdUQIAMgOrxIIfjaRrrXUwJUUcRMfalUnwgwLXDc9azzezI85XPg6Ocm1tE8-Cq9Cqe4pJJDTZ6JKTAXQ0XvcTq0CeDKvDXzYxIvOpmjsjuahC",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQErENoSpE16_xNl9Mv4_CLSVGOBvLGIy-0aZaFuzI-Kgw9IOMFqj2s5krnNG2lxzsOuHxca10s371NgEg1qzAWuehCFNnlJKirSlLq0QFke_oRLsgpw9QGWj02CHmTV8cF8IPi2EyU0tWsrSsqanJ2ZFOUXnqDHB8QLkgFJqrM4mDeD1y8cmW5qbfYtEdU="
+      ]
+    },
+    {
+      "canonical": "fx-swap",
+      "shipped": "fx-échange",
+      "verdict": "change",
+      "proposed": "remplacement",
+      "reasoning": "DEFECT. '*une stratégie d'échange* carries strong connotations of economic trade, interpersonal bartering, or data exchange protocols between two distinct entities… It fundamentally misrepresents the mechanics of DOM manipulation, where HTML is not being traded back and forth, but rather being replaced.' The report's recommendation is explicit — *la stratégie de remplacement* or *le mode d'insertion* — and it says *stratégie d'échange* 'should be aggressively avoided to prevent severe semantic confusion'. This is the same defect found independently in Turkish (*takas*, an economic word) and matches the wave-1 convergence in de/ko/zh/ja that the localized `fx-swap` must mean *replace*, not *exchange*.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG7VYdM6tN75aegX7RlXE01ORM1vnMNJfN0ZA3n80q7qwmYHV2JCctxy4UF4uhtbJzD-rslGMsG-2go6L2sKjGkZbn-FkBvbqM10XOs57spvIahED3mXUWKXOU1i5kC1zN0OOSGfgMcj9OsKRu_Mqx0xdJXwNnWmbF2mpWJR8hm6KCHd5LQ_XvWG_M4AJwPNWswalC9aCloznIDvoLaiQwbZtFKde8FYg7WVwuObw==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEkZbrVx5ptJjZgleikOHhccpEeiu43eeB2f0gBqLcvRvYra-o3L16lAFOptf84_eBO4mm3JviVp1H4wzIsqdq28F95yncpJd4cKo9pT8vpNZtGbQMPj8R6hTy1_NtTO0iaY8A5UhpsDTGs6MpFCFs0vg==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFK1uyalyEZno_6t0bHiUUtSc7yaXZU0yHbOFmQIfbhRJNJQFoMoeJP1y_7Bt2iXEWv7AIKYzo1uolxD62KTWdVbkv9oqlOwOyhYbsUQMkiSWa4xhNf6mqtzI8wQIHvtE6Cf4hbW7-Ora0RWUpP_HhObh3JnTI-0kUAz6ZKDL43EOv1NtRW",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGa484nen_5dpNVkVKldTE105xI1ndG4UvxQDjHwPCNAT3XzG27---cI0vZKhslYPk2VQJkRtUUF-cFRLgzKzhqYRVd_jllG0VW9CvcNzXyQMkuzzpTwFSwRskNTOKpc8WRSFIt",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEDaydDUcF4VSoQUZxKdxQcA1mEPWKQH6PU6c92_pR-DfBjfcpy4m_QFqXcqosTTMripsTr8se1cpya6xmMJnAdUQIAMgOrxIIfjaRrrXUwJUUcRMfalUnwgwLXDc9azzezI85XPg6Ocm1tE8-Cq9Cqe4pJJDTZ6JKTAXQ0XvcTq0CeDKvDXzYxIvOpmjsjuahC"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "canonical": "click",
+      "shipped": "clic",
+      "verdict": "keep",
+      "proposed": null,
+      "reasoning": "'The English word \"click\" has been entirely assimilated into the French language as the masculine noun *le clic*.' Natives write *lors du clic sur le bouton*, and the report is explicit that 'a native developer would never write \"lors du click\"' — the French spelling is the correct one for the human-facing term.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvShFa8NQOd_bafil6Rzyk_4bXU7dBcJ2uDIhR4m_faq0tHa94AiWMPtQVWYJiCN_X8hXOGBGxskk1ejWsNLp5CV8EHNXaWjVfZLR4ziRUTl9JysTtpf-L9cnX67hY1tHLwbRAK67GjOs9gSrSwl0DBlSRgKMZ8uV9eGeyEF2FmIS4XpJ6SWXRBtQ7-xZiJw==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHHMz_VPiki81183x9003A4UxoWEAq0T7p7pw9dZR1aZLzdthK4hurnn370hs3liI9WWKoe20kWTB1AiVxusuqBQSzFHFORjTcaPhfbhJbZnF7EbRhUEm-anEaWhDFnemrLsPl4VjAe-mjbpXVG1XTs43Rd",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQES0dgsB3u9m4t7zy9ZVeZnrvhxAk9yZfWn4UNNN-f0_01GEUwWp99T4cEXzLV0fkrasSSjW8e8GuruKCzfp7w2mDUkTUc9Zyuj9J3n-CIkmKsjepLHH5X7qQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGmibV0h9TbjAkkPap2TM9aatABmuvHl3WnZbNOkfSVJLBir7jHRKhHJc5SWAg94MtyMS7KRbYBVDs0P7vPbX-Yak0Bq5M_JuvpSlyqHmrlSsums2MUIgHtqGD1AlUXuIue9AyABtmJGwjtIedoiAIbpHlPD_aWaE4Wo_RuTIavQ-DDxqYQgk6CluSFVPQGUINmBBpgsIiBgwF-1wADXEQStkvzbRRrnlxtdwA="
+      ]
+    },
+    {
+      "canonical": "change",
+      "shipped": "changement",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `change` has no section and `changement` appears nowhere in the text. Unreviewed, not confirmed.",
+      "sources": []
+    },
+    {
+      "canonical": "submit",
+      "shipped": "soumission",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `submit` has no section and `soumission` appears nowhere in the text. Unreviewed, not confirmed.",
+      "sources": []
+    },
+    {
+      "canonical": "input",
+      "shipped": "saisie",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `input` has no section and `saisie` appears nowhere in the text. Unreviewed, not confirmed.",
+      "sources": []
+    },
+    {
+      "canonical": "focus",
+      "shipped": "focaliser",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Publish nothing; authors write the English `focus`. The report is direct that no native French term is in use: 'The term \"focus\" has been entirely adopted into French technical jargon', and 'attempts to use native French alternatives like *la focalisation* or *la mise en évidence* sound overly academic and are generally ignored by the industry.' Our `focaliser` is the infinitive of exactly the form the industry ignores, and is independently condemned by the cross-locale noun rule. French devs write *donner le focus*, *la prise de focus*, and RGAA standardises *le focus clavier*.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvShFa8NQOd_bafil6Rzyk_4bXU7dBcJ2uDIhR4m_faq0tHa94AiWMPtQVWYJiCN_X8hXOGBGxskk1ejWsNLp5CV8EHNXaWjVfZLR4ziRUTl9JysTtpf-L9cnX67hY1tHLwbRAK67GjOs9gSrSwl0DBlSRgKMZ8uV9eGeyEF2FmIS4XpJ6SWXRBtQ7-xZiJw==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF9e4eOBRYhkFL0hrhlAQbE1VMdgPtWg1rkV7jm4PUjMVjdKygND74Xu6bm40ZjtSZRhNlPwbQvXzDe0LeZeeMHGtMg39OoNgVAvTiER8mn7s9xjLWPVhghBhI-yfYZ1O21dbofE5YocxNeTcQ7yl7YLi0aFiDpcygT7BKV11WOPqeiQq7BRgnnMJtrh43IXHl3QXEIx3JvFgUcdgjivTqCorGBI-CLeNiiNK3f5i2JukDIyRYyG_M1Is7PIFC74w==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHLGuVFDFU26UdyibqpYYkvAeDCrR0VrIyDstLsnspVjXFaeYAmkIZ2KOeurcyTXpCYTVdO8rZmEDrWIO4E-xKImDkHaq1GKyjoJ-OghKWkECxIaw2vlvwUMV-2f9z3-buagvjR7MPmU2ahI3z9S9I=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEiArrkOzOA2J0bdNtMJ3QzDZbRjhvX9E3LgNihjSXKYI7hnHLV5Di1jS59q8qrj_duNZN49C2X2TdhLi0OjHYj2Cb7e6jJ8EGqXrY8Ot4bp26K-TGIMXy2ZLwdaXjlmHQ0Qf6W5lx2Zr3NtPSFvJ914sJK-HGOQ7bQyX9Yr9n59Gdzpao2wQet3w==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH08t3xC8IMfVRRXUyxa_Heq-7Z-sZdH42o-4djidJZ5FF_bmqTXuBhopVDzi3aMx8RNtIrhn9GF8aJWs-H-46KwOL-L5Jmlxc6rRuucDyV0T909AqOdAcnwoVPPR65Y7g0bwAZvItAqZOnIatIyyhU3hS0THtiqHBWG_b-Hx3xRTX6"
+      ]
+    },
+    {
+      "canonical": "blur",
+      "shipped": "défocaliser",
+      "verdict": "change",
+      "proposed": "perte de focus",
+      "reasoning": "DEFECT, and the same class as four earlier locales. 'In general English, \"blur\" means to become indistinct… Consequently, standard dictionaries translate it into French as *le flou*… However, in the context of DOM events, applying the translation *flou* is a catastrophic semantic error. A native French developer will **never** refer to the `blur` event as *le flou*. They exclusively write *la perte de focus* (the loss of focus) or *la désactivation*.' Multi-word is legal for an event value — lookup folds the space. Our `défocaliser` is an unattested infinitive; the report's cited glossary explicitly separates the visual *bulanıklaşma*-equivalent sense from the interactive one.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEvShFa8NQOd_bafil6Rzyk_4bXU7dBcJ2uDIhR4m_faq0tHa94AiWMPtQVWYJiCN_X8hXOGBGxskk1ejWsNLp5CV8EHNXaWjVfZLR4ziRUTl9JysTtpf-L9cnX67hY1tHLwbRAK67GjOs9gSrSwl0DBlSRgKMZ8uV9eGeyEF2FmIS4XpJ6SWXRBtQ7-xZiJw==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEJcblTGJeja3Yiy97QvTtdeqMn-rl6WSe6MeGglvh84hwokoAR5VEdXc6i5zoMmVbTgqw9Bw0_x_t-6XJ0qS9SJWyNk6NzoyHXa4iYZwWpeEm2IJiNRE9gXNF64rjywO1D-de-BrOnMCcgX4WxdFfEqvu0TtLXZ3vTQw7YTaLAHFS6a2KPCA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHjA4dVdt49x9n9gQW6Kh-PVzJr3enGYKqyXiXcX_aMCLeh4RqYcBrUruYGzQ8TomU4HoK7OnAC5qSjUv5MyiQigDBtRwn5eHdoniDtT-aFkaq7IK47xnLddzo7OStl0A6hUfGDtqZS67k6kQW3TUllQukgqeNRjPWKbK2CFA==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGnEWckeESaBSZdKKlYXb9hCpgwTWyz-eN6rF-Kh6XEkP3urqABFFjq8comqBb7cVwxkI7o5WLPM5H4L6pj60_RRMWx-m2N3Ki4Nkne4_99xepY7sIDY1-XEgeB-z2DUJzUxv_nF9iDzLaQstQ_5BYEvCVH7zdi",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGmibV0h9TbjAkkPap2TM9aatABmuvHl3WnZbNOkfSVJLBir7jHRKhHJc5SWAg94MtyMS7KRbYBVDs0P7vPbX-Yak0Bq5M_JuvpSlyqHmrlSsums2MUIgHtqGD1AlUXuIue9AyABtmJGwjtIedoiAIbpHlPD_aWaE4Wo_RuTIavQ-DDxqYQgk6CluSFVPQGUINmBBpgsIiBgwF-1wADXEQStkvzbRRrnlxtdwA=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF9e4eOBRYhkFL0hrhlAQbE1VMdgPtWg1rkV7jm4PUjMVjdKygND74Xu6bm40ZjtSZRhNlPwbQvXzDe0LeZeeMHGtMg39OoNgVAvTiER8mn7s9xjLWPVhghBhI-yfYZ1O21dbofE5YocxNeTcQ7yl7YLi0aFiDpcygT7BKV11WOPqeiQq7BRgnnMJtrh43IXHl3QXEIx3JvFgUcdgjivTqCorGBI-CLeNiiNK3f5i2JukDIyRYyG_M1Is7PIFC74w==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHLGuVFDFU26UdyibqpYYkvAeDCrR0VrIyDstLsnspVjXFaeYAmkIZ2KOeurcyTXpCYTVdO8rZmEDrWIO4E-xKImDkHaq1GKyjoJ-OghKWkECxIaw2vlvwUMV-2f9z3-buagvjR7MPmU2ahI3z9S9I="
+      ]
+    },
+    {
+      "canonical": "init",
+      "shipped": "initialiser",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `init` is fixi's synthetic lifecycle trigger rather than a DOM event, and the report analysed only browser events; `initialiser` appears nowhere. Unreviewed, not confirmed.",
+      "sources": []
+    },
+    {
+      "canonical": "scroll",
+      "shipped": "défiler",
+      "verdict": "change",
+      "proposed": "défilement",
+      "reasoning": "The concept is well localized but we ship the wrong part of speech. 'In highly formal, official documentation (such as translated MDN pages or academic papers), the action of scrolling is accurately translated as *le défilement*.' Our `défiler` is the infinitive, which the cross-locale noun rule condemns; the attested noun is *défilement*. The report records that *le scroll* and *scroller* are ubiquitous in daily parlance, but our audience reads the pedagogical register, which is where *défilement* lives.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHPdv3aqnPlEjuboXApCy6rh_AMZ7IPbX1ddUqTlcx38Lyu0YY3BBLM686kTRjrqlNm9UKYuF3dSoO9XK_S1FXccwlzmUQB-KQPiqxwxObc9hpwG2_dchWAQmtEAp0PXzX0g0CrpdTF2hMp_HMLgLrrN9IOqgIhJfqAqAzPHffZcQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHJaDZO54cZWAC4NHWSLqTPeAEe3nKYWtXcHoB-6zA6UK_hmMcdWyy63RJVYDo8Eb_Vtgr83P9f005N1wtuXQf1fUUg5Kcr_qQJ5dvR6788OmFYxVI67jgLaxzpALE=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGde18ohNlzB67NTV72MzL33C1G0tl6lMhPmURUNPX-_IBPfWKBM5JbNHEx9jbAKk_cC2ArGhqAuuhg8E9DfwBQuAtrUNq_Qz1248ivsTeh7rfBwSDuogrCS9skq4ODU0VT7DAP1zA0KSjt8K6OAAD08OwaLdx3D2tuLcVCFz2O8DdCA7QEnU7N",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgFJ1q1VDz5uk92oRFL-VOvQSemDpfLFaEDedgqUwrm4mvnh7IEJT_9KdDjcMRhcfQQFKrF71UpN4NrLjDTJTBtSgZmJAMyRu-o4rdYSSPK52WkLSJPQwCewMLeMqqomomazLezJuwyTZalZ4ag-WP",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3s4gKeTyGa52n_SL5Kq8wsQn_-9c-QQ-9MB_h_ShDNQvDiYADNK4VQzP4VDE-2rzl0ycwWgRyPCRxrUgZ0J9Zg2FI7WaIpBwbjmvtHWgP-X1_4hD2tIR0_X8LeW60AwJ-cVXx_CQZ1SJqHEAMBVBIz8_n"
+      ]
+    },
+    {
+      "canonical": "resize",
+      "shipped": "redimensionner",
+      "verdict": "change",
+      "proposed": "redimensionnement",
+      "reasoning": "Same defect as `scroll`, and here the report is emphatic that the French term is strong: 'Unlike \"scroll\", \"resize\" possesses a highly functional, elegant, and commonly used French equivalent: *le redimensionnement*. A native developer will frequently write *lors du redimensionnement de la fenêtre*.' It adds that unlike *scroll*, the English word is 'rarely used as a standalone conversational noun in French'. Our `redimensionner` is the infinitive of it.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHPdv3aqnPlEjuboXApCy6rh_AMZ7IPbX1ddUqTlcx38Lyu0YY3BBLM686kTRjrqlNm9UKYuF3dSoO9XK_S1FXccwlzmUQB-KQPiqxwxObc9hpwG2_dchWAQmtEAp0PXzX0g0CrpdTF2hMp_HMLgLrrN9IOqgIhJfqAqAzPHffZcQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGmibV0h9TbjAkkPap2TM9aatABmuvHl3WnZbNOkfSVJLBir7jHRKhHJc5SWAg94MtyMS7KRbYBVDs0P7vPbX-Yak0Bq5M_JuvpSlyqHmrlSsums2MUIgHtqGD1AlUXuIue9AyABtmJGwjtIedoiAIbpHlPD_aWaE4Wo_RuTIavQ-DDxqYQgk6CluSFVPQGUINmBBpgsIiBgwF-1wADXEQStkvzbRRrnlxtdwA=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgFJ1q1VDz5uk92oRFL-VOvQSemDpfLFaEDedgqUwrm4mvnh7IEJT_9KdDjcMRhcfQQFKrF71UpN4NrLjDTJTBtSgZmJAMyRu-o4rdYSSPK52WkLSJPQwCewMLeMqqomomazLezJuwyTZalZ4ag-WP",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGde18ohNlzB67NTV72MzL33C1G0tl6lMhPmURUNPX-_IBPfWKBM5JbNHEx9jbAKk_cC2ArGhqAuuhg8E9DfwBQuAtrUNq_Qz1248ivsTeh7rfBwSDuogrCS9skq4ODU0VT7DAP1zA0KSjt8K6OAAD08OwaLdx3D2tuLcVCFz2O8DdCA7QEnU7N",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHbgItdUwZyB5-UZ-fz-UJz5DZRc42ehwNSSS4YOW_jCFi179HxWXaTPsRFJr1swn8SXW0ZJ4UDc9PDgJNP2lI49AFjE9uAYRPnFyKtX7Pz1ysa4UgA9EMK4UFzMgpMw2FXxLffZ04pyG8rNXCfWKe8QxaqzOBOllv67TQEew==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3s4gKeTyGa52n_SL5Kq8wsQn_-9c-QQ-9MB_h_ShDNQvDiYADNK4VQzP4VDE-2rzl0ycwWgRyPCRxrUgZ0J9Zg2FI7WaIpBwbjmvtHWgP-X1_4hD2tIR0_X8LeW60AwJ-cVXx_CQZ1SJqHEAMBVBIz8_n"
+      ]
+    },
+    {
+      "canonical": "load",
+      "shipped": "charger",
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report. `load` has no section and `charger` appears nowhere. Note for a follow-up: `charger` is a bare infinitive like `défiler` and `redimensionner`, both of which this review corrected, so it is a likely candidate for the same fix — but that is a suspicion the report does not support.",
+      "sources": []
+    }
+  ],
+  "candidates": [
+    {
+      "canonical": "keydown",
+      "upstream": [
+        "touche bas"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Covered only as part of the keyboard sequence ('`keydown`, `keypress`… and finally `keyup`'), with no French form proposed. The report's finding for the keyboard class is that developers 'predominantly use the English identifier as a noun in their discourse'. `touche bas` appears nowhere and is a fused directional compound of exactly the kind the report calls nonsensical for mouse events.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgFJ1q1VDz5uk92oRFL-VOvQSemDpfLFaEDedgqUwrm4mvnh7IEJT_9KdDjcMRhcfQQFKrF71UpN4NrLjDTJTBtSgZmJAMyRu-o4rdYSSPK52WkLSJPQwCewMLeMqqomomazLezJuwyTZalZ4ag-WP",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHgtcqZL6hpMQEEXiit_TA0nvpraVeRt2zomiDIgpWz33s8LSI-XECiOuXVktXbWTiN2FwqwQMYjOSpqVcAz_j_wK8jRLDRQky8u5f1IgCRLOD76V4_kqgqyZK4SVnY5Mzb6Wf5LO-vqIGny5Q4DnPVNAdl_lkSHplA-nLFAQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQExIyoXcIkjlJYBYxCj2QhZFf4Vu2DAodXMAmh6DHLzR2Yha4lSw61D_wUDWb-j7Ile31YA7nt4C9ez_rXi1OB7mqSRcCFQjPAITlfdgvlBPvrv3dLCbSOSzQ351jwzKQ7J99OHSbjb5wAIzALnT95bezRbbfTH5rz8vAXnnmJa2vv4QlRpsrB5u2vJaFUit6nttyJ_4FDNMVDrsq9yRPGDAg=="
+      ]
+    },
+    {
+      "canonical": "keyup",
+      "upstream": [
+        "touche haut"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Directly assessed and rejected: '\"keyup\" has no neat, single-word equivalent in the French language. Translating it conceptually requires a cumbersome, multi-word phrase like *lors du relâchement de la touche*… they predominantly use the English identifier.' It adds that forcing a native translation 'often alienates the reader, as the cognitive link to the actual codebase is severed'. Publish nothing.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgFJ1q1VDz5uk92oRFL-VOvQSemDpfLFaEDedgqUwrm4mvnh7IEJT_9KdDjcMRhcfQQFKrF71UpN4NrLjDTJTBtSgZmJAMyRu-o4rdYSSPK52WkLSJPQwCewMLeMqqomomazLezJuwyTZalZ4ag-WP",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHgtcqZL6hpMQEEXiit_TA0nvpraVeRt2zomiDIgpWz33s8LSI-XECiOuXVktXbWTiN2FwqwQMYjOSpqVcAz_j_wK8jRLDRQky8u5f1IgCRLOD76V4_kqgqyZK4SVnY5Mzb6Wf5LO-vqIGny5Q4DnPVNAdl_lkSHplA-nLFAQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQExIyoXcIkjlJYBYxCj2QhZFf4Vu2DAodXMAmh6DHLzR2Yha4lSw61D_wUDWb-j7Ile31YA7nt4C9ez_rXi1OB7mqSRcCFQjPAITlfdgvlBPvrv3dLCbSOSzQ351jwzKQ7J99OHSbjb5wAIzALnT95bezRbbfTH5rz8vAXnnmJa2vv4QlRpsrB5u2vJaFUit6nttyJ_4FDNMVDrsq9yRPGDAg==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHHMz_VPiki81183x9003A4UxoWEAq0T7p7pw9dZR1aZLzdthK4hurnn370hs3liI9WWKoe20kWTB1AiVxusuqBQSzFHFORjTcaPhfbhJbZnF7EbRhUEm-anEaWhDFnemrLsPl4VjAe-mjbpXVG1XTs43Rd",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF81J_s_1q2RqaZDGzAQz68azgo3nhQghxfaPH5c2qP5tpQgKzRS5OoC8tAlqnpFxum2ldwDgjGwKtoAzoq12sxI22JcBTx6sihg9ON9KSnH1fddtOygc25BZE=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGde18ohNlzB67NTV72MzL33C1G0tl6lMhPmURUNPX-_IBPfWKBM5JbNHEx9jbAKk_cC2ArGhqAuuhg8E9DfwBQuAtrUNq_Qz1248ivsTeh7rfBwSDuogrCS9skq4ODU0VT7DAP1zA0KSjt8K6OAAD08OwaLdx3D2tuLcVCFz2O8DdCA7QEnU7N"
+      ]
+    },
+    {
+      "canonical": "mouseover",
+      "upstream": [
+        "souris dessus"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed. `mouseover` appears once, in the `mousemove` section, only to warn against conflating it with boundary-crossing events; `souris dessus` appears nowhere. The report's general finding on compound mouse events applies but was never applied to this term.",
+      "sources": []
+    },
+    {
+      "canonical": "mouseout",
+      "upstream": [
+        "souris dehors"
+      ],
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Not addressed by the report at all — neither `mouseout` nor `souris dehors` occurs in the text.",
+      "sources": []
+    }
+  ],
+  "gaps": [
+    {
+      "canonical": "mousedown",
+      "shipped": null,
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "No French term exists; authors keep the English token. 'Because `mousedown` combines a noun (mouse) and a directional adverb (down), literal translations into French yield nonsensical results (e.g. *souris descendue*). Therefore, native developers strictly retain the English identifier… In technical writing, maintaining *l'événement `mousedown`* is the only professional choice.' The descriptive alternative it records, *lors de la pression sur le bouton*, is a prose gloss rather than an identifier.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFodJrjiirKpn0W8BrlVMDmzaY87_j1IRjyKe8qgkMmPdKyt9NV7JWUJS1O9CaTbrt93LEMsNoF28jxwLGchUgTJrgL38CMWNeCBF78PvoZ-H9ouG7SltSxqXfptYB3c1DibQZWtpQ=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgFJ1q1VDz5uk92oRFL-VOvQSemDpfLFaEDedgqUwrm4mvnh7IEJT_9KdDjcMRhcfQQFKrF71UpN4NrLjDTJTBtSgZmJAMyRu-o4rdYSSPK52WkLSJPQwCewMLeMqqomomazLezJuwyTZalZ4ag-WP",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHgtcqZL6hpMQEEXiit_TA0nvpraVeRt2zomiDIgpWz33s8LSI-XECiOuXVktXbWTiN2FwqwQMYjOSpqVcAz_j_wK8jRLDRQky8u5f1IgCRLOD76V4_kqgqyZK4SVnY5Mzb6Wf5LO-vqIGny5Q4DnPVNAdl_lkSHplA-nLFAQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF9e4eOBRYhkFL0hrhlAQbE1VMdgPtWg1rkV7jm4PUjMVjdKygND74Xu6bm40ZjtSZRhNlPwbQvXzDe0LeZeeMHGtMg39OoNgVAvTiER8mn7s9xjLWPVhghBhI-yfYZ1O21dbofE5YocxNeTcQ7yl7YLi0aFiDpcygT7BKV11WOPqeiQq7BRgnnMJtrh43IXHl3QXEIx3JvFgUcdgjivTqCorGBI-CLeNiiNK3f5i2JukDIyRYyG_M1Is7PIFC74w=="
+      ]
+    },
+    {
+      "canonical": "mouseup",
+      "shipped": null,
+      "verdict": "reject",
+      "proposed": null,
+      "reasoning": "Same conclusion, argued separately: '`mouseup` defies concise translation. A native developer will write *l'événement `mouseup`* in almost all technical contexts… the core term itself remains firmly untranslated to ensure parity with the DOM API.' The glosses offered (*quand l'utilisateur relâche le clic*, *le relâchement du bouton de la souris*) are clause-shaped.",
+      "sources": [
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFodJrjiirKpn0W8BrlVMDmzaY87_j1IRjyKe8qgkMmPdKyt9NV7JWUJS1O9CaTbrt93LEMsNoF28jxwLGchUgTJrgL38CMWNeCBF78PvoZ-H9ouG7SltSxqXfptYB3c1DibQZWtpQ=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFgFJ1q1VDz5uk92oRFL-VOvQSemDpfLFaEDedgqUwrm4mvnh7IEJT_9KdDjcMRhcfQQFKrF71UpN4NrLjDTJTBtSgZmJAMyRu-o4rdYSSPK52WkLSJPQwCewMLeMqqomomazLezJuwyTZalZ4ag-WP",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHJaDZO54cZWAC4NHWSLqTPeAEe3nKYWtXcHoB-6zA6UK_hmMcdWyy63RJVYDo8Eb_Vtgr83P9f005N1wtuXQf1fUUg5Kcr_qQJ5dvR6788OmFYxVI67jgLaxzpALE=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGde18ohNlzB67NTV72MzL33C1G0tl6lMhPmURUNPX-_IBPfWKBM5JbNHEx9jbAKk_cC2ArGhqAuuhg8E9DfwBQuAtrUNq_Qz1248ivsTeh7rfBwSDuogrCS9skq4ODU0VT7DAP1zA0KSjt8K6OAAD08OwaLdx3D2tuLcVCFz2O8DdCA7QEnU7N",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHgtcqZL6hpMQEEXiit_TA0nvpraVeRt2zomiDIgpWz33s8LSI-XECiOuXVktXbWTiN2FwqwQMYjOSpqVcAz_j_wK8jRLDRQky8u5f1IgCRLOD76V4_kqgqyZK4SVnY5Mzb6Wf5LO-vqIGny5Q4DnPVNAdl_lkSHplA-nLFAQ==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF9e4eOBRYhkFL0hrhlAQbE1VMdgPtWg1rkV7jm4PUjMVjdKygND74Xu6bm40ZjtSZRhNlPwbQvXzDe0LeZeeMHGtMg39OoNgVAvTiER8mn7s9xjLWPVhghBhI-yfYZ1O21dbofE5YocxNeTcQ7yl7YLi0aFiDpcygT7BKV11WOPqeiQq7BRgnnMJtrh43IXHl3QXEIx3JvFgUcdgjivTqCorGBI-CLeNiiNK3f5i2JukDIyRYyG_M1Is7PIFC74w=="
+      ]
+    }
+  ],
+  "familyTokens": [],
+  "variantSplit": {
+    "warranted": false,
+    "reasoning": "Not asked for `fr` and not addressed. The report describes a register split — formal/pedagogical French against a heavily Anglicised engineering vernacular (*scroller*, *le scroll*) — which is an axis of formality, not region."
+  },
+  "overall": "The report answered part of the brief and drifted on the rest. It assessed all five hypermedia attribute concepts and 4 of our 10 shipped events, but analysed two events nobody asked about (`dblclick`, `mousemove`) while omitting `change`, `submit`, `input`, `init` and `load` entirely — those five are recorded `reject` as unreviewed, not confirmed. Roughly a third of its length re-argues whether these identifiers should be translated at all, which the brief listed as a settled decision; under loka's rules its conclusion that 'developers keep the English identifier' is not an argument against translating but the finding *no attested term*, and it has been read that way here (`focus`, `keyup`, `mousedown`, `mouseup`). It did not confirm everything: it found a hard defect in `échange` for swap and infinitive defects in `défocaliser`, `défiler` and `redimensionner`. Note this report was first harvested from a truncated archive that had lost 13,916 characters including the entire attribute section; these findings are distilled from the recovered full text. Sources are vertexaisearch redirect URLs resolved from the report's citation map."
+}

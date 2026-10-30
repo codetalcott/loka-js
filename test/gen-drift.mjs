@@ -27,6 +27,7 @@
 //
 // Pure Node, no browser/server needed:  node test/gen-drift.mjs
 
+import { execFileSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -96,9 +97,48 @@ if (skipped) {
   );
 }
 
+/**
+ * Which sibling checkout the generator actually read, as branch and short SHA.
+ *
+ * Reported on failure because this test's result depends on a *different
+ * repository's working tree*, so it can go red without anything here changing —
+ * and the most common cause is that checkout sitting on an unrelated branch.
+ * Naming it turns a confusing failure into an obvious one.
+ */
+function siblingCheckout() {
+  const dir = path.resolve(ROOT, '..', 'hyperfixi');
+  if (!fs.existsSync(dir)) return null;
+  try {
+    const run = args => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' }).trim();
+    return { dir, branch: run(['rev-parse', '--abbrev-ref', 'HEAD']), sha: run(['rev-parse', '--short', 'HEAD']) };
+  } catch {
+    return { dir, branch: null, sha: null };
+  }
+}
+
 if (failures) {
   console.error(`${failures} check(s) failed — committed output does not match a fresh generate.`);
-  console.error(`Run \`npm run gen\` and inspect the diff before committing it.`);
+
+  const sibling = siblingCheckout();
+  if (sibling?.branch) {
+    console.error(`\nGenerated from ${sibling.dir}`);
+    console.error(`               ${sibling.branch} @ ${sibling.sha}`);
+  }
+
+  // The previous message said only "run `npm run gen`", which is the correct
+  // fix for exactly one of the three causes and actively destructive for
+  // another: when the sibling is stale, regenerating overwrites committed
+  // corrections with the older upstream terms. Say all three.
+  console.error(`\nNot necessarily a bug — the checkout and the committed output disagree.`);
+  console.error(`Decide which side is right:`);
+  console.error(`  - sibling checkout is stale or on another branch`);
+  console.error(`        → pull/switch hyperfixi and re-run.`);
+  console.error(`        → do NOT run \`npm run gen\` first: it would overwrite committed`);
+  console.error(`          corrections with the older upstream terms.`);
+  console.error(`  - upstream changed and the change is wanted`);
+  console.error(`        → \`npm run gen\`, inspect the diff, commit both.`);
+  console.error(`  - a locale file was hand-edited`);
+  console.error(`        → don't; edit fx-vocab.mjs or the profile and regenerate.`);
   process.exit(1);
 }
 console.log('All generated files reproduce from the current checkout.');
