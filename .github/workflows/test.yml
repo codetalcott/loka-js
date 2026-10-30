@@ -7,9 +7,10 @@ on:
   pull_request:
   # test:drift compares against hyperfixi main, which moves without loka
   # changing. A red scheduled run means upstream vocabulary changed — see the
-  # three causes the test prints before regenerating anything.
+  # three causes the test prints before regenerating anything. Monthly, and
+  # the data job only, to keep Actions minutes low.
   schedule:
-    - cron: '17 6 * * 1'
+    - cron: '17 6 1 * *'
   workflow_dispatch:
 
 concurrency:
@@ -49,6 +50,9 @@ jobs:
     # where Playwright 1.60 refuses to install chromium-headless-shell. Move
     # this when a Playwright release supports the newer image.
     runs-on: ubuntu-24.04
+    # The browser checks depend only on loka's own files, which a scheduled
+    # run has no new version of.
+    if: github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
