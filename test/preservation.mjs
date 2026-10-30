@@ -5,12 +5,12 @@
 // produce identical behavior to upstream.
 //
 // Usage:
-//   (server up on :3001)
+//   (server up on :3002 — the same one the acceptance suite uses)
 //   node test/preservation.mjs
 
 import { chromium } from 'playwright';
 
-const BASE = process.env.LOKA_BASE_URL || 'http://127.0.0.1:3001';
+const BASE = process.env.LOKA_BASE_URL || 'http://127.0.0.1:3002';
 
 const browser = await chromium.launch();
 const failures = [];
