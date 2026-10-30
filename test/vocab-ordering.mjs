@@ -13,7 +13,7 @@
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { EVENT_KEYWORDS, extractEventValues } from '../scripts/gen-locales.mjs';
+import { EVENT_KEYWORDS, extractEventValues, preferConcluded } from '../scripts/gen-locales.mjs';
 import { LOCALES } from '../scripts/fx-vocab.mjs';
 import { SETTLED, isAttrKey, statusOf, pendingRecords } from '../scripts/settled-terms.mjs';
 
@@ -56,6 +56,28 @@ console.log('extractEventValues — primary precedes alternatives:');
   const values = extractEventValues(synthProfile);
   ok(preferred(values, 'click') === 'pulsar', "click → 'pulsar' wins (primary, not the alt 'hacer-clic'/'tocar')");
   ok(preferred(values, 'change') === 'cambiar', "change → 'cambiar' wins (primary, not the alt 'modificar')");
+}
+
+// ── 1b. preferConcluded: loka picks the first form, the profile picks the forms ──
+console.log('\npreferConcluded — reorders a group, never adds to it:');
+{
+  // The shape hyperfixi#1460 produced: the profile leads with the command verb,
+  // and loka's reviewed noun is one of its alternatives.
+  const ordered = { enfocar: 'focus', enfoque: 'focus', desenfocar: 'blur', desenfoque: 'blur', clic: 'click' };
+  const settled = {
+    'xx:focus': { concluded: 'enfoque', superseded: ['enfocar'] },
+    'xx:blur': { concluded: 'inventado', superseded: [] },  // not a word the profile has
+    'xx:click': { concluded: null, superseded: [] },
+    'xx:fx-swap': { concluded: 'enfocar', superseded: [] }, // attr record: not ours to apply
+    'yy:focus': { concluded: 'enfocar', superseded: [] },   // another locale
+  };
+  const { events, unplaced } = preferConcluded('xx', ordered, settled);
+  ok(preferred(events, 'focus') === 'enfoque', "the concluded 'enfoque' leads, though the profile put 'enfocar' first");
+  ok(events.enfocar === 'focus', "the profile's primary still parses");
+  ok(!('inventado' in events) && preferred(events, 'blur') === 'desenfocar',
+    'a concluded form the profile lacks is not invented, and the group keeps its order');
+  ok(unplaced.length === 1 && unplaced[0].concluded === 'inventado', 'and it is reported as unplaced');
+  ok(Object.keys(events).sort().join() === Object.keys(ordered).sort().join(), 'membership is unchanged');
 }
 
 // ── 2. Generated output: real locale files honor both conventions ───────────
@@ -117,10 +139,10 @@ console.log('\nExpanded event scope — the vocabulary the allowlist used to dro
 
 console.log('\nCorrected terms — the form we teach, with old spellings still parsing:');
 {
-  // Terms that were malformed when the allowlist first exposed them. Each was
-  // fixed upstream with the old spelling demoted to a parse alternative, so the
-  // assertion is two-sided: the corrected form must win, and the old form must
-  // still resolve.
+  // Terms that were malformed when the allowlist first exposed them. The
+  // generator puts each concluded form first (preferConcluded) and the old
+  // spelling stays a parse alternative, so the assertion is two-sided: the
+  // corrected form must win, and the old form must still resolve.
   //
   // Driven from scripts/settled-terms.mjs, which research-brief.mjs also reads.
   // These were two hand-kept copies of the same facts; a correction reaching one
@@ -142,8 +164,10 @@ console.log('\nCorrected terms — the form we teach, with old spellings still p
       const now = preferred(map, target);
       ok(
         now !== rec.concluded,
-        `${code} ${label} is still pending — if this fails, upstream applied ` +
-          `'${rec.concluded}' and the record should flip to status:'applied'`
+        rec.concluded === null
+          ? `${code} ${label} is still pending (the decision is to publish nothing)`
+          : `${code} ${label} is still pending — if this fails, '${rec.concluded}' is now ` +
+            `shipping and the record should flip to status:'applied'`
       );
       if (rec.superseded.length) {
         ok(

@@ -30,12 +30,15 @@ Three homes, and picking the wrong one is the most expensive mistake available h
 | What | Lives in | Editable by us |
 |---|---|---|
 | Event names a profile publishes | `../hyperfixi/packages/semantic/src/generators/profiles/<profile>.ts` | Only when we own that checkout |
+| Which of those loka lists **first** | `scripts/settled-terms.mjs` → the record's `concluded` | Always |
 | Event names a profile does **not** publish | `scripts/fx-vocab.mjs` → `fixi.events` | Always |
 | Attribute names (`fx-*`) | `scripts/fx-vocab.mjs` → `fixi.attrs` | Always |
 | moxi / paxi / rexi / ssexi tokens | `scripts/fx-vocab.mjs` → per-library sub-objects | Always |
 | Generated output | `locales/*.js`, `dom-vocab/*.js` | Never by hand — `npm run gen` |
 
-**The shadow rule.** `fixi.events` is for vocabulary genuinely *absent* from a profile. Using it to override a term the profile already publishes creates two disagreeing vocabularies, and the loka-side one wins silently — that is how `pulsacion` shipped for a year while semantic parsed `tecla abajo`. `gen-locales.mjs` now warns on this mechanically.
+**The shadow rule.** `fixi.events` is for vocabulary genuinely *absent* from a profile. Using it to override a term the profile already publishes creates two disagreeing vocabularies, and the loka-side one wins silently — that is how `pulsacion` shipped for a year while semantic parsed `tecla abajo`. `gen-locales.mjs` refuses to generate when it sees one.
+
+**Shared spellings, separate first choice.** The profile and loka agree on which words *parse*; they need not agree on which one comes first, because the word sits in different places. In hyperscript it follows a marker (`al`, `ao`, `wenn`, `で`), and for `focus`, `blur`, `scroll` and `init` the same keyword also names a command, so upstream has its own reasons to lead with a verb — hyperfixi#1460 did exactly that for es/pt focus and blur, because the command had been writing `enfoque yo`. In a loka attribute the token stands alone, where the reviewed noun is right. Until 2026-10-30 loka took the profile's first spelling as its own, so that change would have reverted five reviewed loka decisions at the next `npm run gen` (the drift test caught it first), and loka's corrections had earlier broken hyperscript's commands. Now `preferConcluded` in `gen-locales.mjs` puts a record's `concluded` form first, and only reorders: a concluded form the profile lacks is reported `[UNPLACED]`, never added.
 
 "Absent" has a precise meaning, because the coinage track depends on it: **a profile is absent for a canonical when it publishes no non-identity form.** An entry like Swahili's `blur: { primary: 'blur' }` is an identity placeholder that `stripIdentity` drops, so it publishes nothing, and supplying a Swahili `blur` term from `fx-vocab.mjs` fills a gap rather than shadowing a decision.
 
@@ -133,7 +136,8 @@ Decision tree:
 
 | The correction is to… | Do this |
 |---|---|
-| An event primary the profile publishes | Edit the profile → `npm run gen`. **If the upstream checkout is unavailable, record it `pending-upstream` instead** |
+| An event primary, to a form the profile already publishes | Add the record → `npm run gen`. No upstream edit |
+| An event primary, to a form the profile does not publish | Add the form to the profile (an alternative is enough) → record → `npm run gen`. **If the upstream checkout is unavailable, record it `pending-upstream` instead** |
 | An event canonical the profile does not publish | Add to `fixi.events` in `fx-vocab.mjs` → `npm run gen` |
 | An attribute name | Add/reorder in `fixi.attrs` → `npm run gen` |
 | A moxi/paxi/rexi/ssexi token | Edit the per-library sub-object → `npm run gen` |
@@ -145,7 +149,7 @@ Ordering is load-bearing when demoting a spelling: put the new primary **first**
 
 ## Settled records
 
-`scripts/settled-terms.mjs` is the single record of "we already looked at this." Two consumers read it: the brief (to mark a term confirm-only) and `test/vocab-ordering.mjs` (to assert the concluded form shipped). They were once two hand-kept copies and had already drifted.
+`scripts/settled-terms.mjs` is the single record of "we already looked at this." Three consumers read it: the brief (to mark a term confirm-only), `test/vocab-ordering.mjs` (to assert the concluded form shipped), and the generator (to put a concluded event form first). The first two were once hand-kept copies and had already drifted.
 
 Keys are `code:canonical`, where canonical is a DOM event (`es:mousedown`) or an attribute (`de:fx-swap`).
 
@@ -161,13 +165,13 @@ A `null` conclusion is the difference between "we looked and found nothing" and 
 
 ## Freeze protocol
 
-When the hyperfixi checkout is owned by another session, event-primary corrections cannot be applied. Do **not** route around it by adding a `fixi.events` override — that is the shadow rule, and it is how `pulsacion` happened.
+When the hyperfixi checkout is owned by another session, a correction that needs a **new spelling** in a profile cannot be applied. (A correction to a spelling the profile already carries never waits: the record alone reorders it.) Do **not** route around it by adding a `fixi.events` override — that is the shadow rule, and it is how `pulsacion` happened.
 
 Instead: record the decision with `status: 'pending-upstream'` and `superseded[0]` set to the form still shipping.
 
 The test then asserts the *pending state* rather than skipping:
 
-- the concluded form must **not** be primary — if it is, upstream applied it and the record should flip to `applied`;
+- the concluded form must **not** be primary — if it is, the profile now publishes it, the generator put it first, and the record should flip to `applied`;
 - `superseded[0]` must still be primary — if some third form appears, upstream moved differently and the decision's premise is void.
 
 So the freeze lifting is self-reporting. `node scripts/settled-terms.mjs` lists what is outstanding.
@@ -178,9 +182,10 @@ So the freeze lifting is self-reporting. `node scripts/settled-terms.mjs` lists 
 2. `npm run test:drift` — confirm committed output matches the current checkout.
 3. `npm run test:vocab` — failures now name every record to promote or re-look.
 4. Flip promoted records to `status: 'applied'` (or delete `status`).
-5. Apply the still-pending profile edits upstream, regen, flip those too.
-6. Escalate the `gen-locales.mjs` shadow guard from warn to throw (`TODO(freeze-lift)`).
-7. Commit as one change, so the record and the data move together.
+5. Add the still-missing spellings to the profiles upstream, regen, flip those too. `npm run gen` names each one as `[UNPLACED]`.
+6. Commit as one change, so the record and the data move together.
+
+(The shadow guard's escalation from warn to throw, once step 6 here, landed 2026-07-29.)
 
 ## Coinage track
 
@@ -226,7 +231,9 @@ Run one wave at a time. Two in flight means harvesting reports against a vocabul
 | Findings assess a term nobody asked about | `scripts/distill.mjs --check` |
 | A briefed term silently absent from findings | `scripts/distill.mjs --check` |
 | A verdict asserting usage with no source, or an unfollowable `cite N` source | `scripts/distill.mjs --check` |
-| `fx-vocab.mjs` shadowing a profile term | `scripts/gen-locales.mjs` (warn; throw after freeze-lift) |
+| `fx-vocab.mjs` shadowing a profile term | `scripts/gen-locales.mjs` (refuses to generate) |
+| A concluded form the profile does not publish | `scripts/gen-locales.mjs` (`[UNPLACED]`) and `test/vocab-ordering.mjs` |
+| Upstream reordering a profile for hyperscript's sake | Nothing needs to — `preferConcluded` re-applies every concluded event form; `test/vocab-ordering.mjs` section 1b guards the mechanism |
 | A canonical published outside the allowlist | `orderValues` in `gen-locales.mjs` (throws) |
 | A localized term never reaching `addEventListener` | `test/loka-js.spec.mjs` phase J |
 | An attribute alias that stopped resolving per element | `test/loka-js.spec.mjs` phase J |
@@ -235,4 +242,4 @@ Run one wave at a time. Two in flight means harvesting reports against a vocabul
 
 - **Attribute-name aliases have no runtime test beyond phase J's German case.** The mechanism is per-element resolution in `fx.name`; only `de` exercises a demoted spelling.
 - **`suspicions()` is blind to word choice.** It catches fused compounds, underscores and camelCase. It cannot see a real word carrying the wrong meaning, which is where every serious defect so far has been. That is why the brief states the cross-locale rules explicitly instead of relying on flags.
-- **The three cross-locale rules are stated in prose to reviewers, not enforced anywhere.** A locale could ship a new infinitive primary tomorrow and nothing would fail.
+- **The three cross-locale rules are stated in prose to reviewers, not enforced anywhere.** A locale with no record could ship a new infinitive primary tomorrow and nothing would fail — `preferConcluded` protects only terms a review has concluded. Profiles tend to lead with a verb where the keyword is also a command (`focus`, `blur`, `scroll`, `init`), so unreviewed locales are most exposed there: ru and uk ship `сфокусировать`/`сфокусувати` for focus, ar ships `مرر` for scroll.

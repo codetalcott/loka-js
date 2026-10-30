@@ -1,6 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/portuguese.ts (events)
 //         loka-js/scripts/fx-vocab.mjs (event overrides + props)
+//         loka-js/scripts/settled-terms.mjs (which event form is listed first)
 // Regenerate: cd loka-js && npm run gen
 //
 // DOM-keyword vocabulary for the 'pt' locale. Shared between loka-js

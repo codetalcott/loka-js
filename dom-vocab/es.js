@@ -1,6 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/spanish.ts (events)
 //         loka-js/scripts/fx-vocab.mjs (event overrides + props)
+//         loka-js/scripts/settled-terms.mjs (which event form is listed first)
 // Regenerate: cd loka-js && npm run gen
 //
 // DOM-keyword vocabulary for the 'es' locale. Shared between loka-js
@@ -29,9 +30,9 @@ export const events = {
   enfoque: 'focus',
   enfocar: 'focus',
   'pérdida de foco': 'blur',
+  desenfocar: 'blur',
   'perdida de foco': 'blur',
   desenfoque: 'blur',
-  desenfocar: 'blur',
   inicio: 'init',
   'inicialización': 'init',
   iniciar: 'init',
