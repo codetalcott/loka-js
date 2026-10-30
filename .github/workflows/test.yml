@@ -45,7 +45,10 @@ jobs:
 
   browser:
     name: browser checks
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest started resolving to ubuntu-26.04 on 2026-10-30,
+    # where Playwright 1.60 refuses to install chromium-headless-shell. Move
+    # this when a Playwright release supports the newer image.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
