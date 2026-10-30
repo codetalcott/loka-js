@@ -931,26 +931,34 @@ async function main() {
       const pending = Object.entries(SETTLED).filter(
         ([k, r]) => k.startsWith(`${code}:`) && statusOf(r) === 'pending-upstream'
       ).length;
+      // Which of the other four libraries this locale has any vocabulary for.
+      // Only Spanish today; the column is how adding one shows up.
+      const spec = LOCALES[code];
+      const family = ['moxi', 'paxi', 'rexi', 'ssexi']
+        .filter(lib => Object.values(spec[lib] ?? {}).some(t => t && Object.keys(t).length))
+        .join(' ');
       rows.push([
         code,
-        LOCALES[code].name,
-        LOCALES[code].reviewed ? 'attrs reviewed' : '',
+        spec.name,
+        spec.reviewed ? 'attrs reviewed' : '',
         b.priorityCount,
         pending,
         COINAGE[code] ? 'coinage' : '',
+        family,
       ]);
     }
     rows.sort((a, b) => b[4] - a[4] || b[3] - a[3]);
-    console.log('locale  language        attrs           suspect  pending  mode');
-    console.log('-'.repeat(66));
-    for (const [code, name, rev, n, pending, mode] of rows) {
+    console.log('locale  language        attrs           suspect  pending  mode     family');
+    console.log('-'.repeat(86));
+    for (const [code, name, rev, n, pending, mode, family] of rows) {
       console.log(
         code.padEnd(8) +
           name.padEnd(16) +
           rev.padEnd(16) +
           String(n || '').padEnd(9) +
           String(pending || '').padEnd(9) +
-          mode
+          mode.padEnd(9) +
+          family
       );
     }
     console.log('\nBrief for one locale:  node scripts/research-brief.mjs --locale=<code>');

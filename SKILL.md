@@ -7,7 +7,7 @@ description: Work on loka-js (the hook-contract localization pattern for the fix
 
 ## Quick orientation
 
-loka-js makes it possible for non-English-native authors to write fixiproject-family code in their own language without the libraries being aware of any language. Five libraries (fixi, moxi, ssexi, paxi, rexi); three are patched with tiny hook contracts; two need no patch and are localized from outside.
+loka-js makes it possible for non-English-native authors to write fixiproject-family code in their own language without the libraries being aware of any language. Five libraries (fixi, moxi, ssexi, paxi, rexi); three are patched with tiny hook contracts; two need no patch and are localized from outside. The runtime handles all five in any locale, but vocabulary for moxi/paxi/rexi/ssexi exists only in Spanish so far; the other 22 locales localize fixi attribute and event names.
 
 This is **not** a general i18n system — it localizes *authoring vocabulary* (attribute names, modifiers, global function names, event names), not user-visible content. The audience is beginner web developers whose native language isn't English.
 
@@ -203,15 +203,14 @@ If you're adding a new locale's vocabulary, document the choices you make in a h
 ## Testing
 
 ```bash
-# Acceptance suite (needs static server on :3002)
+# Full suite (the browser checks need a static server on :3002)
 npx http-server . -p 3002 -c-1 -s &
-npm test                                      # node test/loka-js.spec.mjs
+npm test                                      # drift, vocab, then every browser check
 
-# Behavior-preservation harness (needs static server on :3001)
-npx http-server . -p 3001 -c-1 -s &
-node test/preservation.mjs
+# Just the browser checks (acceptance, behavior preservation, psatina demos)
+npm run test:browser
 ```
 
-Both scripts honor `LOKA_BASE_URL` env var if you need alternate ports.
+Every browser check honors the `LOKA_BASE_URL` env var if you need another port.
 
 When a test fails, prefer fixing the test or the demo over loosening assertions — every spurious-looking failure in v1 turned out to be a real bug (duplicate ids, attribute stripping, wrong selector). Trust the harness.

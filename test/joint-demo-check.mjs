@@ -10,7 +10,7 @@
 
 import { chromium } from 'playwright';
 
-const BASE = process.env.BASE || 'http://127.0.0.1:8125';
+const BASE = process.env.LOKA_BASE_URL || 'http://127.0.0.1:3002';
 const URL = `${BASE}/demo/joint-fixi-psatina/index.html`;
 
 const browser = await chromium.launch();

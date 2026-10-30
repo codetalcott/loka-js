@@ -1,16 +1,19 @@
 // Terminology decisions that have concluded — the single source for "we already
 // looked at this term."
 //
-// Two consumers, previously two hand-maintained copies of the same four facts:
+// Three consumers; the first two were previously hand-maintained copies of the
+// same four facts:
 //
 //   scripts/research-brief.mjs   marks a term settled so a brief doesn't spend a
 //                                reviewer's effort re-deriving it
 //   test/vocab-ordering.mjs      asserts the concluded form is primary AND the
 //                                superseded spellings still parse
+//   scripts/gen-locales.mjs      puts a concluded EVENT form first in its group
+//                                (preferConcluded) — see below
 //
-// They drifted apart in the obvious way: a correction reached one and not the
-// other, so the brief could advertise a term as reviewed while nothing tested
-// that the reviewed spelling actually shipped.
+// The first two drifted apart in the obvious way: a correction reached one and
+// not the other, so the brief could advertise a term as reviewed while nothing
+// tested that the reviewed spelling actually shipped.
 //
 // Records are phrased as the CONCLUSION, not the transition ("we ship X" rather
 // than "we changed Y to X"), so the entry stays unambiguous when read against a
@@ -18,14 +21,21 @@
 //
 // Adding a record after a review concludes
 // ----------------------------------------
-// The term itself does NOT live here. This file records that a decision was
-// made; the vocabulary lives upstream:
+// The spelling itself does NOT live here. This file records that a decision was
+// made; the spellings live where they parse:
 //
 //   event names → ../hyperfixi/packages/semantic/src/generators/profiles/<profile>.ts
 //   attr names  → scripts/fx-vocab.mjs
 //
-// Change it there, `npm run gen`, then add the record below. `npm test` fails if
-// a record and the generated data disagree.
+// For an EVENT, though, the ORDER is ours. The profile decides which spellings
+// exist; a record here decides which one loka lists first, because a profile's
+// first spelling is chosen for hyperscript (where the word follows a marker and
+// may also name a command) and loka's token stands alone. So an event
+// correction whose form the profile already carries needs only the record and
+// `npm run gen`. One it does not carry must be added to the profile first — an
+// alternative is enough; `npm run gen` reports it as [UNPLACED] until then.
+// Attribute order still comes from fx-vocab.mjs. `npm test` fails if a record
+// and the generated data disagree.
 //
 // When the upstream half is unavailable — another session owns the hyperfixi
 // checkout, say — record the decision anyway with `status: 'pending-upstream'`.
@@ -59,7 +69,10 @@
  *   variantNote: string|null, // regional caveat, e.g. 'pt-BR usage; pt-PT unverified'
  *   status?: 'applied'|'pending-upstream', // absent = 'applied'. 'pending-upstream' means
  *                           // the decision is made but the edit lands in a repo we cannot
- *                           // touch right now, so the WRONG form is still shipping. The
+ *                           // touch right now, so the WRONG form is still shipping. Since
+ *                           // the generator orders events from these records, a concluded
+ *                           // form can only be pending if the profile does not publish it
+ *                           // yet — a reorder never waits on upstream. The
  *                           // brief must say so rather than advertising the term as
  *                           // reviewed, and vocab-ordering asserts the pending state
  *                           // affirmatively so the freeze lifting is self-reporting.
@@ -868,7 +881,7 @@ export const SETTLED = {
       'https://www.lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/sites/lycee-rene-cassin-montfort-sur-meu.ac-rennes.fr/IMG/pdf/javascript.pdf',
     ],
     variantNote:
-      "the profile's alternative 'concentrer' is equally unattested for the event and goes with it. Deliberately NOT applied at the 2026-08-01 freeze-lift with the other seven: those were primary/alternative swaps, but 'focaliser' is load-bearing upstream beyond the profile (French tokenizer, event-handler patterns, generated grammar), so publishing nothing means removing French focus vocabulary from hyperscript parsing — an upstream design decision to take to hyperfixi explicitly, not a vocab reorder",
+      "the profile's alternative 'concentrer' is equally unattested for the event and goes with it. Not applied at the 2026-08-01 freeze-lift with the other seven, which were primary/alternative swaps. Upstream no longer blocks it: 'focaliser' is the word hyperfixi writes for its focus COMMAND, and loka stopped taking its order from the profile, so loka can publish nothing without touching hyperscript. What blocks it now is loka's own data format — a parse map cannot say 'teach the canonical' while keeping 'focaliser' parsing for pages already written with it, and dropping it outright breaks those pages",
     status: 'pending-upstream',
   },
 };

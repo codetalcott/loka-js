@@ -1,0 +1,65 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  # No branch filter: stacked PRs (base = another PR's branch) need CI too.
+  pull_request:
+  # test:drift compares against hyperfixi main, which moves without loka
+  # changing. A red scheduled run means upstream vocabulary changed — see the
+  # three causes the test prints before regenerating anything.
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  data:
+    name: vocab + drift
+    runs-on: ubuntu-latest
+    steps:
+      # The generator reads ../hyperfixi/packages/semantic/src/generators/profiles,
+      # so both repos are checked out side by side, as they are locally.
+      - uses: actions/checkout@v7
+        with:
+          path: loka-js
+      - uses: actions/checkout@v7
+        with:
+          repository: codetalcott/hyperfixi
+          path: hyperfixi
+          sparse-checkout: packages/semantic/src/generators/profiles
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      # Pure Node, no dependencies.
+      - run: node test/vocab-ordering.mjs
+        working-directory: loka-js
+      - run: node test/gen-drift.mjs
+        working-directory: loka-js
+
+  browser:
+    name: browser checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps --only-shell chromium
+      - name: Serve the repo root on :3002
+        run: |
+          npx -y http-server . -p 3002 -c-1 -s &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://127.0.0.1:3002/loka.js && exit 0
+            sleep 1
+          done
+          echo "static server did not come up" && exit 1
+      - run: npm run test:browser

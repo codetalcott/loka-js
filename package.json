@@ -1,7 +1,7 @@
 {
   "name": "loka-js",
   "version": "1.1.0",
-  "description": "Write fixi-family HTML in your own language. 24 locales, no DOM mutation, per-element selection.",
+  "description": "Write fixi-family HTML in your own language. fixi in 23 languages, the whole family in Spanish so far. No DOM mutation, per-element selection.",
   "license": "0BSD",
   "author": "Wm Talcott",
   "main": "fixi.js",
@@ -31,7 +31,8 @@
     "brief": "node scripts/research-brief.mjs",
     "queue-research": "node scripts/queue-research.mjs",
     "verify-prompt": "node scripts/verify-prompt.mjs",
-    "test": "node test/gen-drift.mjs && node test/vocab-ordering.mjs && node test/loka-js.spec.mjs",
+    "test": "node test/gen-drift.mjs && node test/vocab-ordering.mjs && npm run test:browser",
+    "test:browser": "node test/loka-js.spec.mjs && node test/preservation.mjs && node test/joint-demo-check.mjs && node test/psatina-study-es-check.mjs",
     "test:drift": "node test/gen-drift.mjs",
     "test:vocab": "node test/vocab-ordering.mjs"
   },

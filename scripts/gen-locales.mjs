@@ -11,6 +11,8 @@
 //   - ../hyperfixi/packages/semantic/src/generators/profiles/{profile}.ts
 //     (event vocab — sibling-checkout dependency)
 //   - scripts/fx-vocab.mjs (per-library attr/event vocab + props)
+//   - scripts/settled-terms.mjs (which event spelling is listed first, where a
+//     review concluded — see preferConcluded)
 //
 // Outputs (both regenerated together):
 //   - locales/{code}.js     — fixi-specific (script-tag loaded; calls window.loka.register)
@@ -23,6 +25,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { LOCALES } from './fx-vocab.mjs';
+import { SETTLED, isAttrKey } from './settled-terms.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -104,7 +107,8 @@ function parseArgs() {
  * PRIMARY localized form is inserted before its `alternatives`. Callers
  * that invert the map and take the first-wins entry per canonical therefore
  * recover the preferred form. `orderValues` preserves this within-group
- * order, and test/vocab-ordering.mjs guards it against regressions.
+ * order, `preferConcluded` then moves a reviewed form ahead of the profile's
+ * primary, and test/vocab-ordering.mjs guards both against regressions.
  * Exported so that test can assert the invariant directly.
  */
 export function extractEventValues(profileSource) {
@@ -172,6 +176,46 @@ function orderValues(values, code) {
   return ordered;
 }
 
+/**
+ * Move loka's concluded form to the front of its canonical group.
+ *
+ * Which spellings exist is the profile's call; which one loka TEACHES is not.
+ * A profile keyword serves hyperscript, where the word follows a marker (`al`,
+ * `ao`, `wenn`) and, for focus/blur/scroll/init, also names the command — so
+ * upstream has its own reasons to put a verb first (hyperfixi#1460: the command
+ * had been writing `enfoque yo`). loka's token stands alone in an attribute,
+ * where the reviewed noun is right. While the profile's first spelling was taken
+ * as ours, every reorder upstream made for hyperscript's sake reverted a
+ * reviewed loka decision, and loka's corrections broke hyperscript's commands.
+ *
+ * Reorders only. A concluded form the profile does not publish is reported as
+ * unplaced, never added, so loka still cannot publish a word semantic does not
+ * parse — the shadow rule is untouched.
+ *
+ * Returns `{ events, unplaced: [{ canonical, concluded }] }`. `settled` is a
+ * parameter so test/vocab-ordering.mjs can drive it with synthetic records.
+ */
+export function preferConcluded(code, ordered, settled = SETTLED) {
+  const lead = {};
+  const unplaced = [];
+  for (const [key, rec] of Object.entries(settled)) {
+    const sep = key.indexOf(':');
+    const canonical = key.slice(sep + 1);
+    if (key.slice(0, sep) !== code || rec.concluded === null) continue;
+    if (isAttrKey(canonical) || !EVENT_KEYWORDS.includes(canonical)) continue;
+    if (ordered[rec.concluded] === canonical) lead[canonical] = rec.concluded;
+    else unplaced.push({ canonical, concluded: rec.concluded });
+  }
+  const events = {};
+  for (const canonical of EVENT_KEYWORDS) {
+    if (lead[canonical]) events[lead[canonical]] = canonical;
+    for (const [form, can] of Object.entries(ordered)) {
+      if (can === canonical && form !== lead[canonical]) events[form] = can;
+    }
+  }
+  return { events, unplaced };
+}
+
 /** Format a JS object literal with single-quoted keys/values, 2-space indent. */
 function formatObject(obj, indent) {
   const entries = Object.entries(obj);
@@ -197,6 +241,7 @@ function renderDomVocabFile(code, spec, events) {
   return `// AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/${spec.profile}.ts (events)
 //         loka-js/scripts/fx-vocab.mjs (event overrides + props)
+//         loka-js/scripts/settled-terms.mjs (which event form is listed first)
 // Regenerate: cd loka-js && npm run gen
 //
 // DOM-keyword vocabulary for the '${code}' locale. Shared between loka-js
@@ -261,6 +306,7 @@ function renderLocaleFile(code, spec, fixiEvents) {
   const header = `// AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/${spec.profile}.ts (events)
 //         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
+//         loka-js/scripts/settled-terms.mjs (which event form is listed first)
 // Regenerate: cd loka-js && npm run gen
 ${conventions}${unreviewedBanner}${stubBanner}`;
 
@@ -402,12 +448,13 @@ export function renderLocale(code) {
 
   const profileValues = profileSource ? extractEventValues(profileSource) : {};
   const merged = { ...profileValues, ...(spec.fixi?.events ?? {}) };
-  const events = orderValues(merged, code);
+  const { events, unplaced } = preferConcluded(code, orderValues(merged, code));
 
   return {
     code,
     skipped: false,
     shadowed: shadowedCanonicals(code, spec, profileValues),
+    unplaced,
     eventCount: Object.keys(events).length,
     attrCount: Object.keys(spec.fixi?.attrs ?? {}).length,
     propCount: Object.keys(spec.props ?? {}).length,
@@ -486,6 +533,16 @@ function main() {
       console.error(`  [SKIP] ${code}: profile not found at ${result.profilePath}`);
       skipCount++;
       continue;
+    }
+
+    // Not a refusal: the data is still well-formed, and test/vocab-ordering.mjs
+    // fails on the record. This says where the fix goes, which the test can't.
+    for (const { canonical, concluded } of result.unplaced) {
+      console.error(
+        `  [UNPLACED] ${code}: settled-terms concludes '${concluded}' for '${canonical}', but the ` +
+          `'${LOCALES[code].profile}' profile does not publish it. loka cannot teach a word semantic ` +
+          `does not parse — add it to the profile (an alternative is enough), then regenerate.`
+      );
     }
 
     if (args.dryRun) {

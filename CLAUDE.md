@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 loka-js applies a hook-contract pattern to the [fixiproject family](https://fixiproject.org/) (fixi, moxi, ssexi, paxi, rexi) so locale modules can register localized authoring vocabulary that each library resolves at processing time — no DOM mutation, no MutationObserver overhead, per-element language via `lang` ancestor.
 
-Status: **v1** — all five fixiproject libraries supported. fixi/moxi/paxi are patched (small hook contracts; faithful to upstream style for fork hygiene, not because we're pursuing upstream merges — see "Patch discipline" below); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
+Status: **v1** — the runtime supports all five fixiproject libraries; the *vocabulary* does not yet. fixi attribute names ship in 22 locales and event names in 23, but moxi/paxi/rexi/ssexi tokens exist only in Spanish. The README's "Coverage" section is the public statement of this — keep it true when adding a locale's family tokens. fixi/moxi/paxi are patched (small hook contracts; faithful to upstream style for fork hygiene, not because we're pursuing upstream merges — see "Patch discipline" below); ssexi and rexi need no patch (localized from the orchestrator via event re-fire and global aliasing).
 
 When no locale module is loaded, every patched library is behaviorally identical to upstream (the `??=` defaults reproduce the original literals).
 
@@ -36,22 +36,19 @@ npm run gen
 node scripts/gen-locales.mjs --dry-run         # preview
 node scripts/gen-locales.mjs --locale=es       # one locale
 
-# Full suite: drift guard, vocab conventions, then Playwright acceptance.
-# Only the last needs a static server on :3002.
+# Full suite: drift guard, vocab conventions, then every browser check
+# (acceptance, behavior preservation, the two psatina demo checks).
+# Only the browser checks need a static server, all on the same :3002.
 npx http-server . -p 3002 -c-1 -s &
 npm test
+npm run test:browser                           # just the browser checks
 
 # The two pure-Node checks run standalone, no server:
 npm run test:drift                             # committed output == fresh generate
 npm run test:vocab                             # ordering + identity conventions
-
-# Behavior-preservation smoke test (patched fixi with NO orchestrator).
-# Needs a static server on :3001.
-npx http-server . -p 3001 -c-1 -s &
-node test/preservation.mjs
 ```
 
-The test script does not start its own server; start one before running.
+The test script does not start its own server; start one before running. Every browser check reads `LOKA_BASE_URL` (default `http://127.0.0.1:3002`). The behavior-preservation harness used to want :3001 and the psatina checks :8125, so the latter two were never run; CI (`.github/workflows/test.yml`) runs all of them.
 
 ## Architecture
 
@@ -185,15 +182,15 @@ A third defect class, visible in the wave-2 data and briefed from 2026-07-29: **
 
 ### Concluded terms live in one place
 
-[scripts/settled-terms.mjs](./scripts/settled-terms.mjs) records decisions that have concluded: the form we ship, the spellings it demoted, why, when, sources, and any regional caveat. Two consumers read it — the brief (to mark a term "confirm only, don't re-derive") and [test/vocab-ordering.mjs](./test/vocab-ordering.mjs) (to assert the concluded form is primary *and* the demoted spellings still parse).
+[scripts/settled-terms.mjs](./scripts/settled-terms.mjs) records decisions that have concluded: the form we ship, the spellings it demoted, why, when, sources, and any regional caveat. Three consumers read it — the brief (to mark a term "confirm only, don't re-derive"), [test/vocab-ordering.mjs](./test/vocab-ordering.mjs) (to assert the concluded form is primary *and* the demoted spellings still parse), and the generator (to put a concluded event form first).
 
-They were previously two hand-kept copies of the same facts and had already drifted: the test's table covered four terms, the brief's covered six. A correction reaching one and not the other lets a brief advertise a term as reviewed while nothing tests that the reviewed spelling shipped.
+The first two were previously hand-kept copies of the same facts and had already drifted: the test's table covered four terms, the brief's covered six. A correction reaching one and not the other lets a brief advertise a term as reviewed while nothing tests that the reviewed spelling shipped.
 
-The term itself does **not** live there. Event names live upstream in the semantic profile; attribute names live in [scripts/fx-vocab.mjs](./scripts/fx-vocab.mjs). Change it there, `npm run gen`, then add the record. `sources: []` means the decision was made on structural grounds with no citation — the brief says so out loud, so a reviewer knows it is open to challenge.
+The spelling itself does **not** live there. Event spellings live upstream in the semantic profile; attribute names live in [scripts/fx-vocab.mjs](./scripts/fx-vocab.mjs). But for events, **which spelling comes first is loka's**: `preferConcluded` in [gen-locales.mjs](./scripts/gen-locales.mjs) moves a record's `concluded` form to the front of its group. So an event correction to a form the profile already carries is just the record plus `npm run gen`; a form it does not carry has to be added upstream first (an alternative is enough), and `npm run gen` names it `[UNPLACED]` until then. `preferConcluded` only reorders — it never adds a spelling, so the shadow rule still holds. `sources: []` means the decision was made on structural grounds with no citation — the brief says so out loud, so a reviewer knows it is open to challenge.
 
 Records are keyed `code:canonical` for **both** surfaces — `es:mousedown` for an event, `de:fx-swap` for an attribute. The attribute half arrived late: those decisions used to live as prose in `fx-vocab.mjs` plus a hardcoded table in `verify-prompt.mjs` that needed hand-editing after every round, which is the same drift this file exists to end, reintroduced for the other half of the vocabulary.
 
-Three fields carry state the data alone cannot express — `status: 'pending-upstream'` (concluded but the edit lands in a repo we cannot touch, so the *wrong* form is still shipping), `concluded: null` (we looked and decided to publish nothing, as distinct from nobody having looked), and `basis` (attested / structural / coined). Each changes what a brief asks a reviewer to do, and each has its own assertion in [test/vocab-ordering.mjs](./test/vocab-ordering.mjs). See [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md) for the freeze protocol and the coinage track.
+Three fields carry state the data alone cannot express — `status: 'pending-upstream'` (concluded but the edit lands in a repo we cannot touch, so the *wrong* form is still shipping — for a concluded form, only ever one the profile doesn't publish yet), `concluded: null` (we looked and decided to publish nothing, as distinct from nobody having looked), and `basis` (attested / structural / coined). Each changes what a brief asks a reviewer to do, and each has its own assertion in [test/vocab-ordering.mjs](./test/vocab-ordering.mjs). See [RESEARCH_PIPELINE.md](./RESEARCH_PIPELINE.md) for the freeze protocol and the coinage track.
 
 **Three facts about lookup, verified against the runtime rather than assumed** (a probe page driven through Playwright, since all three had been guessed at in the brief's own wording):
 
@@ -216,6 +213,8 @@ The heuristics flag fused compounds, underscores and camelCase — every term of
 **@lokascript/semantic has two event vocabularies, and the generator only reads one.** `gen-locales.mjs` scrapes the profiles' `keywords` maps (`generators/profiles/*.ts`), which mix DOM events with grammar and commands — hence the allowlist. But `patterns/event-handler.ts` exports `eventNameTranslations`, a separate **event-only** table covering 14 languages, plus a test-locked `eventLocalizationDenylist` of pairs that fail round-trip upstream. It holds **66 (locale, event) pairs loka does not publish** — German `taste runter`/`maus über`/`laden`, Japanese キーダウン, Korean 마우스다운, and 8 events each for `ja`/`ko`.
 
 The brief reads it so it doesn't ask reviewers to invent terms that already exist, and marks them as candidates rather than shipped vocabulary — upstream documents that table as *aspirational* (forms proposed, not verified in use), and the denylist correlates with a term being invented. Whether to publish any of them is an open decision, not a mechanical merge.
+
+**Same words, a different first choice — by design.** Neither upstream ordering is loka's. A profile keyword's first spelling is the hyperscript *command* where the keyword is also one (`focus`, `blur`, `scroll`, `init`): hyperfixi#1460 (2026-10-11) put `enfocar`/`desenfocar`/`focar`/`desfocar` first because the command had been writing `enfoque yo`. And `eventNameTranslations`' first entry is what hyperscript writes *after a marker* — es `al` and pt `ao` are masculine contractions, so the feminine `pérdida de foco` / `perda de foco` would read wrong there. A loka token stands alone in an attribute, so it takes the reviewed noun. Keep the spellings shared (a beginner's word must work in both an `fx-*` attribute and in hyperscript) and let each library choose which one it teaches. Don't "fix" this by making loka read either upstream ordering; that was tried on 2026-10-30 and would have taught the visual-blur false friend in ja, ko, de and tr, which the event table still lists first.
 
 ### Data conventions (relied on by external consumers)
 

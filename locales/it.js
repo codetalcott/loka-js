@@ -1,6 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source: hyperfixi/packages/semantic/src/generators/profiles/italian.ts (events)
 //         loka-js/scripts/fx-vocab.mjs (fixi attrs + event overrides + per-library vocab)
+//         loka-js/scripts/settled-terms.mjs (which event form is listed first)
 // Regenerate: cd loka-js && npm run gen
 // Conventions: maps are localized→canonical (parse direction). A canonical
 //   token absent from a map is intentionally identical to the canonical form
